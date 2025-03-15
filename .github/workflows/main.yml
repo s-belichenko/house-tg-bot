@@ -38,5 +38,9 @@ jobs:
           runtime: ${{ vars.FUNCTION_RUNTIME }}
           memory: ${{ vars.FUNCTION_MEMORY }}
           entrypoint: 'main.Handler'
+          service-account: ${{ secrets.YC_SERVICE_ACCOUT_ID }}
+          secrets: |
+            TELEGRAM_BOT_TOKEN=${{ secrets.YC_LOCKBOX_ID }}/${{ secrets.YC_LOCKBOX_VERSION }}/TELEGRAM_BOT_TOKEN
           include: |
             ./*.go
+            ./go.mod
