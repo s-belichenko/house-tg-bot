@@ -25,7 +25,9 @@ jobs:
       - name: golint
         uses: Jerome1337/golint-action@v1.0.2
         with:
-          golint-path: './*.go'
+          golint-path: |
+            ./cmd/**/*.go
+            ./internal/*.go
 
       # Загружаем serverless-функцию в Yandex Cloud
       - name: Deploy Function
@@ -37,10 +39,14 @@ jobs:
           function-name: ${{ secrets.YC_FUNCTION_NAME }}
           runtime: ${{ vars.FUNCTION_RUNTIME }}
           memory: ${{ vars.FUNCTION_MEMORY }}
-          entrypoint: 'main.Handler'
+          entrypoint: 'cmd/bot/main.Handler'
           service-account: ${{ secrets.YC_SERVICE_ACCOUT_ID }}
+          environment: |
+            ALLOWED_USERS=${{ vars.ALLOWED_USERS }}
+            ALLOWED_CHATS=${{ vars.ALLOWED_CHATS }}
           secrets: |
             TELEGRAM_BOT_TOKEN=${{ secrets.YC_LOCKBOX_ID }}/${{ secrets.YC_LOCKBOX_VERSION }}/TELEGRAM_BOT_TOKEN
           include: |
-            ./*.go
+            ./cmd/**/*.go
+            ./internal/*.go
             ./go.mod
