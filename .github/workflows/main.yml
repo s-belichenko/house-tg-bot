@@ -7,11 +7,13 @@ on:
   push:
     branches:
       - main
+      - development
 
 # Задания
 jobs:
   # Название задания
   Main-Job:
+    environment: ${{ github.ref_name }}
     # Запускать на последней версии Ubuntu
     runs-on: ubuntu-latest
 
@@ -42,7 +44,7 @@ jobs:
           entrypoint: 'cmd/bot/main.Handler'
           service-account: ${{ secrets.YC_SERVICE_ACCOUT_ID }}
           environment: |
-            ALLOWED_USERS=${{ vars.ALLOWED_USERS }}
+            CHAT_ADMINS=${{ vars.CHAT_ADMINS }}
             ALLOWED_CHATS=${{ vars.ALLOWED_CHATS }}
           secrets: |
             TELEGRAM_BOT_TOKEN=${{ secrets.YC_LOCKBOX_ID }}/${{ secrets.YC_LOCKBOX_VERSION }}/TELEGRAM_BOT_TOKEN
