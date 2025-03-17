@@ -8,7 +8,7 @@ import (
 	"log"
 	"net/http"
 	"os"
-	"s-belichenko/ilovaiskaya2-bot/internal"
+	"s-belichenko/ilovaiskaya2-bot/internal/middleware"
 )
 
 var bot *tele.Bot
@@ -22,10 +22,10 @@ func init() {
 
 	// Читаем список разрешенных пользователей из переменной окружения
 	allowedUsersEnv := os.Getenv("ALLOWED_USERS")
-	allowedUsers = internal.GetAllowedIDs(allowedUsersEnv)
+	allowedUsers = middleware.GetAllowedIDs(allowedUsersEnv)
 	// Читаем список разрешенных групп из переменной окружения
 	allowedChatsEnv := os.Getenv("ALLOWED_CHATS")
-	allowedChats = internal.GetAllowedIDs(allowedChatsEnv)
+	allowedChats = middleware.GetAllowedIDs(allowedChatsEnv)
 
 	bot, err = tele.NewBot(tele.Settings{
 		Token:  token,
@@ -38,7 +38,7 @@ func init() {
 	// Middleware для проверки разрешенных пользователей и групп
 	bot.Use(func(next tele.HandlerFunc) tele.HandlerFunc {
 		return func(c tele.Context) error {
-			if result, msg := internal.IsAllowed(c, allowedUsers, allowedChats); result != true {
+			if result, msg := middleware.IsAllowed(c, allowedUsers, allowedChats); result != true {
 				if err := c.Send(msg); err != nil {
 					log.Printf("Failed to send message: %v", err)
 				}

@@ -1,4 +1,4 @@
-package internal
+package middleware
 
 import (
 	"github.com/go-test/deep"

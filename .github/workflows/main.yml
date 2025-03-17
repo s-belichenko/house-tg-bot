@@ -61,5 +61,5 @@ jobs:
             TELEGRAM_BOT_TOKEN=${{ secrets.YC_LOCKBOX_ID }}/${{ secrets.YC_LOCKBOX_VERSION }}/TELEGRAM_BOT_TOKEN
           include: |
             ./cmd/**/*.go
-            ./internal/*.go
+            ./internal/**/*.go
             ./go.mod
