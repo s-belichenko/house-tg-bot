@@ -33,18 +33,31 @@ func GetAllowedIDs(IDs string) []tele.ChatID {
 }
 
 // IsAllowed Проверяем, разрешен ли пользователь или группа
-func IsAllowed(c tele.Context, allowedUsers []tele.ChatID, allowedChats []tele.ChatID) bool {
+func IsAllowed(c tele.Context, allowedUsers []tele.ChatID, allowedChats []tele.ChatID) (bool, string) {
 	var userID tele.ChatID
 	var chatID tele.ChatID
-	if c.Sender() != nil {
+	var msg string
+	switch c.Chat().Type {
+	case "private", "privatechannel":
 		userID = tele.ChatID(c.Sender().ID)
-	}
-	if c.Chat() != nil {
+
+		if slices.Contains(allowedUsers, userID) {
+			return true, msg
+		} else {
+			msg = fmt.Sprintf("Извините, у вас нет доступа к этому боту, ваш идентификатор %d", userID)
+		}
+	case "group", "supergroup":
 		chatID = tele.ChatID(c.Chat().ID)
+
+		if slices.Contains(allowedChats, chatID) {
+			return true, msg
+		} else {
+			msg = fmt.Sprintf("Извините, бот не предназначен для группы с идентификатором %d", chatID)
+		}
+	case "channel":
+		chatID = tele.ChatID(c.Chat().ID)
+		msg = fmt.Sprintf("Извините, бот не предназначен для канала с идентификатором %d", chatID)
 	}
 
-	if slices.Contains(allowedUsers, userID) || slices.Contains(allowedChats, chatID) {
-		return true
-	}
-	return false
+	return false, msg
 }

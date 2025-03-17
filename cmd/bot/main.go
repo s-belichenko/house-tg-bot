@@ -9,7 +9,6 @@ import (
 	"net/http"
 	"os"
 	"s-belichenko/ilovaiskaya2-bot/internal"
-	"strconv"
 )
 
 var bot *tele.Bot
@@ -39,17 +38,7 @@ func init() {
 	// Middleware для проверки разрешенных пользователей и групп
 	bot.Use(func(next tele.HandlerFunc) tele.HandlerFunc {
 		return func(c tele.Context) error {
-			if !internal.IsAllowed(c, allowedUsers, allowedChats) {
-				var msg string
-				if c.Sender() != nil {
-					idStr := strconv.FormatInt(c.Sender().ID, 10)
-					msg = fmt.Sprintf("Извините, у вас нет доступа к этому боту, ваш идентификатор %s", idStr)
-				} else if c.Chat() != nil {
-					idStr := strconv.FormatInt(c.Chat().ID, 10)
-					msg = fmt.Sprintf("Извините, бот не предназначен для группы с идентификатором %s", idStr)
-				} else {
-					msg = "Извините, у вас нет доступа к этому боту"
-				}
+			if result, msg := internal.IsAllowed(c, allowedUsers, allowedChats); result != true {
 				if err := c.Send(msg); err != nil {
 					log.Printf("Failed to send message: %v", err)
 				}
