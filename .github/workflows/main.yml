@@ -1,18 +1,35 @@
-# Название рабочего процесса
-name: Основной процесс
-
-# События, запускающие процесс
 on:
-  # Git push в ветку main
   push:
     branches:
       - main
       - development
 
-# Задания
 jobs:
-  # Название задания
-  Main-Job:
+  Tests:
+    runs-on: ubuntu-latest
+    steps:
+      # Загружаем код репозитория в окружение
+      - name: Checkout repository
+        uses: actions/checkout@v3
+      # Проверим стиль кода
+      #      - name: Run linters
+      #        uses: Jerome1337/golint-action@v1.0.2
+      #        with:
+      #          golint-path: |
+      #            ./cmd/**/*.go
+      #            ./internal/*.go
+      # Устанавливаем Golang
+      - name: Setup Go
+        uses: actions/setup-go@v3
+      # Устанавливаем зависимости
+      - name: Install dependencies
+        run: 'cd cmd/bot && go get'
+      # Запускаем модульные тесты
+      - name: Run Go tests
+        run: 'go test -v -cover -race ./...'
+  Deploy:
+    needs:
+      - Tests
     environment: ${{ github.ref_name }}
     # Запускать на последней версии Ubuntu
     runs-on: ubuntu-latest
