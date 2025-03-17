@@ -2,30 +2,33 @@ package main
 
 import (
 	"encoding/json"
-	"fmt"
-	tele "gopkg.in/telebot.v4"
 	"io/ioutil"
 	"log"
 	"net/http"
 	"os"
+	"s-belichenko/ilovaiskaya2-bot/internal/handlers"
 	"s-belichenko/ilovaiskaya2-bot/internal/middleware"
+
+	tele "gopkg.in/telebot.v4"
 )
 
 var bot *tele.Bot
 
-var allowedUsers []tele.ChatID
-var allowedChats []tele.ChatID
-
 func init() {
+	initBot()
+	RegisterCommandHandlers()
+}
+
+func RegisterCommandHandlers() {
+	// Обработчик команды /start
+	bot.Handle("/start", handlers.CommandStartHandler)
+	// Обработчик команды /test
+	bot.Handle("/test", handlers.CommandTestHandler)
+}
+
+func initBot() {
 	token := os.Getenv("TELEGRAM_BOT_TOKEN")
 	var err error
-
-	// Читаем список разрешенных пользователей из переменной окружения
-	allowedUsersEnv := os.Getenv("ALLOWED_USERS")
-	allowedUsers = middleware.GetAllowedIDs(allowedUsersEnv)
-	// Читаем список разрешенных групп из переменной окружения
-	allowedChatsEnv := os.Getenv("ALLOWED_CHATS")
-	allowedChats = middleware.GetAllowedIDs(allowedChatsEnv)
 
 	bot, err = tele.NewBot(tele.Settings{
 		Token:  token,
@@ -36,30 +39,7 @@ func init() {
 	}
 
 	// Middleware для проверки разрешенных пользователей и групп
-	bot.Use(func(next tele.HandlerFunc) tele.HandlerFunc {
-		return func(c tele.Context) error {
-			if result, msg := middleware.IsAllowed(c, allowedUsers, allowedChats); result != true {
-				if err := c.Send(msg); err != nil {
-					log.Printf("Failed to send message: %v", err)
-				}
-				// Прерываем дальнейшую обработку
-				return nil
-			}
-			return next(c)
-		}
-	})
-
-	// Обработчик команды /start
-	bot.Handle("/start", func(c tele.Context) error {
-		userID := c.Sender().ID
-		return c.Send(fmt.Sprintf("Привет, %d", userID))
-	})
-
-	// Обработчик команды /hello
-	bot.Handle("/hello", func(c tele.Context) error {
-		userID := c.Sender().ID
-		return c.Send(fmt.Sprintf("Привет, %d", userID))
-	})
+	bot.Use(middleware.SecurityMiddleware)
 }
 
 // Handler Функция-обработчик для Yandex Cloud Function

@@ -3,6 +3,7 @@ package middleware
 import (
 	"fmt"
 	"github.com/rs/zerolog/log"
+	"os"
 	"slices"
 	"strconv"
 	"strings"
@@ -10,8 +11,37 @@ import (
 	tele "gopkg.in/telebot.v4"
 )
 
-// GetAllowedIDs Получает из текстового списка идентификаторов валидные
-func GetAllowedIDs(IDs string) []tele.ChatID {
+type Config struct {
+	ChatAdmins   []tele.ChatID
+	AllowedChats []tele.ChatID
+}
+
+var config Config
+
+func init() {
+	// Читаем список разрешенных пользователей из переменной окружения
+	allowedUsersEnv := os.Getenv("CHAT_ADMINS")
+	config.ChatAdmins = getAllowedIDs(allowedUsersEnv)
+	// Читаем список разрешенных групп из переменной окружения
+	allowedChatsEnv := os.Getenv("ALLOWED_CHATS")
+	config.AllowedChats = getAllowedIDs(allowedChatsEnv)
+}
+
+func SecurityMiddleware(next tele.HandlerFunc) tele.HandlerFunc {
+	return func(c tele.Context) error {
+		if result, msg := isAllowed(c); result != true {
+			if err := c.Send(msg); err != nil {
+				log.Printf("Failed to send message: %v", err)
+			}
+			// Прерываем дальнейшую обработку
+			return nil
+		}
+		return next(c)
+	}
+}
+
+// getAllowedIDs Получает из текстового списка идентификаторов валидные
+func getAllowedIDs(IDs string) []tele.ChatID {
 	var allowedIDs []tele.ChatID
 	allowedIDs = make([]tele.ChatID, 0)
 	if IDs != "" {
@@ -32,8 +62,8 @@ func GetAllowedIDs(IDs string) []tele.ChatID {
 	return allowedIDs
 }
 
-// IsAllowed Проверяем, разрешен ли пользователь или группа
-func IsAllowed(c tele.Context, allowedUsers []tele.ChatID, allowedChats []tele.ChatID) (bool, string) {
+// isAllowed Проверяем, разрешен ли пользователь или группа
+func isAllowed(c tele.Context) (bool, string) {
 	var userID tele.ChatID
 	var chatID tele.ChatID
 	var msg string
@@ -41,7 +71,7 @@ func IsAllowed(c tele.Context, allowedUsers []tele.ChatID, allowedChats []tele.C
 	case "private", "privatechannel":
 		userID = tele.ChatID(c.Sender().ID)
 
-		if slices.Contains(allowedUsers, userID) {
+		if slices.Contains(config.ChatAdmins, userID) {
 			return true, msg
 		} else {
 			msg = fmt.Sprintf("Извините, у вас нет доступа к этому боту, ваш идентификатор %d", userID)
@@ -49,7 +79,7 @@ func IsAllowed(c tele.Context, allowedUsers []tele.ChatID, allowedChats []tele.C
 	case "group", "supergroup":
 		chatID = tele.ChatID(c.Chat().ID)
 
-		if slices.Contains(allowedChats, chatID) {
+		if slices.Contains(config.AllowedChats, chatID) {
 			return true, msg
 		} else {
 			msg = fmt.Sprintf("Извините, бот не предназначен для группы с идентификатором %d", chatID)
