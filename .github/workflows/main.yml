@@ -12,13 +12,13 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v3
       # Проверим стиль кода
-      #      - name: Run linters
-      #        uses: Jerome1337/golint-action@v1.0.2
-      #        with:
-      #          golint-path: |
-      #            ./cmd/**/*.go
-      #            ./internal/*.go
-      # Устанавливаем Golang
+      - name: Run linters
+        uses: Jerome1337/golint-action@v1.0.2
+        with:
+          golint-path: |
+            ./cmd/**/*.go
+            ./internal/**/*.go
+  #      # Устанавливаем Golang
   #      - name: Setup Go
   #        uses: actions/setup-go@v3
   #        with:
