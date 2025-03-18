@@ -18,17 +18,17 @@ jobs:
           golint-path: |
             ./cmd/**/*.go
             ./internal/**/*.go
-  #      # Устанавливаем Golang
-  #      - name: Setup Go
-  #        uses: actions/setup-go@v3
-  #        with:
-  #          go-version: '^1.21.13'
-  #      # Устанавливаем зависимости
-  #      - name: Install dependencies
-  #        run: 'cd cmd/bot && go get'
-  #      # Запускаем модульные тесты
-  #      - name: Run Go tests
-  #        run: 'go test -v -cover -race ./...'
+      # Устанавливаем Go
+      - name: Setup Go
+        uses: actions/setup-go@v3
+        with:
+          go-version: '1.21.0'
+      #      # Устанавливаем зависимости
+      #      - name: Install dependencies
+      #        run: 'go mod download'
+      # Запускаем модульные тесты
+      - name: Run Go tests
+        run: 'go test -cover -race ./...'
   Deploy:
     needs:
       - Tests
