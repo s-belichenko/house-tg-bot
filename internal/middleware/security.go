@@ -27,7 +27,8 @@ func init() {
 	config.AllowedChats = getAllowedIDs(allowedChatsEnv)
 }
 
-func SecurityMiddleware(next tele.HandlerFunc) tele.HandlerFunc {
+// IsOurDude middleware для проверки разрешенных пользователей и групп
+func IsOurDude(next tele.HandlerFunc) tele.HandlerFunc {
 	return func(c tele.Context) error {
 		if result, msg := isAllowed(c); result != true {
 			if err := c.Send(msg); err != nil {

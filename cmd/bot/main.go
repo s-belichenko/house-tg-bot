@@ -2,7 +2,7 @@ package main
 
 import (
 	"encoding/json"
-	"io/ioutil"
+	"io"
 	"log"
 	"net/http"
 	"os"
@@ -10,6 +10,7 @@ import (
 	"s-belichenko/ilovaiskaya2-bot/internal/middleware"
 
 	tele "gopkg.in/telebot.v4"
+	teleMiddleware "gopkg.in/telebot.v4/middleware"
 )
 
 var bot *tele.Bot
@@ -20,9 +21,7 @@ func init() {
 }
 
 func RegisterCommandHandlers() {
-	// Обработчик команды /start
 	bot.Handle("/start", handlers.CommandStartHandler)
-	// Обработчик команды /test
 	bot.Handle("/test", handlers.CommandTestHandler)
 	bot.Handle("/keys", handlers.CommandKeysHandler)
 }
@@ -31,16 +30,14 @@ func initBot() {
 	token := os.Getenv("TELEGRAM_BOT_TOKEN")
 	var err error
 
-	bot, err = tele.NewBot(tele.Settings{
-		Token:  token,
-		Poller: nil, // В режиме вебхуков опрос не нужен
-	})
+	bot, err = tele.NewBot(tele.Settings{Token: token})
 	if err != nil {
 		log.Fatal(err)
 	}
 
-	// Middleware для проверки разрешенных пользователей и групп
-	bot.Use(middleware.SecurityMiddleware)
+	bot.Use(teleMiddleware.Logger())
+	bot.Use(teleMiddleware.IgnoreVia())
+	bot.Use(middleware.IsOurDude)
 }
 
 // Handler Функция-обработчик для Yandex Cloud Function
@@ -50,7 +47,7 @@ func Handler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	bodyBytes, err := ioutil.ReadAll(r.Body)
+	bodyBytes, err := io.ReadAll(r.Body)
 	if err != nil {
 		http.Error(w, "Failed to read body", http.StatusInternalServerError)
 		return
@@ -63,6 +60,5 @@ func Handler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// Обрабатываем обновление
 	bot.ProcessUpdate(update)
 }
