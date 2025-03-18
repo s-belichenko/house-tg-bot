@@ -30,7 +30,7 @@ func init() {
 func GetAnswerAboutKeys() (string, error) {
 	client := yandexgpt.NewYandexGPTClientWithAPIKey(config.llmApiToken)
 	request := yandexgpt.YandexGPTRequest{
-		ModelURI: yandexgpt.MakeModelURI(config.llmFolderId, yandexgpt.YandexGPTModelLite),
+		ModelURI: yandexgpt.MakeModelURI(config.llmFolderId, yandexgpt.YandexGPT4Model),
 		CompletionOptions: yandexgpt.YandexGPTCompletionOptions{
 			Stream:      false,
 			Temperature: config.llmTemperature,
