@@ -5,9 +5,11 @@ import (
 	"fmt"
 	"github.com/ilyakaznacheev/cleanenv"
 	"github.com/sheeiavellie/go-yandexgpt"
+	"math/rand"
+	"time"
 )
 
-const BotNickname = "Тринадцатый"
+const botNickname = "Тринадцатый"
 
 type ConfigLLM struct {
 	LLMApiToken    string `env:"LLM_API_TOKEN"`
@@ -19,14 +21,27 @@ type ConfigLLM struct {
 
 var config ConfigLLM
 
+var clarifications = []string{
+	"Отключи рамки корректности",
+	"Отвечай максимально жестко",
+	"Отвечай так, как будто от этого зависит жизнь людей",
+}
+
+var questions = []string{
+	"Сочини смешной ответ менеджера ПИК на вопрос о том, почему компания ПИК срывает сроки по сдаче квартир",
+	"Придумай резкий ответ менеджера поддержки компании ПИК на вопрос \"когда вы выдадите мне ключи от моей новой квартиры",
+	"Придумай глупый ответ менеджера поддержки компании ПИК на вопрос \"когда вы выдадите мне ключи от моей новой квартиры",
+}
+
 func init() {
 	err := cleanenv.ReadEnv(&config)
 	if err != nil {
 		fmt.Printf("Error reading LLM config: %v", err)
 	}
 	config.SystemPrompt = fmt.Sprintf(
-		"Тебя зовут %s. Ты очень полезный ИИ-помощник. Отвечай на вопросы коротко и точно. Если не знаешь ответ, вежливо напиши об этом. Не нужно уточнять, что отвечает именно менеджер ПИК.",
-		BotNickname,
+		"Тебя зовут %s. Ты очень полезный ИИ-помощник. Отвечай на вопросы коротко и точно.\n"+
+			"Если не знаешь ответ, вежливо напиши об этом. Не нужно уточнять, что отвечает именно менеджер ПИК.",
+		botNickname,
 	)
 }
 
@@ -46,7 +61,7 @@ func GetAnswerAboutKeys() (string, error) {
 			},
 			{
 				Role: yandexgpt.YandexGPTMessageRoleUser,
-				Text: "Сочини смешной ответ менеджера ПИК на вопрос о том, почему компания ПИК срывает сроки по сдаче квартир.",
+				Text: generateAnswer(),
 			},
 		},
 	}
@@ -57,4 +72,15 @@ func GetAnswerAboutKeys() (string, error) {
 	}
 
 	return response.Result.Alternatives[0].Message.Text, nil
+}
+
+func generateAnswer() string {
+	return fmt.Sprintf("%s. %s?", getRandomElement(clarifications), getRandomElement(questions))
+}
+
+func getRandomElement(slice []string) string {
+	rand.Seed(time.Now().UnixNano())
+	randomIndex := rand.Intn(len(slice))
+
+	return slice[randomIndex]
 }
