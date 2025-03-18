@@ -29,7 +29,7 @@ var testData = &TestData{
 func TestSuccessGetAllowedIDs(t *testing.T) {
 	for testCase, allowedIDsString := range testData.IDs {
 		t.Run(testCase, func(t *testing.T) {
-			actual := GetAllowedIDs(allowedIDsString)
+			actual := getAllowedIDs(allowedIDsString)
 
 			for _, problem := range deep.Equal(actual, testData.expected[testCase]) {
 				t.Error(problem)
