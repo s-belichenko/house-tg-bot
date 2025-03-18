@@ -32,7 +32,7 @@ jobs:
   Deploy:
     needs:
       - Tests
-    environment: ${{ github.ref_name }}
+    environment: ${{ github.ref == 'refs/heads/main' && 'production' || 'development' }}
     # Запускать на последней версии Ubuntu
     runs-on: ubuntu-latest
 
