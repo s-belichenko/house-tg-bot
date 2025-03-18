@@ -4,13 +4,31 @@ import (
 	"encoding/json"
 	"fmt"
 	"log"
+	"s-belichenko/ilovaiskaya2-bot/cmd/llm"
+	"strings"
 
 	tele "gopkg.in/telebot.v4"
 )
 
+func getUsername(u tele.User) string {
+	username := ""
+	if r := strings.TrimSpace(u.Username); r != "" {
+		username = r
+	}
+
+	return username
+}
+
 func CommandStartHandler(c tele.Context) error {
-	userID := c.Sender().ID
-	return c.Send(fmt.Sprintf("Привет, %d", userID))
+	return c.Send(fmt.Sprintf("Привет, %s", getUsername(*c.Sender())))
+}
+
+func CommandKeysHandler(c tele.Context) error {
+	answer, err := llm.GetAnswerAboutKeys()
+	if err != nil {
+		log.Printf("Не удалось получить ответ для команды /keys: %s", err)
+	}
+	return c.Send(answer)
 }
 
 func CommandTestHandler(c tele.Context) error {

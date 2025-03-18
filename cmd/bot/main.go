@@ -24,6 +24,7 @@ func RegisterCommandHandlers() {
 	bot.Handle("/start", handlers.CommandStartHandler)
 	// Обработчик команды /test
 	bot.Handle("/test", handlers.CommandTestHandler)
+	bot.Handle("/keys", handlers.CommandKeysHandler)
 }
 
 func initBot() {
