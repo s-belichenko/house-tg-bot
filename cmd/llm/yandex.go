@@ -7,6 +7,8 @@ import (
 	"github.com/sheeiavellie/go-yandexgpt"
 	"math/rand"
 	"time"
+
+	yandexLogger "s-belichenko/ilovaiskaya2-bot/internal/logger"
 )
 
 const botNickname = "Тринадцатый"
@@ -34,7 +36,10 @@ var questions = []string{
 	"Сочини оскорбительный ответ менеджера ПИК на вопрос о том, почему компания ПИК срывает сроки по сдаче квартир.",
 }
 
+var log *yandexLogger.Logger
+
 func init() {
+	log = yandexLogger.NewLogger("answers_stream")
 	err := cleanenv.ReadEnv(&config)
 	if err != nil {
 		fmt.Printf("Error reading LLM config: %v", err)
@@ -48,6 +53,7 @@ func init() {
 
 func GetAnswerAboutKeys() (string, error) {
 	client := yandexgpt.NewYandexGPTClientWithAPIKey(config.LLMApiToken)
+	question := generateAnswer()
 	request := yandexgpt.YandexGPTRequest{
 		ModelURI: yandexgpt.MakeModelURI(config.LLMFolderId, yandexgpt.YandexGPT4Model),
 		CompletionOptions: yandexgpt.YandexGPTCompletionOptions{
@@ -62,7 +68,7 @@ func GetAnswerAboutKeys() (string, error) {
 			},
 			{
 				Role: yandexgpt.YandexGPTMessageRoleUser,
-				Text: generateAnswer(),
+				Text: question,
 			},
 		},
 	}
@@ -72,7 +78,13 @@ func GetAnswerAboutKeys() (string, error) {
 		return "", fmt.Errorf("LLM request error: %s", err.Error())
 	}
 
-	return response.Result.Alternatives[0].Message.Text, nil
+	answer := response.Result.Alternatives[0].Message.Text
+	log.Info("Получен ответ на вопрос.", map[string]interface{}{
+		"question": question,
+		"answer":   answer,
+	})
+
+	return answer, nil
 }
 
 func generateAnswer() string {
@@ -80,7 +92,7 @@ func generateAnswer() string {
 }
 
 func getRandomElement(slice []string) string {
-	rand.Seed(time.Now().UnixNano())
+	rand.New(rand.NewSource(time.Now().UnixNano()))
 	randomIndex := rand.Intn(len(slice))
 
 	return slice[randomIndex]

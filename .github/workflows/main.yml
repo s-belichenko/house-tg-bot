@@ -65,3 +65,6 @@ jobs:
             ./cmd/**/*.go
             ./internal/**/*.go
             ./go.mod
+          execution-timeout: ${{ vars.EXECUTION_TIMEOUT }}
+          log-level: ${{ vars.LOG_LEVEL }}
+          logs-group-id: ${{ secrets.LOG_GROUP_ID }}

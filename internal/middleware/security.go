@@ -2,13 +2,13 @@ package middleware
 
 import (
 	"fmt"
-	"github.com/rs/zerolog/log"
 	"os"
 	"slices"
 	"strconv"
 	"strings"
 
 	tele "gopkg.in/telebot.v4"
+	yandexLogger "s-belichenko/ilovaiskaya2-bot/internal/logger"
 )
 
 type Config struct {
@@ -17,8 +17,11 @@ type Config struct {
 }
 
 var config Config
+var log *yandexLogger.Logger
 
 func init() {
+	log = yandexLogger.NewLogger("main_stream")
+
 	// Читаем список разрешенных пользователей из переменной окружения
 	allowedUsersEnv := os.Getenv("CHAT_ADMINS")
 	config.ChatAdmins = getAllowedIDs(allowedUsersEnv)
@@ -32,7 +35,9 @@ func IsOurDude(next tele.HandlerFunc) tele.HandlerFunc {
 	return func(c tele.Context) error {
 		if result, msg := isAllowed(c); result != true {
 			if err := c.Send(msg); err != nil {
-				log.Printf("Failed to send message: %v", err)
+				log.Error(fmt.Sprintf("Failed to send message: %v", err), map[string]interface{}{
+					"message": msg,
+				})
 			}
 			// Прерываем дальнейшую обработку
 			return nil
@@ -54,7 +59,7 @@ func getAllowedIDs(IDs string) []tele.ChatID {
 				if err == nil {
 					allowedIDs = append(allowedIDs, tele.ChatID(id))
 				} else {
-					log.Warn().Msg(fmt.Sprintf("Invalid allowed ID: %s", idStr))
+					log.Warn(fmt.Sprintf("Не удалось распознать идентфикатор %s", idStr), nil)
 				}
 			}
 		}
