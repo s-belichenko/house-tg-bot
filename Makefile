@@ -6,3 +6,6 @@ tidy:
 
 tests:
 	@go test -cover -race ./...
+
+mockery:
+	@mockery --all --case=underscore

@@ -13,6 +13,10 @@ import (
 
 type TeleID tele.ChatID
 type TeleIDList []TeleID
+type TeleContext interface {
+	Chat() *tele.Chat
+	Sender() *tele.User
+}
 
 type Config struct {
 	BotAdminsIDs         TeleIDList `env:"CHAT_ADMINS"`
@@ -51,7 +55,7 @@ func (f *TeleID) SetValue(s string) error {
 	if err != nil {
 		return nil
 	}
-	*f = TeleID(r)
+	*f = r
 	return nil
 }
 
@@ -104,7 +108,7 @@ func parseChatID(s string) (TeleID, error) {
 }
 
 // isAllowed Проверяем, разрешен ли пользователь или группа
-func isAllowed(c tele.Context) (bool, string) {
+func isAllowed(c TeleContext) (bool, string) {
 	var msg string
 	r := true
 
@@ -119,7 +123,7 @@ func isAllowed(c tele.Context) (bool, string) {
 	case "group", "supergroup":
 		chatID := TeleID(c.Chat().ID)
 
-		if !slices.Contains(config.AllowedChats, chatID) || !(config.AdministrationChatID == chatID) {
+		if !slices.Contains(config.AllowedChats, chatID) && (config.AdministrationChatID != chatID) {
 			r = false
 			msg = fmt.Sprintf("Извините, бот не предназначен для группы с идентификатором %d", chatID)
 		}

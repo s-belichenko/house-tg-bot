@@ -14,15 +14,16 @@ import (
 	yandexLogger "s-belichenko/ilovaiskaya2-bot/internal/logger"
 )
 
-var bot *tele.Bot
-var log *yandexLogger.Logger
-
 type ConfigBot struct {
 	TelegramToken string `env:"TELEGRAM_BOT_TOKEN"`
 	LogStreamName string
 }
 
-var config ConfigBot
+var (
+	bot    *tele.Bot
+	log    *yandexLogger.Logger
+	config ConfigBot
+)
 
 func init() {
 	initConfig()
