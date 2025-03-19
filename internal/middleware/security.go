@@ -2,7 +2,7 @@ package middleware
 
 import (
 	"fmt"
-	"os"
+	"github.com/ilyakaznacheev/cleanenv"
 	"slices"
 	"strconv"
 	"strings"
@@ -11,23 +11,48 @@ import (
 	yandexLogger "s-belichenko/ilovaiskaya2-bot/internal/logger"
 )
 
+type TeleID tele.ChatID
+type TeleIDList []TeleID
+
 type Config struct {
-	ChatAdmins   []tele.ChatID
-	AllowedChats []tele.ChatID
+	BotAdminsIDs         TeleIDList `env:"CHAT_ADMINS"`
+	AdministrationChatID TeleID     `env:"ADMINISTRATION_CHAT_ID"`
+	AllowedChats         TeleIDList `env:"ALLOWED_CHATS"`
+	LogStreamName        string
 }
 
 var config Config
 var log *yandexLogger.Logger
 
 func init() {
-	log = yandexLogger.NewLogger("main_stream")
+	initConfig()
+	initLog()
+}
 
-	// Читаем список разрешенных пользователей из переменной окружения
-	allowedUsersEnv := os.Getenv("CHAT_ADMINS")
-	config.ChatAdmins = getAllowedIDs(allowedUsersEnv)
-	// Читаем список разрешенных групп из переменной окружения
-	allowedChatsEnv := os.Getenv("ALLOWED_CHATS")
-	config.AllowedChats = getAllowedIDs(allowedChatsEnv)
+func initLog() {
+	log = yandexLogger.NewLogger(config.LogStreamName)
+}
+
+func initConfig() {
+	err := cleanenv.ReadEnv(&config)
+	config.LogStreamName = "main_stream"
+	if err != nil {
+		fmt.Printf("Error reading Bot config: %v", err)
+	}
+}
+
+func (f *TeleIDList) SetValue(s string) error {
+	*f = getAllowedIDs(s)
+	return nil
+}
+
+func (f *TeleID) SetValue(s string) error {
+	r, err := parseChatID(s)
+	if err != nil {
+		return nil
+	}
+	*f = TeleID(r)
+	return nil
 }
 
 // IsOurDude middleware для проверки разрешенных пользователей и групп
@@ -47,20 +72,16 @@ func IsOurDude(next tele.HandlerFunc) tele.HandlerFunc {
 }
 
 // getAllowedIDs Получает из текстового списка идентификаторов валидные
-func getAllowedIDs(IDs string) []tele.ChatID {
-	var allowedIDs []tele.ChatID
-	allowedIDs = make([]tele.ChatID, 0)
+func getAllowedIDs(IDs string) TeleIDList {
+	var allowedIDs TeleIDList
+	allowedIDs = make(TeleIDList, 0)
 	if IDs != "" {
 		userIDs := strings.Split(IDs, ",")
 		for _, idStr := range userIDs {
-			idStr = strings.TrimSpace(idStr)
-			if idStr != "" {
-				id, err := strconv.ParseInt(idStr, 10, 64)
-				if err == nil {
-					allowedIDs = append(allowedIDs, tele.ChatID(id))
-				} else {
-					log.Warn(fmt.Sprintf("Не удалось распознать идентфикатор %s", idStr), nil)
-				}
+			if id, err := parseChatID(idStr); err == nil {
+				allowedIDs = append(allowedIDs, id)
+			} else {
+				log.Warn(fmt.Sprintf("Не удалось распознать идентфикатор %s", idStr), nil)
 			}
 		}
 	}
@@ -68,32 +89,45 @@ func getAllowedIDs(IDs string) []tele.ChatID {
 	return allowedIDs
 }
 
+func parseChatID(s string) (TeleID, error) {
+	idStr := strings.TrimSpace(s)
+	if idStr != "" {
+		id, err := strconv.ParseInt(idStr, 10, 64)
+		if err == nil {
+			return TeleID(id), nil
+		} else {
+			return 0, err
+		}
+	}
+
+	return 0, nil
+}
+
 // isAllowed Проверяем, разрешен ли пользователь или группа
 func isAllowed(c tele.Context) (bool, string) {
-	var userID tele.ChatID
-	var chatID tele.ChatID
 	var msg string
+	r := true
+
 	switch c.Chat().Type {
 	case "private", "privatechannel":
-		userID = tele.ChatID(c.Sender().ID)
+		userID := TeleID(c.Sender().ID)
 
-		if slices.Contains(config.ChatAdmins, userID) {
-			return true, msg
-		} else {
+		if !slices.Contains(config.BotAdminsIDs, userID) {
+			r = false
 			msg = fmt.Sprintf("Извините, у вас нет доступа к этому боту, ваш идентификатор %d", userID)
 		}
 	case "group", "supergroup":
-		chatID = tele.ChatID(c.Chat().ID)
+		chatID := TeleID(c.Chat().ID)
 
-		if slices.Contains(config.AllowedChats, chatID) {
-			return true, msg
-		} else {
+		if !slices.Contains(config.AllowedChats, chatID) || !(config.AdministrationChatID == chatID) {
+			r = false
 			msg = fmt.Sprintf("Извините, бот не предназначен для группы с идентификатором %d", chatID)
 		}
 	case "channel":
-		chatID = tele.ChatID(c.Chat().ID)
-		msg = fmt.Sprintf("Извините, бот не предназначен для канала с идентификатором %d", chatID)
+		r = false
+		channelID := TeleID(c.Chat().ID)
+		msg = fmt.Sprintf("Извините, бот не предназначен для канала с идентификатором %d", channelID)
 	}
 
-	return false, msg
+	return r, msg
 }

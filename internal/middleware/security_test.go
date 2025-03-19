@@ -2,13 +2,12 @@ package middleware
 
 import (
 	"github.com/go-test/deep"
-	tele "gopkg.in/telebot.v4"
 	"testing"
 )
 
 type TestData struct {
 	IDs      map[string]string
-	expected map[string][]tele.ChatID
+	expected map[string]TeleIDList
 }
 
 // TODO: Начать тестировать запись предупреждений в журнал
@@ -18,10 +17,10 @@ var testData = &TestData{
 		"Пустой список":               "",
 		"Список с неверным элементом": "123, -123, sss",
 	},
-	expected: map[string][]tele.ChatID{
-		"Непустой список":             {tele.ChatID(123), tele.ChatID(-123), tele.ChatID(0)},
+	expected: map[string]TeleIDList{
+		"Непустой список":             {TeleID(123), TeleID(-123), TeleID(0)},
 		"Пустой список":               {},
-		"Список с неверным элементом": {tele.ChatID(123), tele.ChatID(-123)},
+		"Список с неверным элементом": {TeleID(123), TeleID(-123)},
 	},
 }
 

@@ -2,6 +2,8 @@ package main
 
 import (
 	"encoding/json"
+	"fmt"
+	"github.com/ilyakaznacheev/cleanenv"
 	"io"
 	"net/http"
 	"os"
@@ -9,18 +11,36 @@ import (
 	"s-belichenko/ilovaiskaya2-bot/internal/middleware"
 
 	tele "gopkg.in/telebot.v4"
-	teleMiddleware "gopkg.in/telebot.v4/middleware"
 	yandexLogger "s-belichenko/ilovaiskaya2-bot/internal/logger"
 )
 
 var bot *tele.Bot
 var log *yandexLogger.Logger
 
-func init() {
-	log = yandexLogger.NewLogger("main_stream")
+type ConfigBot struct {
+	TelegramToken string `env:"TELEGRAM_BOT_TOKEN"`
+	LogStreamName string
+}
 
+var config ConfigBot
+
+func init() {
+	initConfig()
+	initLog()
 	initBot()
 	RegisterCommandHandlers()
+}
+
+func initLog() {
+	log = yandexLogger.NewLogger(config.LogStreamName)
+}
+
+func initConfig() {
+	err := cleanenv.ReadEnv(&config)
+	config.LogStreamName = "main_stream"
+	if err != nil {
+		fmt.Printf("Error reading Bot config: %v", err)
+	}
 }
 
 func RegisterCommandHandlers() {
@@ -39,7 +59,6 @@ func initBot() {
 	}
 
 	bot.Use(yandexLogger.GetMiddleware(log))
-	bot.Use(teleMiddleware.IgnoreVia())
 	bot.Use(middleware.IsOurDude)
 }
 
