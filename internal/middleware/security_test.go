@@ -125,11 +125,11 @@ func TestIsAllowedUser(t *testing.T) {
 			config.AllowedChats = data.allowedChats
 			config.AdministrationChatID = data.AdminChatID
 
-			context := mocks.NewTeleContext(t)
-			context.On("Chat").Return(&telebot.Chat{Type: data.typeChannel}).Times(1)
-			context.On("Sender").Return(&telebot.User{ID: data.id}).Times(1)
+			c := mocks.NewTeleContext(t)
+			c.On("Chat").Return(&telebot.Chat{Type: data.typeChannel}).Times(1)
+			c.On("Sender").Return(&telebot.User{ID: data.id}).Times(1)
 
-			allowed, msg := isAllowed(context)
+			allowed, msg := isAllowed(c)
 
 			assert.True(t, dpIsAllowedUser.expected[testCase].allowed == allowed)
 			for _, problem := range deep.Equal(msg, dpIsAllowedUser.expected[testCase].msg) {

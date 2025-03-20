@@ -3,6 +3,7 @@ package handlers
 import (
 	"encoding/json"
 	"fmt"
+	"github.com/ilyakaznacheev/cleanenv"
 	"s-belichenko/ilovaiskaya2-bot/cmd/llm"
 	"strings"
 
@@ -10,10 +11,37 @@ import (
 	yandexLogger "s-belichenko/ilovaiskaya2-bot/internal/logger"
 )
 
+type TeleContext interface {
+	Chat() *tele.Chat
+	Sender() *tele.User
+	Message() *tele.Message
+	Send(what interface{}, opts ...interface{}) error
+}
+
+type Config struct {
+	HomeThreadBot int `env:"HOME_THREAD_BOT"` // Тема в супергруппе, где нет ограничений для общения с ботом
+	LogStreamName string
+}
+
+var config Config
+
 var log *yandexLogger.Logger
 
 func init() {
-	log = yandexLogger.NewLogger("main_stream")
+	initConfig()
+	initLog()
+}
+
+func initLog() {
+	log = yandexLogger.NewLogger(config.LogStreamName)
+}
+
+func initConfig() {
+	err := cleanenv.ReadEnv(&config)
+	config.LogStreamName = "main_stream"
+	if err != nil {
+		fmt.Printf("Error reading Bot config: %v", err)
+	}
 }
 
 func getUsername(u tele.User) string {
@@ -30,11 +58,35 @@ func CommandStartHandler(c tele.Context) error {
 }
 
 func CommandKeysHandler(c tele.Context) error {
+	if !isBotHouse(c) {
+		return nil
+	}
+
 	answer, err := llm.GetAnswerAboutKeys()
 	if err != nil {
 		log.Error(fmt.Sprintf("Не удалось получить ответ для команды /keys: %v", err), nil)
 	}
 	return c.Send(answer)
+}
+
+func isBotHouse(c TeleContext) bool {
+	//if c.Message().ThreadID == config.HomeThreadBot || c.Message().ReplyTo != nil {
+	if c.Message().ThreadID == config.HomeThreadBot {
+		return true
+	} else {
+		err := c.Send("Псс, я не могу здесь говорить об этом...", tele.SendOptions{
+			AllowWithoutReply: true,
+		})
+		if err != nil {
+			log.Error(fmt.Sprintf(
+				"Бот не смог рассказать об ограничениях команды /keys"),
+				map[string]interface{}{
+					"error": err.Error(),
+				},
+			)
+		}
+		return false
+	}
 }
 
 func CommandTestHandler(c tele.Context) error {
