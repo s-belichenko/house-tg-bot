@@ -42,7 +42,7 @@ var questions = []string{
 var log *yandexLogger.Logger
 
 func init() {
-	log = yandexLogger.NewLogger("answers_stream")
+	log = yandexLogger.InitLog("answers_stream")
 	err := cleanenv.ReadEnv(&config)
 	if err != nil {
 		fmt.Printf("Error reading LLM config: %v", err)

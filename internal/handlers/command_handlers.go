@@ -33,7 +33,7 @@ func init() {
 }
 
 func initLog() {
-	log = yandexLogger.NewLogger(config.LogStreamName)
+	log = yandexLogger.InitLog(config.LogStreamName)
 }
 
 func initConfig() {

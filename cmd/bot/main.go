@@ -8,7 +8,7 @@ import (
 	"net/http"
 	"os"
 	"s-belichenko/ilovaiskaya2-bot/internal/handlers"
-	"s-belichenko/ilovaiskaya2-bot/internal/middleware"
+	"s-belichenko/ilovaiskaya2-bot/internal/security"
 
 	tele "gopkg.in/telebot.v4"
 	yandexLogger "s-belichenko/ilovaiskaya2-bot/internal/logger"
@@ -33,7 +33,7 @@ func init() {
 }
 
 func initLog() {
-	log = yandexLogger.NewLogger(config.LogStreamName)
+	log = yandexLogger.InitLog(config.LogStreamName)
 }
 
 func initConfig() {
@@ -60,7 +60,7 @@ func initBot() {
 	}
 
 	bot.Use(yandexLogger.GetMiddleware(log))
-	bot.Use(middleware.IsOurDude)
+	bot.Use(security.IsOurDude)
 }
 
 // Handler Функция-обработчик для Yandex Cloud Function

@@ -1,4 +1,4 @@
-package middleware
+package security
 
 import (
 	"github.com/go-test/deep"

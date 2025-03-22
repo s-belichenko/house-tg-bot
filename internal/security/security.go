@@ -1,4 +1,4 @@
-package middleware
+package security
 
 import (
 	"fmt"
@@ -25,21 +25,18 @@ type Config struct {
 	LogStreamName        string
 }
 
-var config Config
-var log *yandexLogger.Logger
+var (
+	config = Config{LogStreamName: "main_stream"}
+	log    *yandexLogger.Logger
+)
 
 func init() {
 	initConfig()
-	initLog()
-}
-
-func initLog() {
-	log = yandexLogger.NewLogger(config.LogStreamName)
+	log = yandexLogger.InitLog(config.LogStreamName)
 }
 
 func initConfig() {
 	err := cleanenv.ReadEnv(&config)
-	config.LogStreamName = "main_stream"
 	if err != nil {
 		fmt.Printf("Error reading Bot config: %v", err)
 	}
@@ -57,22 +54,6 @@ func (f *TeleID) SetValue(s string) error {
 	}
 	*f = r
 	return nil
-}
-
-// IsOurDude middleware для проверки разрешенных пользователей и групп
-func IsOurDude(next tele.HandlerFunc) tele.HandlerFunc {
-	return func(c tele.Context) error {
-		if result, msg := isAllowed(c); result != true {
-			if err := c.Send(msg); err != nil {
-				log.Error(fmt.Sprintf("Failed to send message: %v", err), map[string]interface{}{
-					"message": msg,
-				})
-			}
-			// Прерываем дальнейшую обработку
-			return nil
-		}
-		return next(c)
-	}
 }
 
 // getAllowedIDs Получает из текстового списка идентификаторов валидные

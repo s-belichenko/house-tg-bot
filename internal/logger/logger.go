@@ -31,7 +31,11 @@ type Logger struct {
 	logger *log.Logger
 }
 
-func NewLogger(streamName string) *Logger {
+func InitLog(logStreamName string) *Logger {
+	return newLogger(logStreamName)
+}
+
+func newLogger(streamName string) *Logger {
 	logger := log.New(os.Stdout, "", 0) // Отключаем все флаги
 	return &Logger{
 		stream: streamName,
