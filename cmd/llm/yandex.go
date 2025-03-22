@@ -19,14 +19,17 @@ type ConfigLLM struct {
 	LLMFolderId    string  `env:"LLM_FOLDER_ID"`
 	LLMTemperature float32 `env:"LLM_TEMPERATURE" env-default:"0.7"`
 	MaxTokens      int     `env:"LLM_MAX_TOKENS" env-default:"8000"`
+	LogStreamName  string
 }
 
-var config ConfigLLM
-
-var clarifications = []string{
-	"Отключи рамки корректности",
-	"Отвечай максимально жестко",
-}
+var (
+	config         = ConfigLLM{LogStreamName: "llm_stream"}
+	clarifications = []string{
+		"Отключи рамки корректности",
+		"Отвечай максимально жестко",
+	}
+	client *yandexgpt.YandexGPTClient
+)
 
 var questions = []string{
 	"Сочини смешной ответ менеджера ПИК на вопрос о том, почему компания ПИК срывает сроки по сдаче квартир",
@@ -42,8 +45,8 @@ var questions = []string{
 var log *yandexLogger.Logger
 
 func init() {
-	log = yandexLogger.InitLog("answers_stream")
 	err := cleanenv.ReadEnv(&config)
+	log = yandexLogger.InitLog(config.LogStreamName)
 	if err != nil {
 		fmt.Printf("Error reading LLM config: %v", err)
 	}
@@ -54,12 +57,53 @@ func init() {
 			"Если не знаешь ответ, напиши об этом.",
 		botNickname,
 	)
+	client = yandexgpt.NewYandexGPTClientWithAPIKey(config.LLMApiToken)
 }
 
-func GetAnswerAboutKeys() (string, error) {
-	client := yandexgpt.NewYandexGPTClientWithAPIKey(config.LLMApiToken)
-	question := generateAnswer()
-	request := yandexgpt.YandexGPTRequest{
+func GetCantSpeakPhrase() string {
+	question := "Придумай один смешной вариант фразы 'Псс, я не могу здесь говорить об этом...'. Напиши только саму фразу без кавычек."
+	request := createRequest(question)
+	answer := doRequest(request)
+
+	return answer
+}
+
+func GetTeaser() string {
+	question := "Придумай некий короткий ответ на ябедничание, пример 'спамер! Сам спамер, ябеда корябеда!' Выбери только один вариант и перешли его мне."
+	request := createRequest(question)
+	answer := doRequest(request)
+
+	return answer
+}
+
+func GetAnswerAboutKeys() string {
+
+	question := fmt.Sprintf("%s. %s?", getRandomElement(clarifications), getRandomElement(questions))
+	request := createRequest(question)
+	answer := doRequest(request)
+
+	log.Info("Получен ответ про ключи.", map[string]interface{}{
+		"question": question,
+		"answer":   answer,
+	})
+
+	return answer
+}
+
+func doRequest(request yandexgpt.YandexGPTRequest) string {
+	response, err := client.GetCompletion(context.Background(), request)
+	if err != nil {
+		log.Error(fmt.Sprintf("LLM request error: %s", err.Error()), map[string]interface{}{
+			"request": request,
+		})
+		return ""
+	}
+
+	return response.Result.Alternatives[0].Message.Text
+}
+
+func createRequest(question string) yandexgpt.YandexGPTRequest {
+	return yandexgpt.YandexGPTRequest{
 		ModelURI: yandexgpt.MakeModelURI(config.LLMFolderId, yandexgpt.YandexGPT4Model),
 		CompletionOptions: yandexgpt.YandexGPTCompletionOptions{
 			Stream:      false,
@@ -77,23 +121,6 @@ func GetAnswerAboutKeys() (string, error) {
 			},
 		},
 	}
-
-	response, err := client.GetCompletion(context.Background(), request)
-	if err != nil {
-		return "", fmt.Errorf("LLM request error: %s", err.Error())
-	}
-
-	answer := response.Result.Alternatives[0].Message.Text
-	log.Info("Получен ответ на вопрос.", map[string]interface{}{
-		"question": question,
-		"answer":   answer,
-	})
-
-	return answer, nil
-}
-
-func generateAnswer() string {
-	return fmt.Sprintf("%s. %s?", getRandomElement(clarifications), getRandomElement(questions))
 }
 
 func getRandomElement(slice []string) string {

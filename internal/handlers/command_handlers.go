@@ -59,14 +59,20 @@ func CommandStartHandler(c tele.Context) error {
 
 func CommandKeysHandler(c tele.Context) error {
 	if !isBotHouse(c) {
+		cantSpeakPhrase := llm.GetCantSpeakPhrase()
+		if "" != cantSpeakPhrase {
+			err := c.Reply(cantSpeakPhrase)
+			if err != nil {
+				log.Error(fmt.Sprintf("Бот не смог рассказать об ограничениях команды /keys: %v", err), nil)
+			}
+		}
 		return nil
 	}
-
-	answer, err := llm.GetAnswerAboutKeys()
-	if err != nil {
-		log.Error(fmt.Sprintf("Не удалось получить ответ для команды /keys: %v", err), nil)
+	answer := llm.GetAnswerAboutKeys()
+	if !strings.HasSuffix(answer, ".") {
+		answer += "."
 	}
-	return c.Send(answer)
+	return c.Send(answer + " Попробуйте использовать команду в теме \"Оффтоп.\"")
 }
 
 func isBotHouse(c TeleContext) bool {
@@ -90,8 +96,17 @@ func isBotHouse(c TeleContext) bool {
 }
 
 func CommandTestHandler(c tele.Context) error {
+	commands, err := c.Bot().Commands()
+	if err != nil {
+		log.Error(fmt.Sprintf("Не удалось получить команды: %v", err), nil)
+	} else {
+		log.Debug("Команды бота", yandexLogger.LogContext{
+			"commands": commands,
+		})
+	}
+
 	// Преобразуем сообщение в JSON
-	messageJSON, err := json.Marshal(tele.Context.Message)
+	messageJSON, err := json.Marshal(c.Message())
 	if err != nil {
 		log.Error(fmt.Sprintf("Ошибка при преобразовании в JSON: %v", err), nil)
 		return nil
@@ -105,16 +120,9 @@ func CommandTestHandler(c tele.Context) error {
 	}
 
 	userID := c.Sender().ID
-	if err := c.Send(fmt.Sprintf("Привет, %d", userID)); err != nil {
-		log.Error(
-			fmt.Sprintf("Не удалось отправить тестовый привет пользователю %d: %v", userID, err),
-			nil,
-		)
-	}
-
 	// Отправляем отформатированный JSON
 	formattedJSON := fmt.Sprintf("```json\n%s\n```", prettyJSON)
-	if err := c.Send(formattedJSON); err != nil {
+	if err := c.Send(formattedJSON, tele.ModeMarkdownV2); err != nil {
 		log.Error(
 			fmt.Sprintf("Не удалось отправить тестовый JSON пользователю %d: %v", userID, err),
 			nil,
