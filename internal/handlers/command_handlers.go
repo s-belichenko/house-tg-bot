@@ -19,20 +19,18 @@ type TeleContext interface {
 }
 
 type Config struct {
-	HomeThreadBot int `env:"HOME_THREAD_BOT"` // Тема в супергруппе, где нет ограничений для общения с ботом
-	LogStreamName string
+	HomeThreadBot int    `env:"HOME_THREAD_BOT"` // Тема в домашней группе, где нет ограничений для бота
+	LogStreamName string // Имя потока в YC Logs
 }
 
-var config Config
-
-var log *yandexLogger.Logger
+// Общие переменные пакета
+var (
+	config = Config{LogStreamName: "main_stream"}
+	log    *yandexLogger.Logger
+)
 
 func init() {
 	initConfig()
-	initLog()
-}
-
-func initLog() {
 	log = yandexLogger.InitLog(config.LogStreamName)
 }
 
@@ -42,15 +40,6 @@ func initConfig() {
 	if err != nil {
 		fmt.Printf("Error reading Bot config: %v", err)
 	}
-}
-
-func getUsername(u tele.User) string {
-	username := ""
-	if r := strings.TrimSpace(u.Username); r != "" {
-		username = r
-	}
-
-	return username
 }
 
 func CommandStartHandler(c tele.Context) error {
@@ -73,26 +62,6 @@ func CommandKeysHandler(c tele.Context) error {
 		answer += "."
 	}
 	return c.Send(answer + " Попробуйте использовать команду в теме \"Оффтоп.\"")
-}
-
-func isBotHouse(c TeleContext) bool {
-	//if c.Message().ThreadID == config.HomeThreadBot || c.Message().ReplyTo != nil {
-	if c.Message().ThreadID == config.HomeThreadBot {
-		return true
-	} else {
-		err := c.Send("Псс, я не могу здесь говорить об этом...", tele.SendOptions{
-			AllowWithoutReply: true,
-		})
-		if err != nil {
-			log.Error(fmt.Sprintf(
-				"Бот не смог рассказать об ограничениях команды /keys"),
-				map[string]interface{}{
-					"error": err.Error(),
-				},
-			)
-		}
-		return false
-	}
 }
 
 func CommandTestHandler(c tele.Context) error {

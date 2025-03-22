@@ -82,7 +82,7 @@ func GetAnswerAboutKeys() string {
 	request := createRequest(question)
 	answer := doRequest(request)
 
-	log.Info("Получен ответ про ключи.", map[string]interface{}{
+	log.Info("Получен ответ про ключи.", yandexLogger.LogContext{
 		"question": question,
 		"answer":   answer,
 	})
@@ -93,7 +93,7 @@ func GetAnswerAboutKeys() string {
 func doRequest(request yandexgpt.YandexGPTRequest) string {
 	response, err := client.GetCompletion(context.Background(), request)
 	if err != nil {
-		log.Error(fmt.Sprintf("LLM request error: %s", err.Error()), map[string]interface{}{
+		log.Error(fmt.Sprintf("LLM request error: %s", err.Error()), yandexLogger.LogContext{
 			"request": request,
 		})
 		return ""
