@@ -4,11 +4,10 @@ import (
 	"encoding/json"
 	"fmt"
 	"github.com/ilyakaznacheev/cleanenv"
-	"s-belichenko/ilovaiskaya2-bot/cmd/llm"
-	"strings"
-
 	tele "gopkg.in/telebot.v4"
+	"s-belichenko/ilovaiskaya2-bot/cmd/llm"
 	yandexLogger "s-belichenko/ilovaiskaya2-bot/internal/logger"
+	"strings"
 )
 
 type TeleContext interface {
@@ -50,18 +49,20 @@ func CommandKeysHandler(c tele.Context) error {
 	if !isBotHouse(c) {
 		cantSpeakPhrase := llm.GetCantSpeakPhrase()
 		if "" != cantSpeakPhrase {
-			err := c.Reply(cantSpeakPhrase)
+			if !strings.HasSuffix(cantSpeakPhrase, ".") &&
+				!strings.HasSuffix(cantSpeakPhrase, "!") &&
+				!strings.HasSuffix(cantSpeakPhrase, "?") {
+				cantSpeakPhrase += "."
+			}
+			err := c.Reply(cantSpeakPhrase + " Попробуйте использовать команду в теме \"Оффтоп.\"")
 			if err != nil {
 				log.Error(fmt.Sprintf("Бот не смог рассказать об ограничениях команды /keys: %v", err), nil)
 			}
 		}
 		return nil
 	}
-	answer := llm.GetAnswerAboutKeys()
-	if !strings.HasSuffix(answer, ".") {
-		answer += "."
-	}
-	return c.Send(answer + " Попробуйте использовать команду в теме \"Оффтоп.\"")
+
+	return c.Send(llm.GetAnswerAboutKeys())
 }
 
 func CommandTestHandler(c tele.Context) error {
