@@ -18,12 +18,14 @@ const (
 	FATAL LogLevel = "FATAL"
 )
 
+type LogContext map[string]interface{}
+
 type Record struct {
-	Message   string      `json:"message"`
-	Level     LogLevel    `json:"level"`
-	Stream    string      `json:"stream_name"`
-	Timestamp time.Time   `json:"timestamp"`
-	Context   interface{} `json:"extra"`
+	Message   string     `json:"message"`
+	Level     LogLevel   `json:"level"`
+	Stream    string     `json:"stream_name"`
+	Timestamp time.Time  `json:"timestamp"`
+	Context   LogContext `json:"extra"`
 }
 
 type Logger struct {
@@ -43,7 +45,7 @@ func newLogger(streamName string) *Logger {
 	}
 }
 
-func (l *Logger) createEntry(level LogLevel, message string, context interface{}) *Record {
+func (l *Logger) createEntry(level LogLevel, message string, context LogContext) *Record {
 	return &Record{
 		Message:   message,
 		Level:     level,
@@ -63,32 +65,31 @@ func (l *Logger) write(entry *Record) {
 	l.logger.Output(2, string(jsonBytes))
 }
 
-func (l *Logger) Trace(message string, context interface{}) {
+func (l *Logger) Trace(message string, context LogContext) {
 	entry := l.createEntry(TRACE, message, context)
 	l.write(entry)
 }
-func (l *Logger) Debug(message string, context interface{}) {
+func (l *Logger) Debug(message string, context LogContext) {
 	entry := l.createEntry(DEBUG, message, context)
 	l.write(entry)
 }
 
-func (l *Logger) Info(message string, context interface{}) {
+func (l *Logger) Info(message string, context LogContext) {
 	entry := l.createEntry(INFO, message, context)
 	l.write(entry)
 }
 
-func (l *Logger) Warn(message string, context interface{}) {
+func (l *Logger) Warn(message string, context LogContext) {
 	entry := l.createEntry(WARN, message, context)
 	l.write(entry)
 }
 
-func (l *Logger) Error(message string, context interface{}) {
+func (l *Logger) Error(message string, context LogContext) {
 	entry := l.createEntry(ERROR, message, context)
 	l.write(entry)
 }
 
-func (l *Logger) Fatal(message string, context interface{}) {
+func (l *Logger) Fatal(message string, context LogContext) {
 	entry := l.createEntry(FATAL, message, context)
 	l.write(entry)
-	os.Exit(1)
 }

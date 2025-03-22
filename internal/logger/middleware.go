@@ -7,7 +7,9 @@ import (
 func GetMiddleware(logger *Logger) tele.MiddlewareFunc {
 	return func(next tele.HandlerFunc) tele.HandlerFunc {
 		return func(c tele.Context) error {
-			logger.Debug("Получен Update от Telegram", c.Update())
+			logger.Debug("Получен Update от Telegram", LogContext{
+				"update": c.Update(),
+			})
 			return next(c)
 		}
 	}
