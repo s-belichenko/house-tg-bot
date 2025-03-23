@@ -7,60 +7,77 @@ import (
 	"io"
 	"net/http"
 	"os"
-	"s-belichenko/ilovaiskaya2-bot/internal/handlers"
-	"s-belichenko/ilovaiskaya2-bot/internal/security"
 
 	tele "gopkg.in/telebot.v4"
-	yandexLogger "s-belichenko/ilovaiskaya2-bot/internal/logger"
+	teleMid "gopkg.in/telebot.v4/middleware"
+	hdls "s-belichenko/ilovaiskaya2-bot/internal/handlers"
+	yaLog "s-belichenko/ilovaiskaya2-bot/internal/logger"
+	sec "s-belichenko/ilovaiskaya2-bot/internal/security"
 )
 
 type ConfigBot struct {
-	TelegramToken string `env:"TELEGRAM_BOT_TOKEN"`
-	LogStreamName string
+	BotToken             string `env:"TELEGRAM_BOT_TOKEN"`
+	AdministrationChatId int64  `env:"ADMINISTRATION_CHAT_ID"` // Чат администраторов, куда поступают уведомления и тп
+	LogStreamName        string
 }
 
 var (
 	bot    *tele.Bot
-	log    *yandexLogger.Logger
-	config ConfigBot
+	log    *yaLog.Logger
+	config = ConfigBot{LogStreamName: "main_stream"}
 )
 
 func init() {
-	initConfig()
-	initLog()
+	initModule()
 	initBot()
-	RegisterCommandHandlers()
+	setBotMiddleware()
+	registerBotCommandHandlers()
 }
 
-func initLog() {
-	log = yandexLogger.InitLog(config.LogStreamName)
-}
-
-func initConfig() {
+func initModule() {
 	err := cleanenv.ReadEnv(&config)
-	config.LogStreamName = "main_stream"
+	log = yaLog.InitLog(config.LogStreamName)
+	log.Debug("Start init module", nil)
 	if err != nil {
-		fmt.Printf("Error reading Bot config: %v", err)
+		log.Fatal(fmt.Sprintf("Не удалось прочитать конфигурацию ота: %v", err), nil)
+		os.Exit(1)
 	}
-}
-
-func RegisterCommandHandlers() {
-	bot.Handle("/start", handlers.CommandStartHandler)
-	bot.Handle("/test", handlers.CommandTestHandler)
-	bot.Handle("/keys", handlers.CommandKeysHandler)
 }
 
 func initBot() {
-	token := os.Getenv("TELEGRAM_BOT_TOKEN")
 	var err error
+	log.Debug("Start init bot", nil)
 
-	bot, err = tele.NewBot(tele.Settings{Token: token})
+	bot, err = tele.NewBot(tele.Settings{Token: config.BotToken})
 	if err != nil {
-		log.Fatal(err.Error(), nil)
+		log.Fatal(fmt.Sprintf("Не удалось инициализировать бота: %v", err), nil)
+		os.Exit(1)
 	}
+	hdls.SetBotID(bot.Me.ID)
+}
 
-	bot.Use(yandexLogger.GetMiddleware(log))
-	bot.Use(security.IsOurDude)
+func setBotMiddleware() {
+	log.Debug("Start use middleware bot", nil)
+	bot.Use(teleMid.Recover(func(err error, context tele.Context) {
+		log.Fatal(fmt.Sprintf("Bot fatal: %v", err), nil)
+	}))
+	bot.Use(yaLog.GetMiddleware(log))
+}
+
+func registerBotCommandHandlers() {
+	log.Debug("Start register bot commands", nil)
+	// Личные сообщения
+	bot.Handle("/"+hdls.StartCommand.Text, hdls.CommandStartHandler, sec.AllPrivateChatsMiddleware)
+	bot.Handle("/"+hdls.HelpCommand.Text, hdls.CommandHelpHandler, sec.AllPrivateChatsMiddleware)
+	// Домашний чат
+	bot.Handle("/"+hdls.KeysCommand.Text, hdls.CommandKeysHandler, sec.HomeChatMiddleware, sec.KeysCommandMiddleware)
+	bot.Handle("/"+hdls.ReportCommand.Text, hdls.CommandReportHandler, sec.HomeChatMiddleware)
+	// Административный чат
+	bot.Handle("/"+hdls.SetCommandsCommand.Text, hdls.CommandSetCommandsHandler, sec.AdminChatMiddleware)
+	bot.Handle("/"+hdls.HelpAdminChatCommand.Text, hdls.CommandHelpAdminHandler, sec.AdminChatMiddleware)
+	bot.Handle("/"+hdls.BanCommand.Text, hdls.CommandBanHandler, sec.AdminChatMiddleware)
+	bot.Handle("/"+hdls.UnbanCommand.Text, hdls.CommandBanHandler, sec.AdminChatMiddleware)
+	bot.Handle("/"+hdls.KickCommand.Text, hdls.CommandKickHandler, sec.AdminChatMiddleware)
 }
 
 // Handler Функция-обработчик для Yandex Cloud Function

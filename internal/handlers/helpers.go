@@ -8,14 +8,6 @@ import (
 	yandexLogger "s-belichenko/ilovaiskaya2-bot/internal/logger"
 )
 
-func isBotHouse(c TeleContext) bool {
-	if c.Message().ThreadID == config.HomeThreadBot {
-		return true
-	} else {
-		return false
-	}
-}
-
 func getUsername(u tele.User) string {
 	username := ""
 	if r := strings.TrimSpace(u.Username); r != "" {
@@ -25,7 +17,7 @@ func getUsername(u tele.User) string {
 	return username
 }
 
-func generateMessageLink(chat *tele.Chat, messageID int) string {
+func GenerateMessageLink(chat *tele.Chat, messageID int) string {
 	if chat.Type == tele.ChatChannel || chat.Type == tele.ChatSuperGroup || chat.Type == tele.ChatGroup {
 		if chat.Username != "" { // Проверяем, есть ли у чата username
 			// если есть username, формируем публичную ссылку
@@ -47,5 +39,19 @@ func generateMessageLink(chat *tele.Chat, messageID int) string {
 			"message_id": messageID,
 		})
 		return ""
+	}
+}
+
+func setCommands(c tele.Context, commands []tele.Command, scope tele.CommandScope) {
+	if err := c.Bot().SetCommands(commands, scope); err != nil {
+		log.Fatal(fmt.Sprintf("Не удалось инициализировать команды бота: %v", err), yandexLogger.LogContext{
+			"commands": commands,
+			"scope":    scope,
+		})
+	} else {
+		log.Info("Успешно установлены команды бота", yandexLogger.LogContext{
+			"commands": commands,
+			"scope":    scope,
+		})
 	}
 }

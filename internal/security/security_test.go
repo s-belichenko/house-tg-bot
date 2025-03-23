@@ -3,88 +3,11 @@ package security
 import (
 	"github.com/go-test/deep"
 	"github.com/stretchr/testify/assert"
-	"gopkg.in/telebot.v4"
-	mocks "s-belichenko/ilovaiskaya2-bot/mocks/internal_/middleware"
 	"testing"
+
+	tele "gopkg.in/telebot.v4"
+	mocks "s-belichenko/ilovaiskaya2-bot/mocks/internal_/handlers"
 )
-
-type DataProviderIsAllowed struct {
-	testData map[string]struct {
-		admins       TeleIDList
-		allowedChats TeleIDList
-		AdminChatID  TeleID
-		typeChannel  telebot.ChatType
-		id           int64
-	}
-	expected map[string]struct {
-		allowed bool
-		msg     string
-	}
-}
-
-var dpIsAllowedUser = DataProviderIsAllowed{
-	testData: map[string]struct {
-		admins       TeleIDList
-		allowedChats TeleIDList
-		AdminChatID  TeleID
-		typeChannel  telebot.ChatType
-		id           int64
-	}{
-		"Левый пользователь в обычном чате": {
-			admins: TeleIDList{TeleID(123)}, typeChannel: telebot.ChatPrivate, id: 321,
-		},
-		"Левый пользователь в секретном чате": {
-			admins: TeleIDList{TeleID(123)}, typeChannel: telebot.ChatChannelPrivate, id: 321,
-		},
-		"Наш пользователь в обычном чате": {
-			admins: TeleIDList{TeleID(123)}, typeChannel: telebot.ChatPrivate, id: 123,
-		},
-		"Наш пользователь в секретном чате": {
-			admins: TeleIDList{TeleID(123)}, typeChannel: telebot.ChatChannelPrivate, id: 123,
-		},
-	},
-	expected: map[string]struct {
-		allowed bool
-		msg     string
-	}{
-		"Левый пользователь в обычном чате":   {allowed: false, msg: "Извините, у вас нет доступа к этому боту, ваш идентификатор 321"},
-		"Левый пользователь в секретном чате": {allowed: false, msg: "Извините, у вас нет доступа к этому боту, ваш идентификатор 321"},
-		"Наш пользователь в обычном чате":     {allowed: true, msg: ""},
-		"Наш пользователь в секретном чате":   {allowed: true, msg: ""},
-	},
-}
-
-var dpIsAllowedGroupOrChannel = DataProviderIsAllowed{
-	testData: map[string]struct {
-		admins       TeleIDList
-		allowedChats TeleIDList
-		AdminChatID  TeleID
-		typeChannel  telebot.ChatType
-		id           int64
-	}{
-		"Любой пользователь в нашей обычной группе": {
-			admins: TeleIDList{TeleID(123)}, allowedChats: TeleIDList{TeleID(1234)}, typeChannel: telebot.ChatGroup, id: 1234,
-		},
-		"Любой пользователь в нашей супергруппе": {
-			admins: TeleIDList{TeleID(123)}, allowedChats: TeleIDList{TeleID(1234)}, typeChannel: telebot.ChatSuperGroup, id: 1234,
-		},
-		"Любой пользователь в админской обычной группе": {
-			admins: TeleIDList{TeleID(123)}, AdminChatID: TeleID(1234), typeChannel: telebot.ChatGroup, id: 1234,
-		},
-		"Любой пользователь в админской супергруппе": {
-			admins: TeleIDList{TeleID(123)}, AdminChatID: TeleID(1234), typeChannel: telebot.ChatSuperGroup, id: 1234,
-		},
-	},
-	expected: map[string]struct {
-		allowed bool
-		msg     string
-	}{
-		"Любой пользователь в нашей обычной группе":     {allowed: true, msg: ""},
-		"Любой пользователь в нашей супергруппе":        {allowed: true, msg: ""},
-		"Любой пользователь в админской обычной группе": {allowed: true, msg: ""},
-		"Любой пользователь в админской супергруппе":    {allowed: true, msg: ""},
-	},
-}
 
 type DataProviderAllowedIDs struct {
 	IDs      map[string]string
@@ -118,44 +41,63 @@ func TestSuccessGetAllowedIDs(t *testing.T) {
 	}
 }
 
-func TestIsAllowedUser(t *testing.T) {
-	for testCase, data := range dpIsAllowedUser.testData {
-		t.Run(testCase, func(t *testing.T) {
-			config.BotAdminsIDs = data.admins
-			config.AllowedChats = data.allowedChats
-			config.AdministrationChatID = data.AdminChatID
-
-			c := mocks.NewTeleContext(t)
-			c.On("Chat").Return(&telebot.Chat{Type: data.typeChannel}).Times(1)
-			c.On("Sender").Return(&telebot.User{ID: data.id}).Times(1)
-
-			allowed, msg := isAllowed(c)
-
-			assert.True(t, dpIsAllowedUser.expected[testCase].allowed == allowed)
-			for _, problem := range deep.Equal(msg, dpIsAllowedUser.expected[testCase].msg) {
-				t.Error(problem)
-			}
-		})
+type DataProviderIsBotHouse struct {
+	testData map[string]struct {
+		configThreadId int
+		threadID       int
+		message        *tele.Message
 	}
+	expected map[string]bool
 }
 
-func TestIsAllowedGroupOrChannel(t *testing.T) {
-	for testCase, testData := range dpIsAllowedGroupOrChannel.testData {
-		t.Run(testCase, func(t *testing.T) {
-			config.BotAdminsIDs = testData.admins
-			config.AllowedChats = testData.allowedChats
-			config.AdministrationChatID = testData.AdminChatID
+var dpIsBotHouse = DataProviderIsBotHouse{
+	testData: map[string]struct {
+		configThreadId int
+		threadID       int
+		message        *tele.Message
+	}{
+		"Сообщение в форуме вне домика бота и не ответ": {
+			configThreadId: 123,
+			threadID:       321,
+			message:        nil,
+		},
+		"Сообщение в форуме вне домика бота и ответ": {
+			//isForum:        true,
+			configThreadId: 123,
+			threadID:       321,
+			message:        &tele.Message{ID: 12345},
+		},
+		"Сообщение в форуме в домике бота и ответ": {
+			//isForum:        true,
+			configThreadId: 123,
+			threadID:       123,
+			message:        &tele.Message{},
+		},
+		"Сообщение в форуме в домике бота и не ответ": {
+			configThreadId: 123,
+			threadID:       123,
+			message:        nil,
+		},
+	},
+	expected: map[string]bool{
+		"Сообщение в форуме вне домика бота и не ответ": false,
+		"Сообщение в форуме вне домика бота и ответ":    false,
+		"Сообщение в форуме в домике бота и ответ":      true,
+		"Сообщение в форуме в домике бота и не ответ":   true,
+	},
+}
 
-			context := mocks.NewTeleContext(t)
-			context.On("Chat").Return(&telebot.Chat{ID: testData.id, Type: testData.typeChannel}).Times(2)
-			context.On("Sender").Return(&telebot.User{}).Maybe()
+func TestIsBotHouse(t *testing.T) {
+	for testCase, testData := range dpIsBotHouse.testData {
+		config.HomeThreadBot = testData.configThreadId
 
-			allowed, msg := isAllowed(context)
+		c := mocks.NewTeleContext(t)
+		c.On("Message").
+			Return(&tele.Message{ThreadID: testData.threadID, ReplyTo: testData.message}).
+			Once()
 
-			assert.True(t, dpIsAllowedGroupOrChannel.expected[testCase].allowed == allowed)
-			for _, problem := range deep.Equal(msg, dpIsAllowedGroupOrChannel.expected[testCase].msg) {
-				t.Error(problem)
-			}
-		})
+		r := isBotHouse(c)
+
+		assert.True(t, dpIsBotHouse.expected[testCase] == r)
 	}
 }
