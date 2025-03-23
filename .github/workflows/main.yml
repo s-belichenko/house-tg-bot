@@ -56,7 +56,6 @@ jobs:
           service-account: ${{ secrets.YC_SERVICE_ACCOUT_ID }}
           environment: |
             CHAT_ADMINS=${{ vars.CHAT_ADMINS }}
-            ALLOWED_CHATS=${{ vars.ALLOWED_CHATS }}
             HOUSE_CHAT_ID=${{ vars.HOUSE_CHAT_ID }}
             HOME_THREAD_BOT=${{ vars.HOME_THREAD_BOT }}
             ADMINISTRATION_CHAT_ID=${{ vars.ADMINISTRATION_CHAT_ID }}

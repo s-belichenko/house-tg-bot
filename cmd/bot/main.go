@@ -32,6 +32,11 @@ func init() {
 	initBot()
 	setBotMiddleware()
 	registerBotCommandHandlers()
+	registerJoinRequestHandler()
+}
+
+func registerJoinRequestHandler() {
+	bot.Handle(tele.OnChatJoinRequest, hdls.JoinRequestHandler)
 }
 
 func initModule() {
@@ -65,7 +70,7 @@ func setBotMiddleware() {
 }
 
 func registerBotCommandHandlers() {
-	log.Debug("Start register bot commands", nil)
+	log.Debug("Start register command handlers", nil)
 	// Личные сообщения
 	bot.Handle("/"+hdls.StartCommand.Text, hdls.CommandStartHandler, sec.AllPrivateChatsMiddleware)
 	bot.Handle("/"+hdls.HelpCommand.Text, hdls.CommandHelpHandler, sec.AllPrivateChatsMiddleware)

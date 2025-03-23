@@ -127,22 +127,22 @@ func CommandReportHandler(c tele.Context) error {
 	m := c.Message()
 
 	if m.ReplyTo == nil {
-		if err := c.Reply("Пожалуйста, используйте эту команду в ответе на сообщение с нарушением."); err != nil {
+		if err := c.Reply("Пожалуйста, используйте эту команду в ответе на сообщение с нарушением. Подробнее: выполните /help в личной переписке с @lp_13x_bot."); err != nil {
 			log.Error(fmt.Sprintf("Не удалось отправить уточнение про команду /report: %v", err), nil)
 		}
 		return nil
 	}
 
+	reporter := m.Sender
 	violator := m.ReplyTo.Sender
 
 	if violator.ID == config.BotID {
-		if err := c.Reply(llm.GetTeaser()); err != nil {
+		if err := c.Reply(fmt.Sprintf("@%s, ай-яй-яй! %s", reporter.Username, llm.GetTeaser())); err != nil {
 			log.Error(fmt.Sprintf("Не удалось пообзываться в ответ на непорт на бота: %v", err), nil)
 		}
 		return nil
 	}
 
-	reporter := m.Sender
 	clarification := c.Data()
 	chat := m.ReplyTo.Chat
 	violationMessageID := m.ReplyTo.ID

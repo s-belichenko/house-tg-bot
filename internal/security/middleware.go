@@ -105,7 +105,10 @@ func KeysCommandMiddleware(next tele.HandlerFunc) tele.HandlerFunc {
 				// TODO: Через очереди записывать команды не в тех местах и удалять их по истечении некоего времени.
 				//  Писать также куда-то злоупотребляющих командой не в тех местах? Писать вообще все команды куда-либо?
 				//  Использовать DeleteAfter()?
-				err := c.Reply(cantSpeakPhrase + " Попробуйте использовать команду в теме \"Оффтоп.\"")
+				err := c.Reply(fmt.Sprintf(
+					"%s @%s, попробуйте использовать команду в теме \"Оффтоп.\"",
+					cantSpeakPhrase, c.Sender().Username,
+				))
 				if err != nil {
 					log.Error(fmt.Sprintf("Бот не смог рассказать об ограничениях команды /keys: %v", err), nil)
 				}
