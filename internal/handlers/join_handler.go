@@ -27,6 +27,7 @@ func JoinRequestHandler(c tele.Context) error {
 	}
 	adminChat := &tele.Chat{ID: config.AdministrationChatID}
 	requestMsg := fmt.Sprintf(`
+#JOIN_REQUEST
 Новая заявка на вступление в чат.
 
 user_id: %d

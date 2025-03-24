@@ -122,6 +122,7 @@ func CommandReportHandler(c tele.Context) error {
 
 	reportMessage := fmt.Sprintf(
 		`
+#REPORT
 Новое нарушение правил:
 
 Челобитчик: @%s (ID: %d)
