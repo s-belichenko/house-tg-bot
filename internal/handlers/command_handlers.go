@@ -227,7 +227,7 @@ func CommandSetCommandsHandler(c tele.Context) error {
 	// Для участников домового чата
 	setCommands(c,
 		[]tele.Command{KeysCommand, ReportCommand},
-		tele.CommandScope{Type: tele.CommandScopeChat, ChatID: config.HouseChatId})
+		tele.CommandScope{Type: tele.CommandScopeDefault, ChatID: config.HouseChatId})
 	// Для админов домового чата
 	setCommands(c,
 		[]tele.Command{KeysCommand},
@@ -235,7 +235,7 @@ func CommandSetCommandsHandler(c tele.Context) error {
 	// Для участников админского чата
 	setCommands(c,
 		[]tele.Command{HelpAdminChatCommand, BanCommand, KickCommand},
-		tele.CommandScope{Type: tele.CommandScopeChat, ChatID: config.AdministrationChatID})
+		tele.CommandScope{Type: tele.CommandScopeDefault, ChatID: config.AdministrationChatID})
 	// Для админов админского чата
 	setCommands(c,
 		[]tele.Command{SetCommandsCommand, HelpAdminChatCommand, BanCommand, KickCommand},
