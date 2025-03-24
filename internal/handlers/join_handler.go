@@ -16,6 +16,7 @@ func JoinRequestHandler(c tele.Context) error {
 		"lastname":  c.Sender().LastName,
 	})
 
+	// FIXME: Не отправляется тем, кто не начал общение с ботом, то есть всем. Подсмотреть алгоритм в других домовых чатах.
 	if _, err := c.Bot().Send(c.Sender(), hi); err != nil {
 		log.Error(fmt.Sprintf("Не удалось ответить на заявку: %v", err), yaLog.LogContext{
 			"user_id":   c.Sender().ID,
