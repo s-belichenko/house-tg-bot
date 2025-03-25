@@ -13,11 +13,16 @@ import (
 func AllPrivateChatsMiddleware(next tele.HandlerFunc) tele.HandlerFunc {
 	return func(c tele.Context) error {
 		if c.Chat().Type != tele.ChatPrivate && c.Chat().Type != tele.ChatChannelPrivate {
-			log.Warn(fmt.Sprintf(
-				"Попытка использовать команду %s в чате типа %s", getCommandName(c.Message()), c.Chat().Type,
-			), yaLog.LogContext{
-				"message": c.Message(),
-			})
+			log.Warn(
+				fmt.Sprintf("Попытка использовать %q в чате типа %q", getCommandName(c.Message()), c.Chat().Type), yaLog.LogContext{"message": c.Message()})
+			if TeleID(c.Chat().ID) == config.HouseChatId {
+				err := c.Reply("Используйте эту команду в личной переписке с ботом.")
+				if err != nil {
+					log.Error(
+						fmt.Sprintf("Не удалось посоветовать использовать личную переписку с ботом: %v", err),
+						yaLog.LogContext{"message": c.Message()})
+				}
+			}
 			return nil
 		}
 
