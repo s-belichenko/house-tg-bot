@@ -7,6 +7,7 @@ import (
 	yaLog "s-belichenko/ilovaiskaya2-bot/internal/logger"
 	"strconv"
 	"strings"
+	"time"
 )
 
 const usernameRegex = `^(@)(?:[a-z_0-9]){5,64}$`
@@ -105,13 +106,6 @@ func parseDays(s string) int64 {
 	}
 }
 
-func createMemberViolator(c tele.Context, s string, restrictedUntil int64) *tele.ChatMember {
-	user := createUserViolator(c, s)
-	// Так как нулевое значение для bool это false, все права будут false.
-	rights := tele.Rights{}
-	return &tele.ChatMember{RestrictedUntil: restrictedUntil, User: user, Rights: rights}
-}
-
 func createUserViolator(c tele.Context, s string) *tele.User {
 	if userID := parseUserID(s); userID > 0 {
 		return &tele.User{ID: userID}
@@ -130,7 +124,7 @@ func createUserViolator(c tele.Context, s string) *tele.User {
 			})
 			if err := c.Reply(fmt.Sprintf(
 				"Не удалось распознать username нарушителя. Верный формат команды: %s",
-				banCommandFormat,
+				restrictCommandFormat,
 			), tele.ModeHTML); err != nil {
 				log.Error(fmt.Sprintf("Не удалось отправить подсказку по команде /ban: %v", err), yaLog.LogContext{
 					"message": c.Message(),
@@ -139,4 +133,10 @@ func createUserViolator(c tele.Context, s string) *tele.User {
 			return nil
 		}
 	}
+}
+
+func createUnixTimeFromDays(d string) int64 {
+	r := parseDays(d)
+	// Дни в секундах плюс один час для просмотра после бана в настройках
+	return time.Now().Unix() + (r*86400 + 600)
 }

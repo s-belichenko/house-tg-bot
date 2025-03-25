@@ -2,33 +2,174 @@ package handlers
 
 import (
 	"fmt"
-	"strings"
-	"time"
-
 	tele "gopkg.in/telebot.v4"
 	yaLog "s-belichenko/ilovaiskaya2-bot/internal/logger"
+	"strings"
 )
 
 const (
-	banCommandFormat   = `/ban &lt;username | user_id&gt; [days] Если [days] равен 0 или более 366, пользователь будет забанен навсегда.`
-	unbanCommandFormat = `/unban &lt;username | user_id&gt;`
-	kickCommandFormat  = `/kick &lt;username | user_id&gt; [days] Если [days] равен 0 или более 366, пользователь будет удален навсегда.`
+	restrictCommandFormat       = `/restrict &lt;username | user_id&gt; [days] (от 1 до 366, иначе бессрочно)`
+	remoteRestrictCommandFormat = `/remove_restrict &lt;username | user_id&gt;`
+	banCommandFormat            = `/ban &lt;username | user_id&gt; [days] (от 1 до 366, иначе бессрочно)`
+	unbanCommandFormat          = `/unban &lt;username | user_id&gt;`
 )
 
 var (
-	HelpAdminChatCommand = tele.Command{Text: "help_admin", Description: "Справка по боту для админов"}
-	BanCommand           = tele.Command{Text: "ban", Description: "Забанить пользователя  в домовом чате"}
-	UnbanCommand         = tele.Command{Text: "unban", Description: "Разбанить пользователя в домовом чате"}
-	KickCommand          = tele.Command{Text: "kick", Description: "Удалить пользователя из домового чата"}
+	HelpAdminChatCommand  = tele.Command{Text: "help_admin", Description: "Справка по боту для админов"}
+	RestrictCommand       = tele.Command{Text: "restrict", Description: "Ограничить пользователя  в домовом чате"}
+	RemoveRestrictCommand = tele.Command{Text: "remove_restrict", Description: "Снять ограничения с пользователя в домовом чате"}
+	BanCommand            = tele.Command{Text: "ban", Description: "Заблокировать пользователя из домового чата"}
+	UnbanCommand          = tele.Command{Text: "unban", Description: "Разблокировать пользователя из домового чата"}
 
 	SetCommandsCommand = tele.Command{Text: "set_commands", Description: "Установить команды бота"}
 )
+
+func CommandRestrictHandler(c tele.Context) error {
+	var violator *tele.ChatMember
+	d := c.Data()
+	f := strings.Fields(d)
+
+	switch len(f) {
+	case 0:
+		log.Warn(fmt.Sprintf("Вызов команды /restrict без аргументов"), yaLog.LogContext{
+			"arguments_string": d,
+		})
+		if err := c.Reply(fmt.Sprintf("Верный формат команды: %s", restrictCommandFormat), tele.ModeHTML); err != nil {
+			log.Error(fmt.Sprintf("Не удалось отправить подсказку по команде /restrict: %v", err), yaLog.LogContext{
+				"message": c.Message(),
+			})
+		}
+		return nil
+	case 1:
+		violator = &tele.ChatMember{
+			User:   createUserViolator(c, f[0]),
+			Rights: tele.NoRights(),
+		}
+	case 2:
+		violator = &tele.ChatMember{
+			User:            createUserViolator(c, f[0]),
+			Rights:          tele.NoRights(),
+			RestrictedUntil: createUnixTimeFromDays(f[1]),
+		}
+	default:
+		if err := c.Reply(fmt.Sprintf("Верный формат команды: %s", restrictCommandFormat), tele.ModeHTML); err != nil {
+			log.Error(fmt.Sprintf("Не удалось отправить подсказку по команде /restrict: %v", err), yaLog.LogContext{
+				"message": c.Message(),
+			})
+		}
+		return nil
+	}
+	if violator == nil {
+		if err := c.Reply("Не удалось ограничить пользователя."); err != nil {
+			log.Error(fmt.Sprintf("Не удалось ограничить пользователя: %v", err), yaLog.LogContext{
+				"message": c.Message(),
+			})
+		}
+		return nil
+	}
+	if err := c.Bot().Restrict(&tele.Chat{ID: config.HouseChatId}, violator); err != nil {
+		log.Error(fmt.Sprintf("Не удалось ограничить пользователя: %v", err), yaLog.LogContext{
+			"violator": violator,
+			"message":  c.Message(),
+		})
+		if err := c.Reply("Не удалось ограничить пользователя."); err != nil {
+			log.Error(fmt.Sprintf("Не удалось ограничить пользователя: %v", err), yaLog.LogContext{
+				"message": c.Message(),
+			})
+		}
+
+		return nil
+	}
+	log.Debug("Успешно отправлен запрос на ограничение пользователя", yaLog.LogContext{
+		"violator": violator,
+	})
+	if err := c.Reply("Пользователь ограничен."); err != nil {
+		log.Error(fmt.Sprintf("Не удалось уведомить что пользователь ограничен: %v", err), yaLog.LogContext{
+			"message": c.Message(),
+		})
+	}
+	// FIXME: Посылать сообщение пользователю об ограничениях? А если он не начал общение с ботом?
+	log.Info("Пользователь ограничен", yaLog.LogContext{
+		"admin_id":         c.Message().Sender.ID,
+		"admin_username":   c.Message().Sender.Username,
+		"admin_first_name": c.Message().Sender.FirstName,
+		"admin_last_name":  c.Message().Sender.LastName,
+		"violator":         violator,
+	})
+	return nil
+}
+
+func CommandRemoveRestrictHandler(c tele.Context) error {
+	var violator *tele.ChatMember
+	d := c.Data()
+	f := strings.Fields(d)
+	switch len(f) {
+	case 0:
+		log.Warn(fmt.Sprintf("Вызов команды /remove_restrict без аргументов"), yaLog.LogContext{
+			"arguments_string": d,
+		})
+		if err := c.Reply(fmt.Sprintf("Верный формат команды: %s", remoteRestrictCommandFormat), tele.ModeHTML); err != nil {
+			log.Error(fmt.Sprintf("Не удалось отправить подсказку по команде /remove_restrict: %v", err), yaLog.LogContext{
+				"message": c.Message(),
+			})
+		}
+		return nil
+	case 1:
+		user := createUserViolator(c, f[0])
+		violator = &tele.ChatMember{User: user, Rights: tele.NoRestrictions()}
+	default:
+		if err := c.Reply(fmt.Sprintf("Верный формат команды: %s", restrictCommandFormat), tele.ModeHTML); err != nil {
+			log.Error(fmt.Sprintf("Не удалось отправить подсказку по команде /remove_restrict: %v", err), yaLog.LogContext{
+				"message": c.Message(),
+			})
+		}
+		return nil
+	}
+	if violator == nil {
+		if err := c.Reply("Не удалось снять ограничения с пользователя."); err != nil {
+			log.Error(fmt.Sprintf("Не удалось ограничения с пользователя: %v", err), yaLog.LogContext{
+				"message": c.Message(),
+			})
+		}
+		return nil
+	}
+	if err := c.Bot().Promote(&tele.Chat{ID: config.HouseChatId}, violator); err != nil {
+		log.Error(fmt.Sprintf("Не удалось снять ограничения с пользователя: %v", err), yaLog.LogContext{
+			"violator": violator,
+			"message":  c.Message(),
+		})
+		if err := c.Reply("Не удалось снять ограничения с пользователя."); err != nil {
+			log.Error(fmt.Sprintf("Не удалось снять ограничения с пользователя: %v", err), yaLog.LogContext{
+				"message": c.Message(),
+			})
+		}
+
+		return nil
+	}
+	log.Debug("Успешно отправлен запрос на снятие ограничений", yaLog.LogContext{
+		"violator": violator,
+	})
+	if err := c.Reply("Сняты ограничения с пользователя."); err != nil {
+		log.Error(fmt.Sprintf("Не удалось уведомить что сняты ограничения с пользователя: %v", err), yaLog.LogContext{
+			"message": c.Message(),
+		})
+	}
+	// FIXME: Посылать сообщение пользователю об отмене бана? А если он не начал общение с ботом?
+	log.Info("Сняты ограничения с пользователя", yaLog.LogContext{
+		"admin_id":         c.Message().Sender.ID,
+		"admin_username":   c.Message().Sender.Username,
+		"admin_first_name": c.Message().Sender.FirstName,
+		"admin_last_name":  c.Message().Sender.LastName,
+		"violator":         violator,
+	})
+
+	return nil
+}
 
 func CommandBanHandler(c tele.Context) error {
 	var violator *tele.ChatMember
 	d := c.Data()
 	f := strings.Fields(d)
-
 	switch len(f) {
 	case 0:
 		log.Warn(fmt.Sprintf("Вызов команды /ban без аргументов"), yaLog.LogContext{
@@ -41,11 +182,9 @@ func CommandBanHandler(c tele.Context) error {
 		}
 		return nil
 	case 1:
-		violator = createMemberViolator(c, f[0], tele.Forever())
+		violator = &tele.ChatMember{User: createUserViolator(c, f[0]), RestrictedUntil: tele.Forever()}
 	case 2:
-		// Дни в секундах плюс один час для просмотра после бана в настройках
-		term := (parseDays(f[1]) * 86400) + 600
-		violator = createMemberViolator(c, f[0], time.Now().Unix()+term)
+		violator = &tele.ChatMember{User: createUserViolator(c, f[0]), RestrictedUntil: createUnixTimeFromDays(f[1])}
 	default:
 		if err := c.Reply(fmt.Sprintf("Верный формат команды: %s", banCommandFormat), tele.ModeHTML); err != nil {
 			log.Error(fmt.Sprintf("Не удалось отправить подсказку по команде /ban: %v", err), yaLog.LogContext{
@@ -62,7 +201,7 @@ func CommandBanHandler(c tele.Context) error {
 		}
 		return nil
 	}
-	if err := c.Bot().Restrict(&tele.Chat{ID: config.HouseChatId}, violator); err != nil {
+	if err := c.Bot().Ban(&tele.Chat{ID: config.HouseChatId}, violator); err != nil {
 		log.Error(fmt.Sprintf("Не удалось заблокировать пользователя: %v", err), yaLog.LogContext{
 			"violator": violator,
 			"message":  c.Message(),
@@ -75,7 +214,7 @@ func CommandBanHandler(c tele.Context) error {
 
 		return nil
 	}
-	log.Debug("Успешно отправлен запрос на бан", yaLog.LogContext{
+	log.Debug("Успешно отправлен запрос на блокировку", yaLog.LogContext{
 		"violator": violator,
 	})
 	if err := c.Reply("Пользователь заблокирован."); err != nil {
@@ -83,7 +222,6 @@ func CommandBanHandler(c tele.Context) error {
 			"message": c.Message(),
 		})
 	}
-	// FIXME: Посылать сообщение пользователю о бане? А если он не начал общение с ботом?
 	log.Info("Пользователь заблокирован", yaLog.LogContext{
 		"admin_id":         c.Message().Sender.ID,
 		"admin_username":   c.Message().Sender.Username,
@@ -100,10 +238,10 @@ func CommandUnbanHandler(c tele.Context) error {
 	f := strings.Fields(d)
 	switch len(f) {
 	case 0:
-		log.Warn(fmt.Sprintf("Вызов команды /ubban без аргументов"), yaLog.LogContext{
+		log.Warn(fmt.Sprintf("Вызов команды /unban без аргументов"), yaLog.LogContext{
 			"arguments_string": d,
 		})
-		if err := c.Reply(fmt.Sprintf("Верный формат команды: %s", unbanCommandFormat), tele.ModeHTML); err != nil {
+		if err := c.Reply(fmt.Sprintf("Верный формат команды: %s", banCommandFormat), tele.ModeHTML); err != nil {
 			log.Error(fmt.Sprintf("Не удалось отправить подсказку по команде /unban: %v", err), yaLog.LogContext{
 				"message": c.Message(),
 			})
@@ -127,7 +265,7 @@ func CommandUnbanHandler(c tele.Context) error {
 		}
 		return nil
 	}
-	if err := c.Bot().Unban(&tele.Chat{ID: config.HouseChatId}, violator); err != nil {
+	if err := c.Bot().Unban(&tele.Chat{ID: config.HouseChatId}, violator, true); err != nil {
 		log.Error(fmt.Sprintf("Не удалось разблокировать пользователя: %v", err), yaLog.LogContext{
 			"violator": violator,
 			"message":  c.Message(),
@@ -140,7 +278,7 @@ func CommandUnbanHandler(c tele.Context) error {
 
 		return nil
 	}
-	log.Debug("Успешно отправлен запрос на разбан", yaLog.LogContext{
+	log.Debug("Успешно отправлен запрос на разблокировку", yaLog.LogContext{
 		"violator": violator,
 	})
 	if err := c.Reply("Пользователь разблокирован."); err != nil {
@@ -148,77 +286,7 @@ func CommandUnbanHandler(c tele.Context) error {
 			"message": c.Message(),
 		})
 	}
-	// FIXME: Посылать сообщение пользователю об отмене бана? А если он не начал общение с ботом?
 	log.Info("Пользователь разблокирован", yaLog.LogContext{
-		"admin_id":         c.Message().Sender.ID,
-		"admin_username":   c.Message().Sender.Username,
-		"admin_first_name": c.Message().Sender.FirstName,
-		"admin_last_name":  c.Message().Sender.LastName,
-		"violator":         violator,
-	})
-
-	return nil
-}
-
-func CommandKickHandler(c tele.Context) error {
-	var violator *tele.ChatMember
-	var days int64
-	d := c.Data()
-	f := strings.Fields(d)
-	switch len(f) {
-	case 0:
-		log.Warn(fmt.Sprintf("Вызов команды /kick без аргументов"), yaLog.LogContext{
-			"arguments_string": d,
-		})
-		if err := c.Reply(fmt.Sprintf("Верный формат команды: %s", kickCommandFormat), tele.ModeHTML); err != nil {
-			log.Error(fmt.Sprintf("Не удалось отправить подсказку по команде /kick: %v", err), yaLog.LogContext{
-				"message": c.Message(),
-			})
-		}
-		return nil
-	case 1:
-		violator = createMemberViolator(c, f[0], tele.Forever())
-	case 2:
-		days = parseDays(f[1])
-		violator = createMemberViolator(c, f[0], time.Now().Unix()+(days*86400))
-	default:
-		if err := c.Reply(fmt.Sprintf("Верный формат команды: %s", kickCommandFormat), tele.ModeHTML); err != nil {
-			log.Error(fmt.Sprintf("Не удалось отправить подсказку по команде /kick: %v", err), yaLog.LogContext{
-				"message": c.Message(),
-			})
-		}
-		return nil
-	}
-	if violator == nil {
-		if err := c.Reply("Не удалось удалить пользователя."); err != nil {
-			log.Error(fmt.Sprintf("Не удалось удалить пользователя: %v", err), yaLog.LogContext{
-				"message": c.Message(),
-			})
-		}
-		return nil
-	}
-	if err := c.Bot().Ban(&tele.Chat{ID: config.HouseChatId}, violator); err != nil {
-		log.Error(fmt.Sprintf("Не удалось удалить пользователя: %v", err), yaLog.LogContext{
-			"violator": violator,
-			"message":  c.Message(),
-		})
-		if err := c.Reply("Не удалось удалить пользователя."); err != nil {
-			log.Error(fmt.Sprintf("Не удалось удалить пользователя: %v", err), yaLog.LogContext{
-				"message": c.Message(),
-			})
-		}
-
-		return nil
-	}
-	log.Debug("Успешно отправлен запрос на удаление", yaLog.LogContext{
-		"violator": violator,
-	})
-	if err := c.Reply("Пользователь удален."); err != nil {
-		log.Error(fmt.Sprintf("Не удалось уведомить что пользователь удален: %v", err), yaLog.LogContext{
-			"message": c.Message(),
-		})
-	}
-	log.Info("Пользователь удален.", yaLog.LogContext{
 		"admin_id":         c.Message().Sender.ID,
 		"admin_username":   c.Message().Sender.Username,
 		"admin_first_name": c.Message().Sender.FirstName,
@@ -235,11 +303,17 @@ func CommandHelpAdminHandler(c tele.Context) error {
 Команды:
 
 /help_admin – Текущая справка.
-%s – Забанить пользователя в домовом чате. 
-%s – Разабанить пользователя в домовом чате.
-%s – Удалить пользователя из домового чата.
+%s – Ограничить пользователя в домовом чате. 
+%s – Снять ограничения с пользователя в домовом чате.
+%s – Забанить пользователя в домовом чата.
+%s – Разбанить пользователя в домовом чата.
 
-<a href="https://ilovaiskaya2.homes/#rules">Ссылка на правила</a>.`, banCommandFormat, unbanCommandFormat, kickCommandFormat)
+<a href="https://ilovaiskaya2.homes/#rules">Ссылка на правила</a>.`,
+		restrictCommandFormat,
+		remoteRestrictCommandFormat,
+		banCommandFormat,
+		unbanCommandFormat,
+	)
 	err := c.Send(help, tele.ModeHTML, tele.NoPreview)
 	if err != nil {
 		log.Error(fmt.Sprintf("Не удалось отправить текст справки: %v", err), nil)
@@ -266,11 +340,11 @@ func CommandSetCommandsHandler(c tele.Context) error {
 		tele.CommandScope{Type: tele.CommandScopeChatAdmin, ChatID: config.HouseChatId})
 	// Для участников админского чата
 	setCommands(c,
-		[]tele.Command{HelpAdminChatCommand, BanCommand, KickCommand},
+		[]tele.Command{HelpAdminChatCommand, RestrictCommand, BanCommand, UnbanCommand},
 		tele.CommandScope{Type: tele.CommandScopeDefault, ChatID: config.AdministrationChatID})
 	// Для админов админского чата
 	setCommands(c,
-		[]tele.Command{SetCommandsCommand, HelpAdminChatCommand, BanCommand, KickCommand},
+		[]tele.Command{SetCommandsCommand, HelpAdminChatCommand, RestrictCommand, BanCommand, UnbanCommand},
 		tele.CommandScope{Type: tele.CommandScopeChatAdmin, ChatID: config.AdministrationChatID})
 
 	return nil
