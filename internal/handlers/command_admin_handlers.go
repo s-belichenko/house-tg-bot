@@ -359,11 +359,11 @@ func CommandSetCommandsHandler(c tele.Context) error {
 		tele.CommandScope{Type: tele.CommandScopeChatAdmin, ChatID: config.HouseChatId})
 	// Для участников админского чата
 	setCommands(c,
-		[]tele.Command{HelpAdminChatCommand, RestrictCommand, BanCommand, UnbanCommand},
+		[]tele.Command{HelpAdminChatCommand, RestrictCommand, RemoveRestrictCommand, BanCommand, UnbanCommand},
 		tele.CommandScope{Type: tele.CommandScopeDefault, ChatID: config.AdministrationChatID})
 	// Для админов админского чата
 	setCommands(c,
-		[]tele.Command{SetCommandsCommand, HelpAdminChatCommand, RestrictCommand, BanCommand, UnbanCommand},
+		[]tele.Command{SetCommandsCommand, HelpAdminChatCommand, RestrictCommand, RemoveRestrictCommand, BanCommand, UnbanCommand},
 		tele.CommandScope{Type: tele.CommandScopeChatAdmin, ChatID: config.AdministrationChatID})
 
 	return nil
