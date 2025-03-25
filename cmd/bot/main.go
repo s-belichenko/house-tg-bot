@@ -80,8 +80,8 @@ func registerBotCommandHandlers() {
 	// Административный чат
 	bot.Handle("/"+hdls.SetCommandsCommand.Text, hdls.CommandSetCommandsHandler, sec.AdminChatMiddleware)
 	bot.Handle("/"+hdls.HelpAdminChatCommand.Text, hdls.CommandHelpAdminHandler, sec.AdminChatMiddleware)
-	bot.Handle("/"+hdls.RestrictCommand.Text, hdls.CommandRestrictHandler, sec.AdminChatMiddleware)
-	bot.Handle("/"+hdls.RemoveRestrictCommand.Text, hdls.CommandRemoveRestrictHandler, sec.AdminChatMiddleware)
+	bot.Handle("/"+hdls.MuteCommand.Text, hdls.CommandMuteHandler, sec.AdminChatMiddleware)
+	bot.Handle("/"+hdls.UnmuteCommand.Text, hdls.CommandUnmuteHandler, sec.AdminChatMiddleware)
 	bot.Handle("/"+hdls.BanCommand.Text, hdls.CommandBanHandler, sec.AdminChatMiddleware)
 	bot.Handle("/"+hdls.UnbanCommand.Text, hdls.CommandUnbanHandler, sec.AdminChatMiddleware)
 }

@@ -125,7 +125,7 @@ func createUserViolator(c tele.Context, s string) *tele.User {
 				})
 				if err := c.Reply(fmt.Sprintf(
 					"Не удалось распознать username нарушителя. Верный формат команды: %s",
-					restrictCommandFormat,
+					muteCommandFormat,
 				), tele.ModeHTML); err != nil {
 					log.Error(fmt.Sprintf("Не удалось отправить подсказку по команде /ban: %v", err), yaLog.LogContext{
 						"message": c.Message(),

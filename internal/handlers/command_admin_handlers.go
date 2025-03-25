@@ -8,34 +8,34 @@ import (
 )
 
 const (
-	restrictCommandFormat       = `/restrict &lt;username | user_id&gt; [days] (от 1 до 366, иначе бессрочно)`
-	remoteRestrictCommandFormat = `/remove_restrict &lt;username | user_id&gt;`
-	banCommandFormat            = `/ban &lt;username | user_id&gt; [days] (от 1 до 366, иначе бессрочно)`
-	unbanCommandFormat          = `/unban &lt;username | user_id&gt;`
+	muteCommandFormat   = `/mute &lt;username | user_id&gt; [days] (от 1 до 366, иначе бессрочно)`
+	unmuteCommandFormat = `/unmute &lt;username | user_id&gt;`
+	banCommandFormat    = `/ban &lt;username | user_id&gt; [days] (от 1 до 366, иначе бессрочно)`
+	unbanCommandFormat  = `/unban &lt;username | user_id&gt;`
 )
 
 var (
-	HelpAdminChatCommand  = tele.Command{Text: "help_admin", Description: "Справка по боту для админов"}
-	RestrictCommand       = tele.Command{Text: "restrict", Description: "Ограничить пользователя  в домовом чате"}
-	RemoveRestrictCommand = tele.Command{Text: "remove_restrict", Description: "Снять ограничения с пользователя в домовом чате"}
-	BanCommand            = tele.Command{Text: "ban", Description: "Заблокировать пользователя из домового чата"}
-	UnbanCommand          = tele.Command{Text: "unban", Description: "Разблокировать пользователя из домового чата"}
+	HelpAdminChatCommand = tele.Command{Text: "help_admin", Description: "Справка по боту для админов"}
+	MuteCommand          = tele.Command{Text: "mute", Description: "Ограничить пользователя в домовом чате"}
+	UnmuteCommand        = tele.Command{Text: "unmute", Description: "Снять ограничения с пользователя в домовом чате"}
+	BanCommand           = tele.Command{Text: "ban", Description: "Заблокировать пользователя из домового чата"}
+	UnbanCommand         = tele.Command{Text: "unban", Description: "Разблокировать пользователя из домового чата"}
 
 	SetCommandsCommand = tele.Command{Text: "set_commands", Description: "Установить команды бота"}
 )
 
-func CommandRestrictHandler(c tele.Context) error {
+func CommandMuteHandler(c tele.Context) error {
 	var violator *tele.ChatMember
 	d := c.Data()
 	f := strings.Fields(d)
 
 	switch len(f) {
 	case 0:
-		log.Warn(fmt.Sprintf("Вызов команды /restrict без аргументов"), yaLog.LogContext{
+		log.Warn(fmt.Sprintf("Вызов команды /mute без аргументов"), yaLog.LogContext{
 			"arguments_string": d,
 		})
-		if err := c.Reply(fmt.Sprintf("Верный формат команды: %s", restrictCommandFormat), tele.ModeHTML); err != nil {
-			log.Error(fmt.Sprintf("Не удалось отправить подсказку по команде /restrict: %v", err), yaLog.LogContext{
+		if err := c.Reply(fmt.Sprintf("Верный формат команды: %s", muteCommandFormat), tele.ModeHTML); err != nil {
+			log.Error(fmt.Sprintf("Не удалось отправить подсказку по команде /mute: %v", err), yaLog.LogContext{
 				"message": c.Message(),
 			})
 		}
@@ -60,8 +60,8 @@ func CommandRestrictHandler(c tele.Context) error {
 			RestrictedUntil: createUnixTimeFromDays(f[1]),
 		}
 	default:
-		if err := c.Reply(fmt.Sprintf("Верный формат команды: %s", restrictCommandFormat), tele.ModeHTML); err != nil {
-			log.Error(fmt.Sprintf("Не удалось отправить подсказку по команде /restrict: %v", err), yaLog.LogContext{
+		if err := c.Reply(fmt.Sprintf("Верный формат команды: %s", muteCommandFormat), tele.ModeHTML); err != nil {
+			log.Error(fmt.Sprintf("Не удалось отправить подсказку по команде /mute: %v", err), yaLog.LogContext{
 				"message": c.Message(),
 			})
 		}
@@ -107,17 +107,17 @@ func CommandRestrictHandler(c tele.Context) error {
 	return nil
 }
 
-func CommandRemoveRestrictHandler(c tele.Context) error {
+func CommandUnmuteHandler(c tele.Context) error {
 	var violator *tele.ChatMember
 	d := c.Data()
 	f := strings.Fields(d)
 	switch len(f) {
 	case 0:
-		log.Warn(fmt.Sprintf("Вызов команды /remove_restrict без аргументов"), yaLog.LogContext{
+		log.Warn(fmt.Sprintf("Вызов команды /unmute без аргументов"), yaLog.LogContext{
 			"arguments_string": d,
 		})
-		if err := c.Reply(fmt.Sprintf("Верный формат команды: %s", remoteRestrictCommandFormat), tele.ModeHTML); err != nil {
-			log.Error(fmt.Sprintf("Не удалось отправить подсказку по команде /remove_restrict: %v", err), yaLog.LogContext{
+		if err := c.Reply(fmt.Sprintf("Верный формат команды: %s", unmuteCommandFormat), tele.ModeHTML); err != nil {
+			log.Error(fmt.Sprintf("Не удалось отправить подсказку по команде /unmute: %v", err), yaLog.LogContext{
 				"message": c.Message(),
 			})
 		}
@@ -129,8 +129,8 @@ func CommandRemoveRestrictHandler(c tele.Context) error {
 		}
 		violator = &tele.ChatMember{User: user, Rights: tele.NoRestrictions()}
 	default:
-		if err := c.Reply(fmt.Sprintf("Верный формат команды: %s", restrictCommandFormat), tele.ModeHTML); err != nil {
-			log.Error(fmt.Sprintf("Не удалось отправить подсказку по команде /remove_restrict: %v", err), yaLog.LogContext{
+		if err := c.Reply(fmt.Sprintf("Верный формат команды: %s", muteCommandFormat), tele.ModeHTML); err != nil {
+			log.Error(fmt.Sprintf("Не удалось отправить подсказку по команде /unmute: %v", err), yaLog.LogContext{
 				"message": c.Message(),
 			})
 		}
@@ -328,8 +328,8 @@ func CommandHelpAdminHandler(c tele.Context) error {
 %s – Разбанить пользователя в домовом чата.
 
 <a href="https://ilovaiskaya2.homes/#rules">Ссылка на правила</a>.`,
-		restrictCommandFormat,
-		remoteRestrictCommandFormat,
+		muteCommandFormat,
+		unmuteCommandFormat,
 		banCommandFormat,
 		unbanCommandFormat,
 	)
@@ -359,11 +359,11 @@ func CommandSetCommandsHandler(c tele.Context) error {
 		tele.CommandScope{Type: tele.CommandScopeChatAdmin, ChatID: config.HouseChatId})
 	// Для участников админского чата
 	setCommands(c,
-		[]tele.Command{HelpAdminChatCommand, RestrictCommand, RemoveRestrictCommand, BanCommand, UnbanCommand},
+		[]tele.Command{HelpAdminChatCommand, MuteCommand, UnmuteCommand, BanCommand, UnbanCommand},
 		tele.CommandScope{Type: tele.CommandScopeChat, ChatID: config.AdministrationChatID})
 	// Для админов админского чата
 	setCommands(c,
-		[]tele.Command{SetCommandsCommand, HelpAdminChatCommand, RestrictCommand, RemoveRestrictCommand, BanCommand, UnbanCommand},
+		[]tele.Command{SetCommandsCommand, HelpAdminChatCommand, MuteCommand, UnmuteCommand, BanCommand, UnbanCommand},
 		tele.CommandScope{Type: tele.CommandScopeChatAdmin, ChatID: config.AdministrationChatID})
 
 	return nil
