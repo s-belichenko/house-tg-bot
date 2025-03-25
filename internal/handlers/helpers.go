@@ -132,6 +132,10 @@ func createUserViolator(c tele.Context, s string) *tele.User {
 					})
 				}
 			}
+		} else {
+			log.Error(fmt.Sprintf("Для администрирования не удалось определить user_id и username"), yaLog.LogContext{
+				"text": s,
+			})
 		}
 	}
 	return nil
