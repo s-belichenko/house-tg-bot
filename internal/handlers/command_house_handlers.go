@@ -5,7 +5,7 @@ import (
 	"s-belichenko/ilovaiskaya2-bot/cmd/llm"
 
 	tele "gopkg.in/telebot.v4"
-	yaLog "s-belichenko/ilovaiskaya2-bot/internal/logger"
+	intLog "s-belichenko/ilovaiskaya2-bot/internal/logger"
 )
 
 // Команды бота для домового чата
@@ -33,7 +33,7 @@ func CommandReportHandler(c tele.Context) error {
 
 	if violator.ID == config.BotID {
 		if err := c.Reply(fmt.Sprintf("%s, ай-яй-яй! %s", GetGreetingName(reporter), llm.GetTeaser())); err != nil {
-			log.Error(fmt.Sprintf("Не удалось пообзываться в ответ на репорт на бота: %v", err), yaLog.LogContext{
+			log.Error(fmt.Sprintf("Не удалось пообзываться в ответ на репорт на бота: %v", err), intLog.LogContext{
 				"reporter": reporter,
 			})
 		}
@@ -45,7 +45,7 @@ func CommandReportHandler(c tele.Context) error {
 	violationMessageID := m.ReplyTo.ID
 	messageLink := GenerateMessageLink(chat, violationMessageID)
 
-	log.Info(fmt.Sprintf("Новое нарушение правил от %s", GetGreetingName(reporter)), yaLog.LogContext{
+	log.Info(fmt.Sprintf("Новое нарушение правил от %s", GetGreetingName(reporter)), intLog.LogContext{
 		"reporter_username": reporter.Username,
 		"reporter_id":       reporter.ID,
 		"violator":          violator.Username,
@@ -90,7 +90,7 @@ func CommandReportHandler(c tele.Context) error {
 	if err != nil {
 		log.Error(fmt.Sprintf(
 			"Не удалось удалить сообщение с жалобой от %s: %v", GetGreetingName(reporter), err),
-			yaLog.LogContext{
+			intLog.LogContext{
 				"message_id":   m.ID,
 				"message_text": m.Text,
 				"violator_id":  violator.ID,

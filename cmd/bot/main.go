@@ -11,7 +11,7 @@ import (
 	tele "gopkg.in/telebot.v4"
 	teleMid "gopkg.in/telebot.v4/middleware"
 	hdls "s-belichenko/ilovaiskaya2-bot/internal/handlers"
-	yaLog "s-belichenko/ilovaiskaya2-bot/internal/logger"
+	intLog "s-belichenko/ilovaiskaya2-bot/internal/logger"
 	sec "s-belichenko/ilovaiskaya2-bot/internal/security"
 )
 
@@ -23,7 +23,7 @@ type ConfigBot struct {
 
 var (
 	bot    *tele.Bot
-	log    *yaLog.Logger
+	log    intLog.Logger
 	config = ConfigBot{LogStreamName: "main_stream"}
 )
 
@@ -41,7 +41,7 @@ func registerJoinRequestHandler() {
 
 func initModule() {
 	err := cleanenv.ReadEnv(&config)
-	log = yaLog.InitLog(config.LogStreamName)
+	log = intLog.InitLog(config.LogStreamName)
 	log.Debug("Start init module", nil)
 	if err != nil {
 		log.Fatal(fmt.Sprintf("Не удалось прочитать конфигурацию ота: %v", err), nil)
@@ -66,7 +66,7 @@ func setBotMiddleware() {
 	bot.Use(teleMid.Recover(func(err error, context tele.Context) {
 		log.Fatal(fmt.Sprintf("Bot fatal: %v", err), nil)
 	}))
-	bot.Use(yaLog.GetMiddleware(log))
+	bot.Use(intLog.GetMiddleware(log))
 }
 
 func registerBotCommandHandlers() {

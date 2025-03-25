@@ -2,9 +2,10 @@ package handlers
 
 import (
 	"fmt"
-	tele "gopkg.in/telebot.v4"
-	yaLog "s-belichenko/ilovaiskaya2-bot/internal/logger"
 	"strings"
+
+	tele "gopkg.in/telebot.v4"
+	intLog "s-belichenko/ilovaiskaya2-bot/internal/logger"
 )
 
 const (
@@ -31,11 +32,11 @@ func CommandMuteHandler(c tele.Context) error {
 
 	switch len(f) {
 	case 0:
-		log.Warn(fmt.Sprintf("Вызов команды /mute без аргументов"), yaLog.LogContext{
+		log.Warn(fmt.Sprintf("Вызов команды /mute без аргументов"), intLog.LogContext{
 			"arguments_string": d,
 		})
 		if err := c.Reply(fmt.Sprintf("Верный формат команды: %s", muteCommandFormat), tele.ModeHTML); err != nil {
-			log.Error(fmt.Sprintf("Не удалось отправить подсказку по команде /mute: %v", err), yaLog.LogContext{
+			log.Error(fmt.Sprintf("Не удалось отправить подсказку по команде /mute: %v", err), intLog.LogContext{
 				"message": c.Message(),
 			})
 		}
@@ -61,7 +62,7 @@ func CommandMuteHandler(c tele.Context) error {
 		}
 	default:
 		if err := c.Reply(fmt.Sprintf("Верный формат команды: %s", muteCommandFormat), tele.ModeHTML); err != nil {
-			log.Error(fmt.Sprintf("Не удалось отправить подсказку по команде /mute: %v", err), yaLog.LogContext{
+			log.Error(fmt.Sprintf("Не удалось отправить подсказку по команде /mute: %v", err), intLog.LogContext{
 				"message": c.Message(),
 			})
 		}
@@ -69,35 +70,35 @@ func CommandMuteHandler(c tele.Context) error {
 	}
 	if violator == nil {
 		if err := c.Reply("Не удалось ограничить пользователя."); err != nil {
-			log.Error(fmt.Sprintf("Не удалось ограничить пользователя: %v", err), yaLog.LogContext{
+			log.Error(fmt.Sprintf("Не удалось ограничить пользователя: %v", err), intLog.LogContext{
 				"message": c.Message(),
 			})
 		}
 		return nil
 	}
 	if err := c.Bot().Restrict(&tele.Chat{ID: config.HouseChatId}, violator); err != nil {
-		log.Error(fmt.Sprintf("Не удалось ограничить пользователя: %v", err), yaLog.LogContext{
+		log.Error(fmt.Sprintf("Не удалось ограничить пользователя: %v", err), intLog.LogContext{
 			"violator": violator,
 			"message":  c.Message(),
 		})
 		if err := c.Reply("Не удалось ограничить пользователя."); err != nil {
-			log.Error(fmt.Sprintf("Не удалось ограничить пользователя: %v", err), yaLog.LogContext{
+			log.Error(fmt.Sprintf("Не удалось ограничить пользователя: %v", err), intLog.LogContext{
 				"message": c.Message(),
 			})
 		}
 
 		return nil
 	}
-	log.Debug("Успешно отправлен запрос на ограничение пользователя", yaLog.LogContext{
+	log.Debug("Успешно отправлен запрос на ограничение пользователя", intLog.LogContext{
 		"violator": violator,
 	})
 	if err := c.Reply("Пользователь ограничен."); err != nil {
-		log.Error(fmt.Sprintf("Не удалось уведомить что пользователь ограничен: %v", err), yaLog.LogContext{
+		log.Error(fmt.Sprintf("Не удалось уведомить что пользователь ограничен: %v", err), intLog.LogContext{
 			"message": c.Message(),
 		})
 	}
 	// FIXME: Посылать сообщение пользователю об ограничениях? А если он не начал общение с ботом?
-	log.Info("Пользователь ограничен", yaLog.LogContext{
+	log.Info("Пользователь ограничен", intLog.LogContext{
 		"admin_id":         c.Message().Sender.ID,
 		"admin_username":   c.Message().Sender.Username,
 		"admin_first_name": c.Message().Sender.FirstName,
@@ -113,11 +114,11 @@ func CommandUnmuteHandler(c tele.Context) error {
 	f := strings.Fields(d)
 	switch len(f) {
 	case 0:
-		log.Warn(fmt.Sprintf("Вызов команды /unmute без аргументов"), yaLog.LogContext{
+		log.Warn(fmt.Sprintf("Вызов команды /unmute без аргументов"), intLog.LogContext{
 			"arguments_string": d,
 		})
 		if err := c.Reply(fmt.Sprintf("Верный формат команды: %s", unmuteCommandFormat), tele.ModeHTML); err != nil {
-			log.Error(fmt.Sprintf("Не удалось отправить подсказку по команде /unmute: %v", err), yaLog.LogContext{
+			log.Error(fmt.Sprintf("Не удалось отправить подсказку по команде /unmute: %v", err), intLog.LogContext{
 				"message": c.Message(),
 			})
 		}
@@ -130,7 +131,7 @@ func CommandUnmuteHandler(c tele.Context) error {
 		violator = &tele.ChatMember{User: user, Rights: tele.NoRestrictions()}
 	default:
 		if err := c.Reply(fmt.Sprintf("Верный формат команды: %s", muteCommandFormat), tele.ModeHTML); err != nil {
-			log.Error(fmt.Sprintf("Не удалось отправить подсказку по команде /unmute: %v", err), yaLog.LogContext{
+			log.Error(fmt.Sprintf("Не удалось отправить подсказку по команде /unmute: %v", err), intLog.LogContext{
 				"message": c.Message(),
 			})
 		}
@@ -138,35 +139,35 @@ func CommandUnmuteHandler(c tele.Context) error {
 	}
 	if violator == nil {
 		if err := c.Reply("Не удалось снять ограничения с пользователя."); err != nil {
-			log.Error(fmt.Sprintf("Не удалось ограничения с пользователя: %v", err), yaLog.LogContext{
+			log.Error(fmt.Sprintf("Не удалось ограничения с пользователя: %v", err), intLog.LogContext{
 				"message": c.Message(),
 			})
 		}
 		return nil
 	}
 	if err := c.Bot().Promote(&tele.Chat{ID: config.HouseChatId}, violator); err != nil {
-		log.Error(fmt.Sprintf("Не удалось снять ограничения с пользователя: %v", err), yaLog.LogContext{
+		log.Error(fmt.Sprintf("Не удалось снять ограничения с пользователя: %v", err), intLog.LogContext{
 			"violator": violator,
 			"message":  c.Message(),
 		})
 		if err := c.Reply("Не удалось снять ограничения с пользователя."); err != nil {
-			log.Error(fmt.Sprintf("Не удалось снять ограничения с пользователя: %v", err), yaLog.LogContext{
+			log.Error(fmt.Sprintf("Не удалось снять ограничения с пользователя: %v", err), intLog.LogContext{
 				"message": c.Message(),
 			})
 		}
 
 		return nil
 	}
-	log.Debug("Успешно отправлен запрос на снятие ограничений", yaLog.LogContext{
+	log.Debug("Успешно отправлен запрос на снятие ограничений", intLog.LogContext{
 		"violator": violator,
 	})
 	if err := c.Reply("Сняты ограничения с пользователя."); err != nil {
-		log.Error(fmt.Sprintf("Не удалось уведомить что сняты ограничения с пользователя: %v", err), yaLog.LogContext{
+		log.Error(fmt.Sprintf("Не удалось уведомить что сняты ограничения с пользователя: %v", err), intLog.LogContext{
 			"message": c.Message(),
 		})
 	}
 	// FIXME: Посылать сообщение пользователю об отмене бана? А если он не начал общение с ботом?
-	log.Info("Сняты ограничения с пользователя", yaLog.LogContext{
+	log.Info("Сняты ограничения с пользователя", intLog.LogContext{
 		"admin_id":         c.Message().Sender.ID,
 		"admin_username":   c.Message().Sender.Username,
 		"admin_first_name": c.Message().Sender.FirstName,
@@ -183,11 +184,11 @@ func CommandBanHandler(c tele.Context) error {
 	f := strings.Fields(d)
 	switch len(f) {
 	case 0:
-		log.Warn(fmt.Sprintf("Вызов команды /ban без аргументов"), yaLog.LogContext{
+		log.Warn(fmt.Sprintf("Вызов команды /ban без аргументов"), intLog.LogContext{
 			"arguments_string": d,
 		})
 		if err := c.Reply(fmt.Sprintf("Верный формат команды: %s", banCommandFormat), tele.ModeHTML); err != nil {
-			log.Error(fmt.Sprintf("Не удалось отправить подсказку по команде /ban: %v", err), yaLog.LogContext{
+			log.Error(fmt.Sprintf("Не удалось отправить подсказку по команде /ban: %v", err), intLog.LogContext{
 				"message": c.Message(),
 			})
 		}
@@ -206,7 +207,7 @@ func CommandBanHandler(c tele.Context) error {
 		violator = &tele.ChatMember{User: user, RestrictedUntil: createUnixTimeFromDays(f[1])}
 	default:
 		if err := c.Reply(fmt.Sprintf("Верный формат команды: %s", banCommandFormat), tele.ModeHTML); err != nil {
-			log.Error(fmt.Sprintf("Не удалось отправить подсказку по команде /ban: %v", err), yaLog.LogContext{
+			log.Error(fmt.Sprintf("Не удалось отправить подсказку по команде /ban: %v", err), intLog.LogContext{
 				"message": c.Message(),
 			})
 		}
@@ -214,34 +215,34 @@ func CommandBanHandler(c tele.Context) error {
 	}
 	if violator == nil {
 		if err := c.Reply("Не удалось заблокировать пользователя."); err != nil {
-			log.Error(fmt.Sprintf("Не удалось заблокировать пользователя: %v", err), yaLog.LogContext{
+			log.Error(fmt.Sprintf("Не удалось заблокировать пользователя: %v", err), intLog.LogContext{
 				"message": c.Message(),
 			})
 		}
 		return nil
 	}
 	if err := c.Bot().Ban(&tele.Chat{ID: config.HouseChatId}, violator); err != nil {
-		log.Error(fmt.Sprintf("Не удалось заблокировать пользователя: %v", err), yaLog.LogContext{
+		log.Error(fmt.Sprintf("Не удалось заблокировать пользователя: %v", err), intLog.LogContext{
 			"violator": violator,
 			"message":  c.Message(),
 		})
 		if err := c.Reply("Не удалось заблокировать пользователя."); err != nil {
-			log.Error(fmt.Sprintf("Не удалось заблокировать пользователя: %v", err), yaLog.LogContext{
+			log.Error(fmt.Sprintf("Не удалось заблокировать пользователя: %v", err), intLog.LogContext{
 				"message": c.Message(),
 			})
 		}
 
 		return nil
 	}
-	log.Debug("Успешно отправлен запрос на блокировку", yaLog.LogContext{
+	log.Debug("Успешно отправлен запрос на блокировку", intLog.LogContext{
 		"violator": violator,
 	})
 	if err := c.Reply("Пользователь заблокирован."); err != nil {
-		log.Error(fmt.Sprintf("Не удалось уведомить что пользователь заблокирован: %v", err), yaLog.LogContext{
+		log.Error(fmt.Sprintf("Не удалось уведомить что пользователь заблокирован: %v", err), intLog.LogContext{
 			"message": c.Message(),
 		})
 	}
-	log.Info("Пользователь заблокирован", yaLog.LogContext{
+	log.Info("Пользователь заблокирован", intLog.LogContext{
 		"admin_id":         c.Message().Sender.ID,
 		"admin_username":   c.Message().Sender.Username,
 		"admin_first_name": c.Message().Sender.FirstName,
@@ -257,11 +258,11 @@ func CommandUnbanHandler(c tele.Context) error {
 	f := strings.Fields(d)
 	switch len(f) {
 	case 0:
-		log.Warn(fmt.Sprintf("Вызов команды /unban без аргументов"), yaLog.LogContext{
+		log.Warn(fmt.Sprintf("Вызов команды /unban без аргументов"), intLog.LogContext{
 			"arguments_string": d,
 		})
 		if err := c.Reply(fmt.Sprintf("Верный формат команды: %s", banCommandFormat), tele.ModeHTML); err != nil {
-			log.Error(fmt.Sprintf("Не удалось отправить подсказку по команде /unban: %v", err), yaLog.LogContext{
+			log.Error(fmt.Sprintf("Не удалось отправить подсказку по команде /unban: %v", err), intLog.LogContext{
 				"message": c.Message(),
 			})
 		}
@@ -270,7 +271,7 @@ func CommandUnbanHandler(c tele.Context) error {
 		violator = createUserViolator(c, f[0])
 	default:
 		if err := c.Reply(fmt.Sprintf("Верный формат команды: %s", banCommandFormat), tele.ModeHTML); err != nil {
-			log.Error(fmt.Sprintf("Не удалось отправить подсказку по команде /unban: %v", err), yaLog.LogContext{
+			log.Error(fmt.Sprintf("Не удалось отправить подсказку по команде /unban: %v", err), intLog.LogContext{
 				"message": c.Message(),
 			})
 		}
@@ -278,34 +279,34 @@ func CommandUnbanHandler(c tele.Context) error {
 	}
 	if violator == nil {
 		if err := c.Reply("Не удалось разблокировать пользователя."); err != nil {
-			log.Error(fmt.Sprintf("Не удалось разблокировать пользователя: %v", err), yaLog.LogContext{
+			log.Error(fmt.Sprintf("Не удалось разблокировать пользователя: %v", err), intLog.LogContext{
 				"message": c.Message(),
 			})
 		}
 		return nil
 	}
 	if err := c.Bot().Unban(&tele.Chat{ID: config.HouseChatId}, violator, true); err != nil {
-		log.Error(fmt.Sprintf("Не удалось разблокировать пользователя: %v", err), yaLog.LogContext{
+		log.Error(fmt.Sprintf("Не удалось разблокировать пользователя: %v", err), intLog.LogContext{
 			"violator": violator,
 			"message":  c.Message(),
 		})
 		if err := c.Reply("Не удалось разблокировать пользователя."); err != nil {
-			log.Error(fmt.Sprintf("Не удалось разблокировать пользователя: %v", err), yaLog.LogContext{
+			log.Error(fmt.Sprintf("Не удалось разблокировать пользователя: %v", err), intLog.LogContext{
 				"message": c.Message(),
 			})
 		}
 
 		return nil
 	}
-	log.Debug("Успешно отправлен запрос на разблокировку", yaLog.LogContext{
+	log.Debug("Успешно отправлен запрос на разблокировку", intLog.LogContext{
 		"violator": violator,
 	})
 	if err := c.Reply("Пользователь разблокирован."); err != nil {
-		log.Error(fmt.Sprintf("Не удалось уведомить что пользователь разблокирован: %v", err), yaLog.LogContext{
+		log.Error(fmt.Sprintf("Не удалось уведомить что пользователь разблокирован: %v", err), intLog.LogContext{
 			"message": c.Message(),
 		})
 	}
-	log.Info("Пользователь разблокирован", yaLog.LogContext{
+	log.Info("Пользователь разблокирован", intLog.LogContext{
 		"admin_id":         c.Message().Sender.ID,
 		"admin_username":   c.Message().Sender.Username,
 		"admin_first_name": c.Message().Sender.FirstName,

@@ -2,12 +2,13 @@ package handlers
 
 import (
 	"fmt"
-	tele "gopkg.in/telebot.v4"
 	"regexp"
-	yaLog "s-belichenko/ilovaiskaya2-bot/internal/logger"
 	"strconv"
 	"strings"
 	"time"
+
+	tele "gopkg.in/telebot.v4"
+	intLog "s-belichenko/ilovaiskaya2-bot/internal/logger"
 )
 
 const usernameRegex = `^(?:[a-z_0-9]){5,64}$`
@@ -53,7 +54,7 @@ func GenerateMessageLink(chat *tele.Chat, messageID int) string {
 			return fmt.Sprintf("https://t.me/c/%d/%d", chatID, messageID)
 		}
 	} else {
-		log.Error("Невозможно сформировать ссылку для этого типа чата", yaLog.LogContext{
+		log.Error("Невозможно сформировать ссылку для этого типа чата", intLog.LogContext{
 			"chat":       chat,
 			"message_id": messageID,
 		})
@@ -63,12 +64,12 @@ func GenerateMessageLink(chat *tele.Chat, messageID int) string {
 
 func setCommands(c tele.Context, commands []tele.Command, scope tele.CommandScope) {
 	if err := c.Bot().SetCommands(commands, scope); err != nil {
-		log.Fatal(fmt.Sprintf("Не удалось инициализировать команды бота: %v", err), yaLog.LogContext{
+		log.Fatal(fmt.Sprintf("Не удалось инициализировать команды бота: %v", err), intLog.LogContext{
 			"commands": commands,
 			"scope":    scope,
 		})
 	} else {
-		log.Info("Успешно установлены команды бота", yaLog.LogContext{
+		log.Info("Успешно установлены команды бота", intLog.LogContext{
 			"commands": commands,
 			"scope":    scope,
 		})
@@ -113,27 +114,27 @@ func createUserViolator(c tele.Context, s string) *tele.User {
 		username := parseUsername(s)
 		if username != "" {
 			if chat, err := c.Bot().ChatByUsername(username); err != nil {
-				log.Error(fmt.Sprintf("Не удалось получить чат для блокировки пользователя: %v", err), yaLog.LogContext{
+				log.Error(fmt.Sprintf("Не удалось получить чат для блокировки пользователя: %v", err), intLog.LogContext{
 					"username": username,
 				})
 				return nil
 			} else if chat != nil {
 				return &tele.User{ID: chat.ID}
 			} else {
-				log.Warn(fmt.Sprintf("В команду /ban передан невалидный username или user_id"), yaLog.LogContext{
+				log.Warn(fmt.Sprintf("В команду /ban передан невалидный username или user_id"), intLog.LogContext{
 					"username_or_user_id": s,
 				})
 				if err := c.Reply(fmt.Sprintf(
 					"Не удалось распознать username нарушителя. Верный формат команды: %s",
 					muteCommandFormat,
 				), tele.ModeHTML); err != nil {
-					log.Error(fmt.Sprintf("Не удалось отправить подсказку по команде /ban: %v", err), yaLog.LogContext{
+					log.Error(fmt.Sprintf("Не удалось отправить подсказку по команде /ban: %v", err), intLog.LogContext{
 						"message": c.Message(),
 					})
 				}
 			}
 		} else {
-			log.Error(fmt.Sprintf("Для администрирования не удалось определить user_id и username"), yaLog.LogContext{
+			log.Error(fmt.Sprintf("Для администрирования не удалось определить user_id и username"), intLog.LogContext{
 				"text": s,
 			})
 		}

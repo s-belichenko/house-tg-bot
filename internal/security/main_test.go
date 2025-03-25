@@ -29,13 +29,11 @@ var dpIsBotHouse = DataProviderIsBotHouse{
 			message:        nil,
 		},
 		"Сообщение в форуме вне домика бота и ответ": {
-			//isForum:        true,
 			configThreadId: 123,
 			threadID:       321,
 			message:        &tele.Message{ID: 12345},
 		},
 		"Сообщение в форуме в домике бота и ответ": {
-			//isForum:        true,
 			configThreadId: 123,
 			threadID:       123,
 			message:        &tele.Message{},

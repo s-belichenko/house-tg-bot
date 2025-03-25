@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"github.com/ilyakaznacheev/cleanenv"
 	tele "gopkg.in/telebot.v4"
-	yaLog "s-belichenko/ilovaiskaya2-bot/internal/logger"
+	intLog "s-belichenko/ilovaiskaya2-bot/internal/logger"
 )
 
 type Config struct {
@@ -17,7 +17,7 @@ type Config struct {
 // Общие переменные пакета
 var (
 	config = Config{LogStreamName: "main_stream"}
-	log    *yaLog.Logger
+	log    intLog.Logger
 )
 
 type TeleContext interface {
@@ -29,7 +29,7 @@ type TeleContext interface {
 
 func init() {
 	initConfig()
-	log = yaLog.InitLog(config.LogStreamName)
+	log = intLog.InitLog(config.LogStreamName)
 }
 
 func initConfig() {

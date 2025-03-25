@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"github.com/ilyakaznacheev/cleanenv"
 	tele "gopkg.in/telebot.v4"
-	yaLog "s-belichenko/ilovaiskaya2-bot/internal/logger"
+	intLog "s-belichenko/ilovaiskaya2-bot/internal/logger"
 )
 
 type TeleID tele.ChatID
@@ -24,12 +24,12 @@ type Config struct {
 
 var (
 	config = Config{LogStreamName: "main_stream"}
-	log    *yaLog.Logger
+	log    intLog.Logger
 )
 
 func init() {
 	initConfig()
-	log = yaLog.InitLog(config.LogStreamName)
+	log = intLog.InitLog(config.LogStreamName)
 }
 
 func initConfig() {

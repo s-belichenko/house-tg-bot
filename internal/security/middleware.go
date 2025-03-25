@@ -7,20 +7,20 @@ import (
 	tele "gopkg.in/telebot.v4"
 	llm "s-belichenko/ilovaiskaya2-bot/cmd/llm"
 	hndls "s-belichenko/ilovaiskaya2-bot/internal/handlers"
-	yaLog "s-belichenko/ilovaiskaya2-bot/internal/logger"
+	intLog "s-belichenko/ilovaiskaya2-bot/internal/logger"
 )
 
 func AllPrivateChatsMiddleware(next tele.HandlerFunc) tele.HandlerFunc {
 	return func(c tele.Context) error {
 		if c.Chat().Type != tele.ChatPrivate && c.Chat().Type != tele.ChatChannelPrivate {
 			log.Warn(
-				fmt.Sprintf("Попытка использовать %q в чате типа %q", getCommandName(c.Message()), c.Chat().Type), yaLog.LogContext{"message": c.Message()})
+				fmt.Sprintf("Попытка использовать %q в чате типа %q", getCommandName(c.Message()), c.Chat().Type), intLog.LogContext{"message": c.Message()})
 			if TeleID(c.Chat().ID) == config.HouseChatId {
 				err := c.Reply(fmt.Sprintf("Используйте команду %q в личной переписке с ботом.", getCommandName(c.Message())))
 				if err != nil {
 					log.Error(
 						fmt.Sprintf("Не удалось посоветовать использовать личную переписку с ботом: %v", err),
-						yaLog.LogContext{"message": c.Message()})
+						intLog.LogContext{"message": c.Message()})
 				}
 			}
 			return nil
@@ -35,14 +35,14 @@ func HomeChatMiddleware(next tele.HandlerFunc) tele.HandlerFunc {
 		if c.Chat().Type != tele.ChatGroup && c.Chat().Type != tele.ChatSuperGroup {
 			log.Warn(fmt.Sprintf(
 				"Попытка использовать %q в чате типа %q", getCommandName(c.Message()), c.Chat().Type,
-			), yaLog.LogContext{"message": c.Message()})
+			), intLog.LogContext{"message": c.Message()})
 			return nil
 		}
 
 		if TeleID(c.Chat().ID) != config.HouseChatId {
 			log.Warn(fmt.Sprintf(
 				"Попытка использовать %q вне домового чата, чат: %d", getCommandName(c.Message()), c.Chat().ID,
-			), yaLog.LogContext{
+			), intLog.LogContext{
 				"message": c.Message(),
 			})
 			return nil
@@ -57,7 +57,7 @@ func AdminChatMiddleware(next tele.HandlerFunc) tele.HandlerFunc {
 		if c.Chat().Type != tele.ChatGroup && c.Chat().Type != tele.ChatSuperGroup {
 			log.Warn(fmt.Sprintf(
 				"Попытка использовать команду %q в чате типа %q", getCommandName(c.Message()), c.Chat().Type,
-			), yaLog.LogContext{
+			), intLog.LogContext{
 				"message": c.Message(),
 			})
 			return nil
@@ -66,14 +66,14 @@ func AdminChatMiddleware(next tele.HandlerFunc) tele.HandlerFunc {
 		if TeleID(c.Chat().ID) != config.AdministrationChatID {
 			log.Warn(fmt.Sprintf(
 				"Попытка использовать команду %q в чате %d", getCommandName(c.Message()), c.Chat().ID),
-				yaLog.LogContext{"message": c.Message()})
+				intLog.LogContext{"message": c.Message()})
 			return nil
 		}
 
 		if member, err := c.Bot().ChatMemberOf(c.Chat(), c.Sender()); err != nil {
 			log.Error(
 				fmt.Sprintf("Не удалось получить информацию об отправителе %q команды %q", hndls.GetGreetingName(c.Sender()), getCommandName(c.Message())),
-				yaLog.LogContext{"user_id": c.Sender().ID})
+				intLog.LogContext{"user_id": c.Sender().ID})
 			return nil
 		} else {
 			if (tele.Creator != member.Role) && (tele.Administrator != member.Role) {
