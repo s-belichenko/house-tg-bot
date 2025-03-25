@@ -111,28 +111,30 @@ func createUserViolator(c tele.Context, s string) *tele.User {
 		return &tele.User{ID: userID}
 	} else {
 		username := parseUsername(s)
-		if chat, err := c.Bot().ChatByUsername(username); err != nil {
-			log.Error(fmt.Sprintf("Не удалось получить чат для блокировки пользователя: %v", err), yaLog.LogContext{
-				"username": username,
-			})
-			return nil
-		} else if chat != nil {
-			return &tele.User{ID: chat.ID}
-		} else {
-			log.Warn(fmt.Sprintf("В команду /ban передан невалидный username или user_id"), yaLog.LogContext{
-				"username_or_user_id": s,
-			})
-			if err := c.Reply(fmt.Sprintf(
-				"Не удалось распознать username нарушителя. Верный формат команды: %s",
-				restrictCommandFormat,
-			), tele.ModeHTML); err != nil {
-				log.Error(fmt.Sprintf("Не удалось отправить подсказку по команде /ban: %v", err), yaLog.LogContext{
-					"message": c.Message(),
+		if username != "" {
+			if chat, err := c.Bot().ChatByUsername(username); err != nil {
+				log.Error(fmt.Sprintf("Не удалось получить чат для блокировки пользователя: %v", err), yaLog.LogContext{
+					"username": username,
 				})
+				return nil
+			} else if chat != nil {
+				return &tele.User{ID: chat.ID}
+			} else {
+				log.Warn(fmt.Sprintf("В команду /ban передан невалидный username или user_id"), yaLog.LogContext{
+					"username_or_user_id": s,
+				})
+				if err := c.Reply(fmt.Sprintf(
+					"Не удалось распознать username нарушителя. Верный формат команды: %s",
+					restrictCommandFormat,
+				), tele.ModeHTML); err != nil {
+					log.Error(fmt.Sprintf("Не удалось отправить подсказку по команде /ban: %v", err), yaLog.LogContext{
+						"message": c.Message(),
+					})
+				}
 			}
-			return nil
 		}
 	}
+	return nil
 }
 
 func createUnixTimeFromDays(d string) int64 {

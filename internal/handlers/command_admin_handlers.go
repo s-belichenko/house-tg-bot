@@ -41,13 +41,21 @@ func CommandRestrictHandler(c tele.Context) error {
 		}
 		return nil
 	case 1:
+		user := createUserViolator(c, f[0])
+		if user == nil {
+			return nil
+		}
 		violator = &tele.ChatMember{
-			User:   createUserViolator(c, f[0]),
+			User:   user,
 			Rights: tele.NoRights(),
 		}
 	case 2:
+		user := createUserViolator(c, f[0])
+		if user == nil {
+			return nil
+		}
 		violator = &tele.ChatMember{
-			User:            createUserViolator(c, f[0]),
+			User:            user,
 			Rights:          tele.NoRights(),
 			RestrictedUntil: createUnixTimeFromDays(f[1]),
 		}
@@ -116,6 +124,9 @@ func CommandRemoveRestrictHandler(c tele.Context) error {
 		return nil
 	case 1:
 		user := createUserViolator(c, f[0])
+		if user == nil {
+			return nil
+		}
 		violator = &tele.ChatMember{User: user, Rights: tele.NoRestrictions()}
 	default:
 		if err := c.Reply(fmt.Sprintf("Верный формат команды: %s", restrictCommandFormat), tele.ModeHTML); err != nil {
@@ -182,9 +193,17 @@ func CommandBanHandler(c tele.Context) error {
 		}
 		return nil
 	case 1:
-		violator = &tele.ChatMember{User: createUserViolator(c, f[0]), RestrictedUntil: tele.Forever()}
+		user := createUserViolator(c, f[0])
+		if user == nil {
+			return nil
+		}
+		violator = &tele.ChatMember{User: user, RestrictedUntil: tele.Forever()}
 	case 2:
-		violator = &tele.ChatMember{User: createUserViolator(c, f[0]), RestrictedUntil: createUnixTimeFromDays(f[1])}
+		user := createUserViolator(c, f[0])
+		if user == nil {
+			return nil
+		}
+		violator = &tele.ChatMember{User: user, RestrictedUntil: createUnixTimeFromDays(f[1])}
 	default:
 		if err := c.Reply(fmt.Sprintf("Верный формат команды: %s", banCommandFormat), tele.ModeHTML); err != nil {
 			log.Error(fmt.Sprintf("Не удалось отправить подсказку по команде /ban: %v", err), yaLog.LogContext{
