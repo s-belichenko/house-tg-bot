@@ -2,11 +2,11 @@ package security
 
 import (
 	"fmt"
-	"s-belichenko/ilovaiskaya2-bot/cmd/llm"
-	"s-belichenko/ilovaiskaya2-bot/internal/handlers"
 	"strings"
 
 	tele "gopkg.in/telebot.v4"
+	llm "s-belichenko/ilovaiskaya2-bot/cmd/llm"
+	hndls "s-belichenko/ilovaiskaya2-bot/internal/handlers"
 	yaLog "s-belichenko/ilovaiskaya2-bot/internal/logger"
 )
 
@@ -16,7 +16,7 @@ func AllPrivateChatsMiddleware(next tele.HandlerFunc) tele.HandlerFunc {
 			log.Warn(
 				fmt.Sprintf("Попытка использовать %q в чате типа %q", getCommandName(c.Message()), c.Chat().Type), yaLog.LogContext{"message": c.Message()})
 			if TeleID(c.Chat().ID) == config.HouseChatId {
-				err := c.Reply("Используйте эту команду в личной переписке с ботом.")
+				err := c.Reply(fmt.Sprintf("Используйте команду %q в личной переписке с ботом.", getCommandName(c.Message())))
 				if err != nil {
 					log.Error(
 						fmt.Sprintf("Не удалось посоветовать использовать личную переписку с ботом: %v", err),
@@ -34,16 +34,14 @@ func HomeChatMiddleware(next tele.HandlerFunc) tele.HandlerFunc {
 	return func(c tele.Context) error {
 		if c.Chat().Type != tele.ChatGroup && c.Chat().Type != tele.ChatSuperGroup {
 			log.Warn(fmt.Sprintf(
-				"Попытка использовать команду %s в чате типа %s", getCommandName(c.Message()), c.Chat().Type,
-			), yaLog.LogContext{
-				"message": c.Message(),
-			})
+				"Попытка использовать %q в чате типа %q", getCommandName(c.Message()), c.Chat().Type,
+			), yaLog.LogContext{"message": c.Message()})
 			return nil
 		}
 
 		if TeleID(c.Chat().ID) != config.HouseChatId {
 			log.Warn(fmt.Sprintf(
-				"Попытка использовать команду %s вне домового чата, чат: %d", getCommandName(c.Message()), c.Chat().ID,
+				"Попытка использовать %q вне домового чата, чат: %d", getCommandName(c.Message()), c.Chat().ID,
 			), yaLog.LogContext{
 				"message": c.Message(),
 			})
@@ -58,7 +56,7 @@ func AdminChatMiddleware(next tele.HandlerFunc) tele.HandlerFunc {
 	return func(c tele.Context) error {
 		if c.Chat().Type != tele.ChatGroup && c.Chat().Type != tele.ChatSuperGroup {
 			log.Warn(fmt.Sprintf(
-				"Попытка использовать команду %s в чате типа %s", getCommandName(c.Message()), c.Chat().Type,
+				"Попытка использовать команду %q в чате типа %q", getCommandName(c.Message()), c.Chat().Type,
 			), yaLog.LogContext{
 				"message": c.Message(),
 			})
@@ -67,26 +65,22 @@ func AdminChatMiddleware(next tele.HandlerFunc) tele.HandlerFunc {
 
 		if TeleID(c.Chat().ID) != config.AdministrationChatID {
 			log.Warn(fmt.Sprintf(
-				"Попытка использовать команду %s в чате %d", getCommandName(c.Message()), c.Chat().ID,
-			), yaLog.LogContext{
-				"message": c.Message(),
-			})
+				"Попытка использовать команду %q в чате %d", getCommandName(c.Message()), c.Chat().ID),
+				yaLog.LogContext{"message": c.Message()})
 			return nil
 		}
 
 		if member, err := c.Bot().ChatMemberOf(c.Chat(), c.Sender()); err != nil {
 			log.Error(
-				fmt.Sprintf("Не удалось получить информацию об отправителе %s команды %s", getCommandName(c.Message()), c.Sender().Username),
-				yaLog.LogContext{
-					"user_id": c.Sender().ID,
-				})
+				fmt.Sprintf("Не удалось получить информацию об отправителе %q команды %q", hndls.GetGreetingName(c.Sender()), getCommandName(c.Message())),
+				yaLog.LogContext{"user_id": c.Sender().ID})
 			return nil
 		} else {
 			if (tele.Creator != member.Role) && (tele.Administrator != member.Role) {
-				link := fmt.Sprintf("<a href=%s>ссылка</a>", handlers.GenerateMessageLink(c.Chat(), c.Message().ID))
+				link := fmt.Sprintf("<a href=%q>ссылка</a>", hndls.GenerateMessageLink(c.Chat(), c.Message().ID))
 				reportMessage := fmt.Sprintf(
-					"Хакир детектед! Пользователь %s попытался использовать команду %s, ссылка: %s",
-					c.Chat().Username, getCommandName(c.Message()), link,
+					"Хакир детектед! Пользователь %q попытался использовать команду %q, ссылка: %s",
+					hndls.GetGreetingName(c.Sender()), getCommandName(c.Message()), link,
 				)
 				adminChat := &tele.Chat{ID: int64(config.AdministrationChatID)}
 				_, _ = c.Bot().Send(adminChat, reportMessage, tele.ModeHTML)

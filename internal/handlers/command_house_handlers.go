@@ -32,7 +32,7 @@ func CommandReportHandler(c tele.Context) error {
 	violator := m.ReplyTo.Sender
 
 	if violator.ID == config.BotID {
-		if err := c.Reply(fmt.Sprintf("%s, ай-яй-яй! %s", getGreetingName(reporter), llm.GetTeaser())); err != nil {
+		if err := c.Reply(fmt.Sprintf("%s, ай-яй-яй! %s", GetGreetingName(reporter), llm.GetTeaser())); err != nil {
 			log.Error(fmt.Sprintf("Не удалось пообзываться в ответ на репорт на бота: %v", err), yaLog.LogContext{
 				"reporter": reporter,
 			})
@@ -45,7 +45,7 @@ func CommandReportHandler(c tele.Context) error {
 	violationMessageID := m.ReplyTo.ID
 	messageLink := GenerateMessageLink(chat, violationMessageID)
 
-	log.Info(fmt.Sprintf("Новое нарушение правил от %s", getGreetingName(reporter)), yaLog.LogContext{
+	log.Info(fmt.Sprintf("Новое нарушение правил от %s", GetGreetingName(reporter)), yaLog.LogContext{
 		"reporter_username": reporter.Username,
 		"reporter_id":       reporter.ID,
 		"violator":          violator.Username,
@@ -80,8 +80,8 @@ func CommandReportHandler(c tele.Context) error {
 	if _, err := c.Bot().Send(adminChat, reportMessage, tele.ModeHTML, tele.NoPreview); err != nil {
 		log.Error(fmt.Sprintf(
 			"Не удалось послать в чат админов жалобу от %s на %s: %v",
-			getGreetingName(reporter),
-			getGreetingName(violator),
+			GetGreetingName(reporter),
+			GetGreetingName(violator),
 			err,
 		), nil)
 	}
@@ -89,7 +89,7 @@ func CommandReportHandler(c tele.Context) error {
 	err := c.Bot().Delete(m)
 	if err != nil {
 		log.Error(fmt.Sprintf(
-			"Не удалось удалить сообщение с жалобой от %s: %v", getGreetingName(reporter), err),
+			"Не удалось удалить сообщение с жалобой от %s: %v", GetGreetingName(reporter), err),
 			yaLog.LogContext{
 				"message_id":   m.ID,
 				"message_text": m.Text,
@@ -106,7 +106,7 @@ func CommandReportHandler(c tele.Context) error {
 	if _, err := c.Bot().Send(reporter, thx, tele.ModeHTML, tele.NoPreview); err != nil {
 		log.Error(fmt.Sprintf(
 			"Не удалось послать благодарность за жалобу %s: %v",
-			getGreetingName(reporter),
+			GetGreetingName(reporter),
 			err,
 		), nil)
 	}

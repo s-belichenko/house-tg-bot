@@ -14,7 +14,7 @@ var (
 
 func CommandStartHandler(c tele.Context) error {
 	err := c.Send(fmt.Sprintf(
-		"Привет, %s! Ознакомься со справкой по работе с ботом: /help", getGreetingName(c.Sender()),
+		"Привет, %s! Ознакомься со справкой по работе с ботом: /help", GetGreetingName(c.Sender()),
 	))
 	if err != nil {
 		log.Error(fmt.Sprintf("Не удалось отправить ответ на команду /start: %v", err), nil)

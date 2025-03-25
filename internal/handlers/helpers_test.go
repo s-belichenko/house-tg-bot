@@ -96,7 +96,7 @@ var dpGetGreeting = GetGreetingDataProvider{
 
 func TestGetGreetingName(t *testing.T) {
 	for testCase, data := range dpGetGreeting.testData {
-		r := getGreetingName(&data)
+		r := GetGreetingName(&data)
 
 		for _, problem := range deep.Equal(r, dpGetGreeting.expected[testCase]) {
 			t.Error(problem)
