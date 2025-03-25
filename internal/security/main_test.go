@@ -1,45 +1,12 @@
 package security
 
 import (
-	"github.com/go-test/deep"
 	"github.com/stretchr/testify/assert"
 	"testing"
 
 	tele "gopkg.in/telebot.v4"
 	mocks "s-belichenko/ilovaiskaya2-bot/mocks/internal_/handlers"
 )
-
-type DataProviderAllowedIDs struct {
-	IDs      map[string]string
-	expected map[string]TeleIDList
-}
-
-// TODO: Начать тестировать запись предупреждений в журнал
-var dpIDs = &DataProviderAllowedIDs{
-	IDs: map[string]string{
-		"Непустой список":             "123, -123, 0",
-		"Пустой список":               "",
-		"Список с неверным элементом": "123, -123, sss",
-	},
-	expected: map[string]TeleIDList{
-		"Непустой список":             {TeleID(123), TeleID(-123), TeleID(0)},
-		"Пустой список":               {},
-		"Список с неверным элементом": {TeleID(123), TeleID(-123)},
-	},
-}
-
-// TestSuccessGetAllowedIDs Проверка успешного получения валидных идентификаторов пользователей и чатов
-func TestSuccessGetAllowedIDs(t *testing.T) {
-	for testCaseIndex, allowedIDsString := range dpIDs.IDs {
-		t.Run(testCaseIndex, func(t *testing.T) {
-			actual := getAllowedIDs(allowedIDsString)
-
-			for _, problem := range deep.Equal(actual, dpIDs.expected[testCaseIndex]) {
-				t.Error(problem)
-			}
-		})
-	}
-}
 
 type DataProviderIsBotHouse struct {
 	testData map[string]struct {

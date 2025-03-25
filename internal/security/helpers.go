@@ -1,30 +1,11 @@
 package security
 
 import (
-	"fmt"
 	"strconv"
 	"strings"
 
 	tele "gopkg.in/telebot.v4"
 )
-
-// getAllowedIDs Получает из текстового списка идентификаторов валидные
-func getAllowedIDs(IDs string) TeleIDList {
-	var allowedIDs TeleIDList
-	allowedIDs = make(TeleIDList, 0)
-	if IDs != "" {
-		userIDs := strings.Split(IDs, ",")
-		for _, idStr := range userIDs {
-			if id, err := parseChatID(idStr); err == nil {
-				allowedIDs = append(allowedIDs, id)
-			} else {
-				log.Warn(fmt.Sprintf("Не удалось распознать идентфикатор %s", idStr), nil)
-			}
-		}
-	}
-
-	return allowedIDs
-}
 
 func parseChatID(s string) (TeleID, error) {
 	idStr := strings.TrimSpace(s)

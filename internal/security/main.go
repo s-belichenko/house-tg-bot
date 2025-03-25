@@ -16,10 +16,9 @@ type TeleContext interface {
 }
 
 type Config struct {
-	BotAdminsIDs         TeleIDList `env:"CHAT_ADMINS"`
-	AdministrationChatID TeleID     `env:"ADMINISTRATION_CHAT_ID"`
-	HouseChatId          TeleID     `env:"HOUSE_CHAT_ID"`   // Домовой чат, управляемый ботом
-	HomeThreadBot        int        `env:"HOME_THREAD_BOT"` // Тема в супергруппе, где нет ограничений для бота
+	AdministrationChatID TeleID `env:"ADMINISTRATION_CHAT_ID"`
+	HouseChatId          TeleID `env:"HOUSE_CHAT_ID"`   // Домовой чат, управляемый ботом
+	HomeThreadBot        int    `env:"HOME_THREAD_BOT"` // Тема в супергруппе, где нет ограничений для бота
 	LogStreamName        string
 }
 
@@ -38,12 +37,6 @@ func initConfig() {
 	if err != nil {
 		fmt.Printf("Error reading Bot config: %v", err)
 	}
-}
-
-// SetValue сеттер для загрузки в конфигурацию типа TeleIDList
-func (f *TeleIDList) SetValue(s string) error {
-	*f = getAllowedIDs(s)
-	return nil
 }
 
 // SetValue сеттер для загрузки в конфигурацию типа TeleID
