@@ -10,7 +10,7 @@ import (
 	"time"
 )
 
-const usernameRegex = `^(@)(?:[a-z_0-9]){5,64}$`
+const usernameRegex = `^(?:[a-z_0-9]){5,64}$`
 const userIDRegex = `^[0-9]+$`
 
 func getGreetingName(u *tele.User) string {

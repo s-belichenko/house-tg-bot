@@ -43,21 +43,21 @@ type ParseUsernameDataProvider struct {
 
 var dpUsername = ParseUsernameDataProvider{
 	testData: map[string]string{
-		"Валидный username":            "@username1",
-		"Слишком короткий username":    "@user",
-		"Минимально короткий username": "@usern",
+		"Валидный username":            "username1",
+		"username с собачкой":          "@username1",
+		"Слишком короткий username":    "user",
+		"Минимально короткий username": "usern",
 		"Слишком длинный username":     "@useruseruseruseruseruseruseruseruseruseruseruseruseruseruseruseru1useruseruseruseruseruseruseruseruseruseruseruseruseruseruseruseru1",
 		"Пустая строка":                "",
-		"Username без собачки":         "username2",
-		"Username с пробелом":          "@username2 ",
+		"Username с пробелом":          "username2 ",
 	},
 	expected: map[string]string{
-		"Валидный username":            "@username1",
+		"Валидный username":            "username1",
+		"username с собачкой":          "",
 		"Слишком короткий username":    "",
-		"Минимально короткий username": "@usern",
+		"Минимально короткий username": "usern",
 		"Слишком длинный username":     "",
 		"Пустая строка":                "",
-		"Username без собачки":         "",
 		"Username с пробелом":          "",
 	},
 }
