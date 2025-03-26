@@ -108,5 +108,5 @@ func Handler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	bot.ProcessUpdate(update)
+	go bot.ProcessUpdate(update)
 }
