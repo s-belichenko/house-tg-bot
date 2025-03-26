@@ -32,46 +32,25 @@ func CommandMuteHandler(c tele.Context) error {
 	f := strings.Fields(d)
 
 	switch len(f) {
-	case 0:
-		log.Warn(fmt.Sprintf("Вызов команды /mute без аргументов"), intLog.LogContext{
-			"arguments_string": d,
-		})
-		if err := c.Reply(fmt.Sprintf("Верный формат команды: %s", muteCommandFormat), tele.ModeHTML); err != nil {
-			log.Error(fmt.Sprintf("Не удалось отправить подсказку по команде /mute: %v", err), intLog.LogContext{
-				"message": c.Message(),
-			})
-		}
-		return nil
 	case 1:
-		user := createUserViolator(c, f[0])
-		if user == nil {
-			return nil
-		}
-		violator = &tele.ChatMember{
-			User:   user,
-			Rights: tele.NoRights(),
+		if user := createUserViolator(c, f[0]); user != nil {
+			violator = &tele.ChatMember{
+				User:   user,
+				Rights: tele.NoRights(),
+			}
 		}
 	case 2:
-		user := createUserViolator(c, f[0])
-		if user == nil {
-			return nil
+		if user := createUserViolator(c, f[0]); user != nil {
+			violator = &tele.ChatMember{
+				User:            user,
+				Rights:          tele.NoRights(),
+				RestrictedUntil: createUnixTimeFromDays(f[1]),
+			}
 		}
-		violator = &tele.ChatMember{
-			User:            user,
-			Rights:          tele.NoRights(),
-			RestrictedUntil: createUnixTimeFromDays(f[1]),
-		}
-	default:
-		if err := c.Reply(fmt.Sprintf("Верный формат команды: %s", muteCommandFormat), tele.ModeHTML); err != nil {
-			log.Error(fmt.Sprintf("Не удалось отправить подсказку по команде /mute: %v", err), intLog.LogContext{
-				"message": c.Message(),
-			})
-		}
-		return nil
 	}
 	if violator == nil {
-		if err := c.Reply("Не удалось ограничить пользователя."); err != nil {
-			log.Error(fmt.Sprintf("Не удалось ограничить пользователя: %v", err), intLog.LogContext{
+		if err := c.Reply(fmt.Sprintf("Верный формат команды: %s", muteCommandFormat), tele.ModeHTML); err != nil {
+			log.Error(fmt.Sprintf("Не удалось отправить подсказку по команде /mute: %v", err), intLog.LogContext{
 				"message": c.Message(),
 			})
 		}
@@ -87,12 +66,9 @@ func CommandMuteHandler(c tele.Context) error {
 				"message": c.Message(),
 			})
 		}
-
 		return nil
 	}
-	log.Debug("Успешно отправлен запрос на ограничение пользователя", intLog.LogContext{
-		"violator": violator,
-	})
+
 	if err := c.Reply("Пользователь ограничен."); err != nil {
 		log.Error(fmt.Sprintf("Не удалось уведомить что пользователь ограничен: %v", err), intLog.LogContext{
 			"message": c.Message(),
@@ -114,33 +90,14 @@ func CommandUnmuteHandler(c tele.Context) error {
 	d := c.Data()
 	f := strings.Fields(d)
 	switch len(f) {
-	case 0:
-		log.Warn(fmt.Sprintf("Вызов команды /unmute без аргументов"), intLog.LogContext{
-			"arguments_string": d,
-		})
-		if err := c.Reply(fmt.Sprintf("Верный формат команды: %s", unmuteCommandFormat), tele.ModeHTML); err != nil {
-			log.Error(fmt.Sprintf("Не удалось отправить подсказку по команде /unmute: %v", err), intLog.LogContext{
-				"message": c.Message(),
-			})
-		}
-		return nil
 	case 1:
-		user := createUserViolator(c, f[0])
-		if user == nil {
-			return nil
+		if user := createUserViolator(c, f[0]); user != nil {
+			violator = &tele.ChatMember{User: user, Rights: tele.NoRestrictions()}
 		}
-		violator = &tele.ChatMember{User: user, Rights: tele.NoRestrictions()}
-	default:
-		if err := c.Reply(fmt.Sprintf("Верный формат команды: %s", muteCommandFormat), tele.ModeHTML); err != nil {
-			log.Error(fmt.Sprintf("Не удалось отправить подсказку по команде /unmute: %v", err), intLog.LogContext{
-				"message": c.Message(),
-			})
-		}
-		return nil
 	}
 	if violator == nil {
-		if err := c.Reply("Не удалось снять ограничения с пользователя."); err != nil {
-			log.Error(fmt.Sprintf("Не удалось ограничения с пользователя: %v", err), intLog.LogContext{
+		if err := c.Reply(fmt.Sprintf("Верный формат команды: %s", unmuteCommandFormat), tele.ModeHTML); err != nil {
+			log.Error(fmt.Sprintf("Не удалось отправить подсказку по команде /unmute: %v", err), intLog.LogContext{
 				"message": c.Message(),
 			})
 		}
@@ -156,12 +113,9 @@ func CommandUnmuteHandler(c tele.Context) error {
 				"message": c.Message(),
 			})
 		}
-
 		return nil
 	}
-	log.Debug("Успешно отправлен запрос на снятие ограничений", intLog.LogContext{
-		"violator": violator,
-	})
+
 	if err := c.Reply("Сняты ограничения с пользователя."); err != nil {
 		log.Error(fmt.Sprintf("Не удалось уведомить что сняты ограничения с пользователя: %v", err), intLog.LogContext{
 			"message": c.Message(),
@@ -175,7 +129,6 @@ func CommandUnmuteHandler(c tele.Context) error {
 		"admin_last_name":  c.Message().Sender.LastName,
 		"violator":         violator,
 	})
-
 	return nil
 }
 
@@ -184,39 +137,21 @@ func CommandBanHandler(c tele.Context) error {
 	d := c.Data()
 	f := strings.Fields(d)
 	switch len(f) {
-	case 0:
+	case 1:
+		if user := createUserViolator(c, f[0]); user != nil {
+			violator = &tele.ChatMember{User: user, RestrictedUntil: tele.Forever()}
+		}
+	case 2:
+		if user := createUserViolator(c, f[0]); user != nil {
+			violator = &tele.ChatMember{User: user, RestrictedUntil: createUnixTimeFromDays(f[1])}
+		}
+	}
+	if violator == nil {
 		log.Warn(fmt.Sprintf("Вызов команды /ban без аргументов"), intLog.LogContext{
 			"arguments_string": d,
 		})
 		if err := c.Reply(fmt.Sprintf("Верный формат команды: %s", banCommandFormat), tele.ModeHTML); err != nil {
 			log.Error(fmt.Sprintf("Не удалось отправить подсказку по команде /ban: %v", err), intLog.LogContext{
-				"message": c.Message(),
-			})
-		}
-		return nil
-	case 1:
-		user := createUserViolator(c, f[0])
-		if user == nil {
-			return nil
-		}
-		violator = &tele.ChatMember{User: user, RestrictedUntil: tele.Forever()}
-	case 2:
-		user := createUserViolator(c, f[0])
-		if user == nil {
-			return nil
-		}
-		violator = &tele.ChatMember{User: user, RestrictedUntil: createUnixTimeFromDays(f[1])}
-	default:
-		if err := c.Reply(fmt.Sprintf("Верный формат команды: %s", banCommandFormat), tele.ModeHTML); err != nil {
-			log.Error(fmt.Sprintf("Не удалось отправить подсказку по команде /ban: %v", err), intLog.LogContext{
-				"message": c.Message(),
-			})
-		}
-		return nil
-	}
-	if violator == nil {
-		if err := c.Reply("Не удалось заблокировать пользователя."); err != nil {
-			log.Error(fmt.Sprintf("Не удалось заблокировать пользователя: %v", err), intLog.LogContext{
 				"message": c.Message(),
 			})
 		}
@@ -232,12 +167,9 @@ func CommandBanHandler(c tele.Context) error {
 				"message": c.Message(),
 			})
 		}
-
 		return nil
 	}
-	log.Debug("Успешно отправлен запрос на блокировку", intLog.LogContext{
-		"violator": violator,
-	})
+
 	if err := c.Reply("Пользователь заблокирован."); err != nil {
 		log.Error(fmt.Sprintf("Не удалось уведомить что пользователь заблокирован: %v", err), intLog.LogContext{
 			"message": c.Message(),
@@ -258,7 +190,10 @@ func CommandUnbanHandler(c tele.Context) error {
 	d := c.Data()
 	f := strings.Fields(d)
 	switch len(f) {
-	case 0:
+	case 1:
+		violator = createUserViolator(c, f[0])
+	}
+	if violator == nil {
 		log.Warn(fmt.Sprintf("Вызов команды /unban без аргументов"), intLog.LogContext{
 			"arguments_string": d,
 		})
@@ -267,24 +202,6 @@ func CommandUnbanHandler(c tele.Context) error {
 				"message": c.Message(),
 			})
 		}
-		return nil
-	case 1:
-		violator = createUserViolator(c, f[0])
-	default:
-		if err := c.Reply(fmt.Sprintf("Верный формат команды: %s", banCommandFormat), tele.ModeHTML); err != nil {
-			log.Error(fmt.Sprintf("Не удалось отправить подсказку по команде /unban: %v", err), intLog.LogContext{
-				"message": c.Message(),
-			})
-		}
-		return nil
-	}
-	if violator == nil {
-		if err := c.Reply("Не удалось разблокировать пользователя."); err != nil {
-			log.Error(fmt.Sprintf("Не удалось разблокировать пользователя: %v", err), intLog.LogContext{
-				"message": c.Message(),
-			})
-		}
-		return nil
 	}
 	if err := c.Bot().Unban(&tele.Chat{ID: config.HouseChatId}, violator, true); err != nil {
 		log.Error(fmt.Sprintf("Не удалось разблокировать пользователя: %v", err), intLog.LogContext{
@@ -296,12 +213,9 @@ func CommandUnbanHandler(c tele.Context) error {
 				"message": c.Message(),
 			})
 		}
-
 		return nil
 	}
-	log.Debug("Успешно отправлен запрос на разблокировку", intLog.LogContext{
-		"violator": violator,
-	})
+
 	if err := c.Reply("Пользователь разблокирован."); err != nil {
 		log.Error(fmt.Sprintf("Не удалось уведомить что пользователь разблокирован: %v", err), intLog.LogContext{
 			"message": c.Message(),

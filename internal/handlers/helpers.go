@@ -123,7 +123,7 @@ func createUserViolator(c tele.Context, s string) *tele.User {
 	if userID := parseUserID(s); userID > 0 {
 		return &tele.User{ID: userID}
 	} else {
-		// FIXME: Если не найдется способа получать user_id по username, удалить закоментированный код ниже.
+		// FIXME: Если не найдется способа получать user_id по username, удалить закомментированный код ниже.
 		//username := parseUsername(s)
 		//if username != "" {
 		//	if chat, err := c.Bot().ChatByUsername(username); err != nil {
