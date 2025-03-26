@@ -9,10 +9,10 @@ import (
 )
 
 const (
-	muteCommandFormat   = `/mute &lt;username | user_id&gt; [days] (от 1 до 366, иначе бессрочно)`
-	unmuteCommandFormat = `/unmute &lt;username | user_id&gt;`
-	banCommandFormat    = `/ban &lt;username | user_id&gt; [days] (от 1 до 366, иначе бессрочно)`
-	unbanCommandFormat  = `/unban &lt;username | user_id&gt;`
+	muteCommandFormat   = `/mute &lt;user_id&gt; [days] (от 1 до 366, иначе бессрочно)`
+	unmuteCommandFormat = `/unmute &lt;user_id&gt;`
+	banCommandFormat    = `/ban &lt;user_id&gt; [days] (от 1 до 366, иначе бессрочно)`
+	unbanCommandFormat  = `/unban &lt;user_id&gt;`
 )
 
 var (
