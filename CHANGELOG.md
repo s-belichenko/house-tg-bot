@@ -3,7 +3,7 @@
 Формат этого файла соответствует рекомендациям [Keep a Changelog](https://keepachangelog.com/ru/1.0.0/).
 Проект использует [семантическое версионирование](http://semver.org/spec/v2.0.0.html).
 
-## Не выпущено
+## 1.8.0 – 26.03.2025
 
 - Пакет logger получил интерфейс Logger.
 - Команды `/restrict` и `/remove_restrict` переименованы в `/mute` и `/unmute` соответственно.
