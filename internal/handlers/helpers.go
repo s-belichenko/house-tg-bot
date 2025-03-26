@@ -64,7 +64,7 @@ func GenerateMessageLink(chat *tele.Chat, messageID int) string {
 
 func setCommands(c tele.Context, commands []tele.Command, scope tele.CommandScope) {
 	if err := c.Bot().SetCommands(commands, scope); err != nil {
-		log.Fatal(fmt.Sprintf("Не удалось инициализировать команды бота: %v", err), intLog.LogContext{
+		log.Fatal(fmt.Sprintf("Не удалось установить команды бота: %v", err), intLog.LogContext{
 			"commands": commands,
 			"scope":    scope,
 		})
@@ -72,6 +72,18 @@ func setCommands(c tele.Context, commands []tele.Command, scope tele.CommandScop
 		log.Info("Успешно установлены команды бота", intLog.LogContext{
 			"commands": commands,
 			"scope":    scope,
+		})
+	}
+}
+
+func deleteCommands(c tele.Context, scope tele.CommandScope) {
+	if err := c.Bot().DeleteCommands(scope); err != nil {
+		log.Fatal(fmt.Sprintf("Не удалось удалить команды бота: %v", err), intLog.LogContext{
+			"scope": scope,
+		})
+	} else {
+		log.Info("Успешно удалены команды бота", intLog.LogContext{
+			"scope": scope,
 		})
 	}
 }

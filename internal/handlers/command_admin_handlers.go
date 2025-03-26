@@ -22,7 +22,8 @@ var (
 	BanCommand           = tele.Command{Text: "ban", Description: "Заблокировать пользователя из домового чата"}
 	UnbanCommand         = tele.Command{Text: "unban", Description: "Разблокировать пользователя из домового чата"}
 
-	SetCommandsCommand = tele.Command{Text: "set_commands", Description: "Установить команды бота"}
+	SetCommandsCommand    = tele.Command{Text: "set_commands", Description: "Установить команды бота"}
+	DeleteCommandsCommand = tele.Command{Text: "delete_commands", Description: "Удалить команды бота"}
 )
 
 func CommandMuteHandler(c tele.Context) error {
@@ -364,8 +365,25 @@ func CommandSetCommandsHandler(c tele.Context) error {
 		tele.CommandScope{Type: tele.CommandScopeChat, ChatID: config.AdministrationChatID})
 	// Для админов админского чата
 	setCommands(c,
-		[]tele.Command{SetCommandsCommand, HelpAdminChatCommand, MuteCommand, UnmuteCommand, BanCommand, UnbanCommand},
+		[]tele.Command{SetCommandsCommand, DeleteCommandsCommand, HelpAdminChatCommand, MuteCommand, UnmuteCommand, BanCommand, UnbanCommand},
 		tele.CommandScope{Type: tele.CommandScopeChatAdmin, ChatID: config.AdministrationChatID})
+
+	return nil
+}
+
+func CommandDeleteCommandsHandler(c tele.Context) error {
+	// По умолчанию
+	deleteCommands(c, tele.CommandScope{Type: tele.CommandScopeDefault})
+	// Для личных чатов со всеми подряд
+	deleteCommands(c, tele.CommandScope{Type: tele.CommandScopeAllPrivateChats})
+	// Для участников домового чата
+	deleteCommands(c, tele.CommandScope{Type: tele.CommandScopeChat, ChatID: config.HouseChatId})
+	// Для админов домового чата
+	deleteCommands(c, tele.CommandScope{Type: tele.CommandScopeChatAdmin, ChatID: config.HouseChatId})
+	// Для участников админского чата
+	deleteCommands(c, tele.CommandScope{Type: tele.CommandScopeChat, ChatID: config.AdministrationChatID})
+	// Для админов админского чата
+	deleteCommands(c, tele.CommandScope{Type: tele.CommandScopeChatAdmin, ChatID: config.AdministrationChatID})
 
 	return nil
 }

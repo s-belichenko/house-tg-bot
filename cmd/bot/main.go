@@ -79,6 +79,8 @@ func registerBotCommandHandlers() {
 	bot.Handle("/"+hdls.ReportCommand.Text, hdls.CommandReportHandler, sec.HomeChatMiddleware)
 	// Административный чат
 	bot.Handle("/"+hdls.SetCommandsCommand.Text, hdls.CommandSetCommandsHandler, sec.AdminChatMiddleware)
+	bot.Handle("/"+hdls.DeleteCommandsCommand.Text, hdls.CommandDeleteCommandsHandler, sec.AdminChatMiddleware)
+
 	bot.Handle("/"+hdls.HelpAdminChatCommand.Text, hdls.CommandHelpAdminHandler, sec.AdminChatMiddleware)
 	bot.Handle("/"+hdls.MuteCommand.Text, hdls.CommandMuteHandler, sec.AdminChatMiddleware)
 	bot.Handle("/"+hdls.UnmuteCommand.Text, hdls.CommandUnmuteHandler, sec.AdminChatMiddleware)
