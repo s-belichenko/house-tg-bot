@@ -20,7 +20,9 @@ func CommandKeysHandler(c tele.Context) error {
 
 func CommandReportHandler(c tele.Context) error {
 	m := c.Message()
-
+	log.Debug("ReplyTo", intLog.LogContext{
+		"reply_to": m.ReplyTo,
+	})
 	if m.ReplyTo == nil {
 		if err := c.Reply("Пожалуйста, используйте эту команду в ответе на сообщение с нарушением. Подробнее: выполните /help в личной переписке с @lp_13x_bot."); err != nil {
 			log.Error(fmt.Sprintf("Не удалось отправить уточнение про команду /report: %v", err), nil)
