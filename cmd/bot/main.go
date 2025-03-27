@@ -35,10 +35,6 @@ func init() {
 	registerJoinRequestHandler()
 }
 
-func registerJoinRequestHandler() {
-	bot.Handle(tele.OnChatJoinRequest, hdls.JoinRequestHandler)
-}
-
 func initModule() {
 	err := cleanenv.ReadEnv(&config)
 	log = intLog.InitLog(config.LogStreamName)
@@ -86,6 +82,10 @@ func registerBotCommandHandlers() {
 	bot.Handle("/"+hdls.UnmuteCommand.Text, hdls.CommandUnmuteHandler, sec.AdminChatMiddleware)
 	bot.Handle("/"+hdls.BanCommand.Text, hdls.CommandBanHandler, sec.AdminChatMiddleware)
 	bot.Handle("/"+hdls.UnbanCommand.Text, hdls.CommandUnbanHandler, sec.AdminChatMiddleware)
+}
+
+func registerJoinRequestHandler() {
+	bot.Handle(tele.OnChatJoinRequest, hdls.JoinRequestHandler)
 }
 
 // Handler Функция-обработчик для Yandex Cloud Function

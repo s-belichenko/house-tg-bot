@@ -21,10 +21,7 @@ var (
 )
 
 type TeleContext interface {
-	Chat() *tele.Chat
-	Sender() *tele.User
-	Message() *tele.Message
-	Send(what interface{}, opts ...interface{}) error
+	tele.Context
 }
 
 func init() {

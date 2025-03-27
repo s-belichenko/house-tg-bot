@@ -33,14 +33,14 @@ func CommandMuteHandler(c tele.Context) error {
 
 	switch len(f) {
 	case 1:
-		if user := createUserViolator(c, f[0]); user != nil {
+		if user := createUserViolator(f[0]); user != nil {
 			violator = &tele.ChatMember{
 				User:   user,
 				Rights: tele.NoRights(),
 			}
 		}
 	case 2:
-		if user := createUserViolator(c, f[0]); user != nil {
+		if user := createUserViolator(f[0]); user != nil {
 			violator = &tele.ChatMember{
 				User:            user,
 				Rights:          tele.NoRights(),
@@ -91,7 +91,7 @@ func CommandUnmuteHandler(c tele.Context) error {
 	f := strings.Fields(d)
 	switch len(f) {
 	case 1:
-		if user := createUserViolator(c, f[0]); user != nil {
+		if user := createUserViolator(f[0]); &user != nil {
 			violator = &tele.ChatMember{User: user, Rights: tele.NoRestrictions()}
 		}
 	}
@@ -138,11 +138,11 @@ func CommandBanHandler(c tele.Context) error {
 	f := strings.Fields(d)
 	switch len(f) {
 	case 1:
-		if user := createUserViolator(c, f[0]); user != nil {
+		if user := createUserViolator(f[0]); user != nil {
 			violator = &tele.ChatMember{User: user, RestrictedUntil: tele.Forever()}
 		}
 	case 2:
-		if user := createUserViolator(c, f[0]); user != nil {
+		if user := createUserViolator(f[0]); user != nil {
 			violator = &tele.ChatMember{User: user, RestrictedUntil: createUnixTimeFromDays(f[1])}
 		}
 	}
@@ -191,7 +191,7 @@ func CommandUnbanHandler(c tele.Context) error {
 	f := strings.Fields(d)
 	switch len(f) {
 	case 1:
-		violator = createUserViolator(c, f[0])
+		violator = createUserViolator(f[0])
 	}
 	if violator == nil {
 		log.Warn(fmt.Sprintf("Вызов команды /unban без аргументов"), intLog.LogContext{

@@ -62,7 +62,7 @@ func GenerateMessageLink(chat *tele.Chat, messageID int) string {
 	}
 }
 
-func setCommands(c tele.Context, commands []tele.Command, scope tele.CommandScope) {
+func setCommands(c TeleContext, commands []tele.Command, scope tele.CommandScope) {
 	if err := c.Bot().SetCommands(commands, scope); err != nil {
 		log.Fatal(fmt.Sprintf("Не удалось установить команды бота: %v", err), intLog.LogContext{
 			"commands": commands,
@@ -76,7 +76,7 @@ func setCommands(c tele.Context, commands []tele.Command, scope tele.CommandScop
 	}
 }
 
-func deleteCommands(c tele.Context, scope tele.CommandScope) {
+func deleteCommands(c TeleContext, scope tele.CommandScope) {
 	if err := c.Bot().DeleteCommands(scope); err != nil {
 		log.Fatal(fmt.Sprintf("Не удалось удалить команды бота: %v", err), intLog.LogContext{
 			"scope": scope,
@@ -119,7 +119,7 @@ func parseDays(s string) int64 {
 	}
 }
 
-func createUserViolator(c tele.Context, s string) *tele.User {
+func createUserViolator(s string) *tele.User {
 	if userID := parseUserID(s); userID > 0 {
 		return &tele.User{ID: userID}
 	} else {
