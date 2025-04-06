@@ -29,7 +29,8 @@ func CommandReportHandler(ctx tele.Context) error {
 	})
 
 	if m.ReplyTo == nil {
-		if err := ctx.Reply("Пожалуйста, используйте эту команду в ответе на сообщение с нарушением. Подробнее: выполните /help в личной переписке с @lp_13x_bot."); err != nil {
+		if err := ctx.Reply("Пожалуйста, используйте эту команду в ответе на сообщение с нарушением. " +
+			"Подробнее: выполните /help в личной переписке с @lp_13x_bot."); err != nil {
 			pkgLog.Error(
 				fmt.Sprintf("Не удалось отправить уточнение про команду /report: %v", err),
 				nil,

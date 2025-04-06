@@ -49,9 +49,10 @@ func TestParseUsername(t *testing.T) {
 			"username с собачкой":          "@username1",
 			"Слишком короткий username":    "user",
 			"Минимально короткий username": "usern",
-			"Слишком длинный username":     "@useruseruseruseruseruseruseruseruseruseruseruseruseruseruseruseru1useruseruseruseruseruseruseruseruseruseruseruseruseruseruseruseru1",
-			"Пустая строка":                "",
-			"Username с пробелом":          "username2 ",
+			"Слишком длинный username": "@useruseruseruseruseruseruseruseruseruseruseruseruseruseruseruseru" +
+				"1useruseruseruseruseruseruseruseruseruseruseruseruseruseruseruseru1",
+			"Пустая строка":       "",
+			"Username с пробелом": "username2 ",
 		},
 		expected: map[string]string{
 			"Валидный username":            "username1",
