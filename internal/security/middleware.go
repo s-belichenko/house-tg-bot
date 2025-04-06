@@ -99,9 +99,10 @@ func AdminChatMiddleware(next tele.HandlerFunc) tele.HandlerFunc {
 		if member, err := ctx.Bot().ChatMemberOf(ctx.Chat(), ctx.Sender()); err != nil {
 			log.Error(
 				fmt.Sprintf(
-					"Не удалось получить информацию об отправителе %q команды %q",
+					"Не удалось получить информацию об отправителе %q команды %q: %v",
 					hndls.GetGreetingName(ctx.Sender()),
 					getCommandName(ctx.Message()),
+					err,
 				),
 				pkgLog.LogContext{"user_id": ctx.Sender().ID},
 			)

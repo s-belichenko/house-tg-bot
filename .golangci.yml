@@ -18,7 +18,6 @@ linters:
     - funlen
     - wrapcheck
     - nestif
-    - nilerr
   settings:
     tagliatelle:
       case:
