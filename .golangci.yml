@@ -10,16 +10,15 @@ linters:
     - perfsprint
     - depguard
     - paralleltest
+    - mnd
+    - intrange
     # TODO: Поправить и включить проверку.
     - exhaustruct
-    - intrange
     - gochecknoglobals
     - funlen
     - wrapcheck
-    - mnd
     - nestif
     - nilerr
-    - staticcheck
   settings:
     tagliatelle:
       case:

@@ -132,7 +132,7 @@ func CommandUnmuteHandler(ctx tele.Context) error {
 
 	f := strings.Fields(d)
 	if len(f) == 1 {
-		if user := createUserViolator(f[0]); &user != nil {
+		if user := createUserViolator(f[0]); user != nil {
 			violator = &tele.ChatMember{User: user, Rights: tele.NoRestrictions()}
 		}
 	}
