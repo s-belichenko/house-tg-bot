@@ -4,6 +4,7 @@ import (
 	tele "gopkg.in/telebot.v4"
 )
 
+// GetMiddleware FIXME: вынести из пакета.
 func GetMiddleware(logger Logger) tele.MiddlewareFunc {
 	return func(next tele.HandlerFunc) tele.HandlerFunc {
 		return func(c tele.Context) error {

@@ -3,7 +3,6 @@ package logger
 import (
 	"encoding/json"
 	"log"
-	"os"
 	"time"
 )
 
@@ -15,18 +14,12 @@ type Record struct {
 	Context   LogContext `json:"extra"`
 }
 
-func InitLog(logStreamName string) *YandexLogger {
-	return newYandexLogger(logStreamName)
-}
-
 type YandexLogger struct {
 	stream string
 	logger *log.Logger
 }
 
-func newYandexLogger(streamName string) *YandexLogger {
-	logger := log.New(os.Stdout, "", 0) // Отключаем все флаги
-
+func newYandexLogger(streamName string, logger *log.Logger) *YandexLogger {
 	return &YandexLogger{
 		stream: streamName,
 		logger: logger,

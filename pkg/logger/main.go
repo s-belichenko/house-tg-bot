@@ -1,5 +1,10 @@
 package logger
 
+import (
+	"log"
+	"os"
+)
+
 type LogLevel string
 
 type Logger interface {
@@ -21,3 +26,9 @@ const (
 )
 
 type LogContext map[string]interface{}
+
+func InitLog(logStreamName string) *YandexLogger {
+	logger := log.New(os.Stdout, "", 0) // Отключаем все флаги.
+
+	return newYandexLogger(logStreamName, logger)
+}
