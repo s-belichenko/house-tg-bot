@@ -54,6 +54,7 @@ func GenerateMessageLink(chat *tele.Chat, messageID int) string {
 			if chatID < 0 {
 				chatID = -chatID
 			}
+
 			if chatID > 1000000000000 {
 				chatID -= 1000000000000
 			}

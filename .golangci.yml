@@ -9,6 +9,7 @@ linters:
     - gomoddirectives
     - perfsprint
     - depguard
+    - paralleltest
     # TODO: Поправить и включить проверку.
     - exhaustruct
     - intrange
@@ -18,11 +19,9 @@ linters:
     - mnd
     - nestif
     - nilerr
-    - paralleltest
     - revive
     - staticcheck
     - varnamelen
-    - wsl
   settings:
     tagliatelle:
       case:

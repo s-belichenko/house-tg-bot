@@ -8,11 +8,10 @@ import (
 )
 
 func TestParseUserID(t *testing.T) {
-	type ParseUserIDDataProvider struct {
+	dpUserID := struct {
 		testData map[string]string
 		expected map[string]int64
-	}
-	dpUserID := ParseUserIDDataProvider{
+	}{
 		testData: map[string]string{
 			"Валидный user_id":      "123",
 			"Отрицательный user_id": "-123",
@@ -38,11 +37,10 @@ func TestParseUserID(t *testing.T) {
 }
 
 func TestParseUsername(t *testing.T) {
-	type ParseUsernameDataProvider struct {
+	dp := struct {
 		testData map[string]string
 		expected map[string]string
-	}
-	dp := ParseUsernameDataProvider{
+	}{
 		testData: map[string]string{
 			"Валидный username":            "username1",
 			"username с собачкой":          "@username1",
@@ -75,11 +73,10 @@ func TestParseUsername(t *testing.T) {
 }
 
 func TestCreateUserViolator(t *testing.T) {
-	type CreateUserViolatorDataProvider struct {
+	dp := struct {
 		testData map[string]string
 		expected map[string]*tele.User
-	}
-	dp := CreateUserViolatorDataProvider{
+	}{
 		testData: map[string]string{
 			"Валидный user_id": "123",
 			"Пустой user_id":   "",

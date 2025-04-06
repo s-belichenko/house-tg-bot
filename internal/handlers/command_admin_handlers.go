@@ -49,6 +49,7 @@ var (
 
 func CommandMuteHandler(ctx tele.Context) error {
 	var violator *tele.ChatMember
+
 	d := ctx.Data()
 
 	fields := strings.Fields(d)
@@ -126,6 +127,7 @@ func CommandMuteHandler(ctx tele.Context) error {
 
 func CommandUnmuteHandler(ctx tele.Context) error {
 	var violator *tele.ChatMember
+
 	d := ctx.Data()
 
 	f := strings.Fields(d)
@@ -191,6 +193,7 @@ func CommandUnmuteHandler(ctx tele.Context) error {
 
 func CommandBanHandler(ctx tele.Context) error {
 	var violator *tele.ChatMember
+
 	d := ctx.Data()
 
 	fields := strings.Fields(d)
@@ -212,6 +215,7 @@ func CommandBanHandler(ctx tele.Context) error {
 		pkgLog.Warn("Вызов команды /ban без аргументов", pkgLogger.LogContext{
 			"arguments_string": d,
 		})
+
 		if err := ctx.Reply(fmt.Sprintf("Верный формат команды: %s", banCommandFormat), tele.ModeHTML); err != nil {
 			pkgLog.Error(
 				fmt.Sprintf("Не удалось отправить подсказку по команде /ban: %v", err),
@@ -267,6 +271,7 @@ func CommandBanHandler(ctx tele.Context) error {
 
 func CommandUnbanHandler(ctx tele.Context) error {
 	var violator *tele.User
+
 	d := ctx.Data()
 
 	f := strings.Fields(d)
@@ -278,6 +283,7 @@ func CommandUnbanHandler(ctx tele.Context) error {
 		pkgLog.Warn("Вызов команды /unban без аргументов", pkgLogger.LogContext{
 			"arguments_string": d,
 		})
+
 		if err := ctx.Reply(fmt.Sprintf("Верный формат команды: %s", banCommandFormat), tele.ModeHTML); err != nil {
 			pkgLog.Error(
 				fmt.Sprintf("Не удалось отправить подсказку по команде /unban: %v", err),

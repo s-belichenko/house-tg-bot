@@ -134,10 +134,12 @@ func createRequest(question string) yandexgpt.YandexGPTRequest {
 
 func getRandomElement(slice []string) string {
 	var randomIndex int
+
 	randomInt, err := rand.Int(rand.Reader, big.NewInt(int64(len(slice))))
 	if err != nil {
 		pkgLog.Error(fmt.Sprintf("Ошибка генерации случайного числа: %v", err), nil)
 	}
+
 	randomIndex = int(randomInt.Int64())
 
 	return slice[randomIndex]

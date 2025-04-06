@@ -9,11 +9,10 @@ import (
 )
 
 func TestGetGreetingName(t *testing.T) {
-	type GetGreetingDataProvider struct {
+	dp := struct {
 		testData map[string]tele.User
 		expected map[string]string
-	}
-	dp := GetGreetingDataProvider{
+	}{
 		testData: map[string]tele.User{
 			"Все данные": {
 				Username:  "some_username",
