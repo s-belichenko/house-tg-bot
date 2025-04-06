@@ -105,6 +105,7 @@ func AdminChatMiddleware(next tele.HandlerFunc) tele.HandlerFunc {
 				),
 				pkgLog.LogContext{"user_id": ctx.Sender().ID},
 			)
+
 			return nil
 		} else if (tele.Creator != member.Role) && (tele.Administrator != member.Role) {
 			link := fmt.Sprintf("<a href=%q>ссылка</a>", hndls.GenerateMessageLink(ctx.Chat(), ctx.Message().ID))
