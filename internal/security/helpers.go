@@ -13,9 +13,9 @@ func parseChatID(s string) (TeleID, error) {
 		id, err := strconv.ParseInt(idStr, 10, 64)
 		if err == nil {
 			return TeleID(id), nil
-		} else {
-			return 0, err
 		}
+
+		return 0, err
 	}
 
 	return 0, nil

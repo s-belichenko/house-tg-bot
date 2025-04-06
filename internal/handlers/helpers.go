@@ -48,27 +48,27 @@ func GenerateMessageLink(chat *tele.Chat, messageID int) string {
 		if chat.Username != "" { // Проверяем, есть ли у чата username
 			// если есть username, формируем публичную ссылку
 			return fmt.Sprintf("https://t.me/%s/%d", chat.Username, messageID)
-		} else { // Если username нет, формируем приватную ссылку
-			// удаляем -100 из начала chat.ID
-			chatID := chat.ID
-			if chatID < 0 {
-				chatID = -chatID
-			}
-
-			if chatID > 1000000000000 {
-				chatID -= 1000000000000
-			}
-
-			return fmt.Sprintf("https://t.me/c/%d/%d", chatID, messageID)
 		}
-	} else {
-		pkgLog.Error("Невозможно сформировать ссылку для этого типа чата", pkgLogger.LogContext{
-			"chat":       chat,
-			"message_id": messageID,
-		})
 
-		return ""
+		// удаляем -100 из начала chat.ID
+		chatID := chat.ID
+		if chatID < 0 {
+			chatID = -chatID
+		}
+
+		if chatID > 1000000000000 {
+			chatID -= 1000000000000
+		}
+
+		return fmt.Sprintf("https://t.me/c/%d/%d", chatID, messageID)
 	}
+
+	pkgLog.Error("Невозможно сформировать ссылку для этого типа чата", pkgLogger.LogContext{
+		"chat":       chat,
+		"message_id": messageID,
+	})
+
+	return ""
 }
 
 func setCommands(c TeleContext, commands []tele.Command, scope tele.CommandScope) {
@@ -116,47 +116,19 @@ func parseUserID(str string) int64 {
 }
 
 func parseDays(s string) int64 {
-	if days, err := strconv.ParseInt(s, 10, 64); err != nil {
+	days, err := strconv.ParseInt(s, 10, 64)
+	if err != nil {
 		pkgLog.Error(fmt.Sprintf("Не удалось распарсить days %q в int64 %v", s, err), nil)
 
 		return 0
-	} else {
-		return days
 	}
+
+	return days
 }
 
 func createUserViolator(s string) *tele.User {
 	if userID := parseUserID(s); userID > 0 {
 		return &tele.User{ID: userID}
-	} else {
-		// FIXME: Если не найдется способа получать user_id по username, удалить закомментированный код ниже.
-		// username := parseUsername(s)
-		// if username != "" {
-		//	if chat, err := c.Bot().ChatByUsername(username); err != nil {
-		//		pkgLog.Error(fmt.Sprintf("Не удалось получить чат для блокировки пользователя: %v", err), pkgLog.LogContext{
-		//			"username": username,
-		//		})
-		//		return nil
-		//	} else if chat != nil {
-		//		return &tele.User{ID: chat.ID}
-		//	} else {
-		//		pkgLog.Warn(fmt.Sprintf("В команду /ban передан невалидный username или user_id"), pkgLog.LogContext{
-		//			"username_or_user_id": s,
-		//		})
-		//		if err := c.Reply(fmt.Sprintf(
-		//			"Не удалось распознать username нарушителя. Верный формат команды: %s",
-		//			muteCommandFormat,
-		//		), tele.ModeHTML); err != nil {
-		//			pkgLog.Error(fmt.Sprintf("Не удалось отправить подсказку по команде /ban: %v", err), pkgLog.LogContext{
-		//				"message": c.Message(),
-		//			})
-		//		}
-		//	}
-		// } else {
-		//	pkgLog.Error(fmt.Sprintf("Для администрирования не удалось определить user_id и username"), pkgLog.LogContext{
-		//		"text": s,
-		//	})
-		//}
 	}
 
 	return nil

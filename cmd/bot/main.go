@@ -12,18 +12,18 @@ import (
 	teleMid "gopkg.in/telebot.v4/middleware"
 	hdls "s-belichenko/ilovaiskaya2-bot/internal/handlers"
 	sec "s-belichenko/ilovaiskaya2-bot/internal/security"
-	pkgLog "s-belichenko/ilovaiskaya2-bot/pkg/logger"
+	pkgLogger "s-belichenko/ilovaiskaya2-bot/pkg/logger"
 )
 
 type ConfigBot struct {
 	BotToken             string `env:"TELEGRAM_BOT_TOKEN"`
-	AdministrationChatId int64  `env:"ADMINISTRATION_CHAT_ID"` // Чат администраторов, куда поступают уведомления и тп
+	AdministrationChatID int64  `env:"ADMINISTRATION_CHAT_ID"` // Чат администраторов, куда поступают уведомления и тп
 	LogStreamName        string
 }
 
 var (
 	bot    *tele.Bot
-	log    pkgLog.Logger
+	pkgLog pkgLogger.Logger
 	config = ConfigBot{LogStreamName: "main_stream"}
 )
 
@@ -36,12 +36,12 @@ func init() {
 }
 
 func initModule() {
-	log = pkgLog.InitLog(config.LogStreamName)
+	pkgLog = pkgLogger.InitLog(config.LogStreamName)
 
-	log.Debug("Start init module", nil)
+	pkgLog.Debug("Start init module", nil)
 
 	if err := cleanenv.ReadEnv(&config); err != nil {
-		log.Fatal(fmt.Sprintf("Не удалось прочитать конфигурацию ота: %v", err), nil)
+		pkgLog.Fatal(fmt.Sprintf("Не удалось прочитать конфигурацию ота: %v", err), nil)
 		os.Exit(1)
 	}
 }
@@ -49,11 +49,11 @@ func initModule() {
 func initBot() {
 	var err error
 
-	log.Debug("Start init bot", nil)
+	pkgLog.Debug("Start init bot", nil)
 
 	bot, err = tele.NewBot(tele.Settings{Token: config.BotToken})
 	if err != nil {
-		log.Fatal(fmt.Sprintf("Не удалось инициализировать бота: %v", err), nil)
+		pkgLog.Fatal(fmt.Sprintf("Не удалось инициализировать бота: %v", err), nil)
 		os.Exit(1)
 	}
 
@@ -61,15 +61,15 @@ func initBot() {
 }
 
 func setBotMiddleware() {
-	log.Debug("Start use middleware bot", nil)
-	bot.Use(teleMid.Recover(func(err error, context tele.Context) {
-		log.Fatal(fmt.Sprintf("Bot fatal: %v", err), nil)
+	pkgLog.Debug("Start use middleware bot", nil)
+	bot.Use(teleMid.Recover(func(err error, _ tele.Context) {
+		pkgLog.Fatal(fmt.Sprintf("Bot fatal: %v", err), nil)
 	}))
-	bot.Use(pkgLog.GetMiddleware(log))
+	bot.Use(pkgLogger.GetMiddleware(pkgLog))
 }
 
 func registerBotCommandHandlers() {
-	log.Debug("Start register command handlers", nil)
+	pkgLog.Debug("Start register command handlers", nil)
 	// Личные сообщения.
 	bot.Handle("/"+hdls.StartCommand.Text, hdls.CommandStartHandler, sec.AllPrivateChatsMiddleware)
 	bot.Handle("/"+hdls.HelpCommand.Text, hdls.CommandHelpHandler, sec.AllPrivateChatsMiddleware)

@@ -44,11 +44,12 @@ func initConfig() {
 
 // SetValue сеттер для загрузки в конфигурацию типа TeleID.
 func (f *TeleID) SetValue(s string) error {
-	if r, err := parseChatID(s); err != nil {
-		return nil
-	} else {
-		*f = r
+	r, err := parseChatID(s)
+	if err != nil {
+		return err
 	}
+
+	*f = r
 
 	return nil
 }

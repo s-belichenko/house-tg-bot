@@ -19,7 +19,6 @@ linters:
     - mnd
     - nestif
     - nilerr
-    - revive
     - staticcheck
   settings:
     tagliatelle:
