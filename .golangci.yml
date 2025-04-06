@@ -22,7 +22,6 @@ linters:
     - revive
     - staticcheck
     - tagliatelle
-    - testpackage
     - nlreturn
     - tagalign
     - varnamelen
