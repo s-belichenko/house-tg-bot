@@ -11,11 +11,13 @@ import (
 	pkgLogger "s-belichenko/ilovaiskaya2-bot/pkg/logger"
 )
 
-const usernameRegex = `^(?:[a-z_0-9]){5,64}$`
-const userIDRegex = `^[0-9]+$`
+const (
+	usernameRegex = `^(?:[a-z_0-9]){5,64}$`
+	userIDRegex   = `^[0-9]+$`
+)
 
 func GetGreetingName(user *tele.User) string {
-	var name = "сосед"
+	name := "сосед"
 
 	if user.Username != "" {
 		return "@" + user.Username
@@ -41,7 +43,8 @@ func GetGreetingName(user *tele.User) string {
 }
 
 func GenerateMessageLink(chat *tele.Chat, messageID int) string {
-	if chat.Type == tele.ChatChannel || chat.Type == tele.ChatSuperGroup || chat.Type == tele.ChatGroup {
+	if chat.Type == tele.ChatChannel || chat.Type == tele.ChatSuperGroup ||
+		chat.Type == tele.ChatGroup {
 		if chat.Username != "" { // Проверяем, есть ли у чата username
 			// если есть username, формируем публичную ссылку
 			return fmt.Sprintf("https://t.me/%s/%d", chat.Username, messageID)
@@ -69,10 +72,13 @@ func GenerateMessageLink(chat *tele.Chat, messageID int) string {
 
 func setCommands(c TeleContext, commands []tele.Command, scope tele.CommandScope) {
 	if err := c.Bot().SetCommands(commands, scope); err != nil {
-		pkgLog.Fatal(fmt.Sprintf("Не удалось установить команды бота: %v", err), pkgLogger.LogContext{
-			"commands": commands,
-			"scope":    scope,
-		})
+		pkgLog.Fatal(
+			fmt.Sprintf("Не удалось установить команды бота: %v", err),
+			pkgLogger.LogContext{
+				"commands": commands,
+				"scope":    scope,
+			},
+		)
 	} else {
 		pkgLog.Info("Успешно установлены команды бота", pkgLogger.LogContext{
 			"commands": commands,

@@ -41,12 +41,15 @@ lastname: %s
 `, ctx.Sender().ID, ctx.Sender().Username, ctx.Sender().FirstName, ctx.Sender().LastName)
 
 	if _, err := ctx.Bot().Send(adminChat, requestMsg); err != nil {
-		pkgLog.Error(fmt.Sprintf("Не удалось ответить на заявку на вступление: %v", err), pkgLogger.LogContext{
-			"user_id":   ctx.Sender().ID,
-			"username":  ctx.Sender().Username,
-			"firstname": ctx.Sender().FirstName,
-			"lastname":  ctx.Sender().LastName,
-		})
+		pkgLog.Error(
+			fmt.Sprintf("Не удалось ответить на заявку на вступление: %v", err),
+			pkgLogger.LogContext{
+				"user_id":   ctx.Sender().ID,
+				"username":  ctx.Sender().Username,
+				"firstname": ctx.Sender().FirstName,
+				"lastname":  ctx.Sender().LastName,
+			},
+		)
 	}
 
 	return nil

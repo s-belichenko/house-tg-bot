@@ -41,10 +41,10 @@ linters:
 formatters:
   enable:
     - gci
-  #    - gofmt
-  #    - gofumpt
-  #    - goimports
-  #    - golines
+    - gofmt
+    - gofumpt
+    #    - goimports
+    - golines
   exclusions:
     generated: lax
 

@@ -18,7 +18,7 @@ type ConfigLLM struct {
 	SystemPrompt   string
 	LLMFolderID    string  `env:"LLM_FOLDER_ID"`
 	LLMTemperature float32 `env:"LLM_TEMPERATURE" env-default:"0.7"`
-	MaxTokens      int     `env:"LLM_MAX_TOKENS" env-default:"8000"`
+	MaxTokens      int     `env:"LLM_MAX_TOKENS"  env-default:"8000"`
 	LogStreamName  string
 }
 
@@ -78,7 +78,11 @@ func GetTeaser() string {
 }
 
 func GetAnswerAboutKeys() string {
-	question := fmt.Sprintf("%s. %s?", getRandomElement(clarifications), getRandomElement(questions))
+	question := fmt.Sprintf(
+		"%s. %s?",
+		getRandomElement(clarifications),
+		getRandomElement(questions),
+	)
 	request := createRequest(question)
 	answer := doRequest(request)
 

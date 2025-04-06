@@ -4,14 +4,17 @@ import (
 	"fmt"
 
 	tele "gopkg.in/telebot.v4"
-	"s-belichenko/ilovaiskaya2-bot/cmd/llm"
+	llm "s-belichenko/ilovaiskaya2-bot/cmd/llm"
 	pkgLogger "s-belichenko/ilovaiskaya2-bot/pkg/logger"
 )
 
 // Команды бота для домового чата.
 var (
 	KeysCommand   = tele.Command{Text: "keys", Description: "ПИК, где ключи?"}
-	ReportCommand = tele.Command{Text: "report", Description: "Сообщить о нарушении правил, формат: /report [уточнение]"}
+	ReportCommand = tele.Command{
+		Text:        "report",
+		Description: "Сообщить о нарушении правил, формат: /report [уточнение]",
+	}
 )
 
 func CommandKeysHandler(c tele.Context) error {
@@ -19,7 +22,7 @@ func CommandKeysHandler(c tele.Context) error {
 }
 
 func CommandReportHandler(ctx tele.Context) error {
-	var m = ctx.Message()
+	m := ctx.Message()
 
 	pkgLog.Debug("ReplyTo", pkgLogger.LogContext{
 		"reply_to": m.ReplyTo,
@@ -27,7 +30,10 @@ func CommandReportHandler(ctx tele.Context) error {
 
 	if m.ReplyTo == nil {
 		if err := ctx.Reply("Пожалуйста, используйте эту команду в ответе на сообщение с нарушением. Подробнее: выполните /help в личной переписке с @lp_13x_bot."); err != nil {
-			pkgLog.Error(fmt.Sprintf("Не удалось отправить уточнение про команду /report: %v", err), nil)
+			pkgLog.Error(
+				fmt.Sprintf("Не удалось отправить уточнение про команду /report: %v", err),
+				nil,
+			)
 		}
 
 		return nil
@@ -38,9 +44,12 @@ func CommandReportHandler(ctx tele.Context) error {
 
 	if violator.ID == config.BotID {
 		if err := ctx.Reply(fmt.Sprintf("%s, ай-яй-яй! %s", GetGreetingName(reporter), llm.GetTeaser())); err != nil {
-			pkgLog.Error(fmt.Sprintf("Не удалось пообзываться в ответ на репорт на бота: %v", err), pkgLogger.LogContext{
-				"reporter": reporter,
-			})
+			pkgLog.Error(
+				fmt.Sprintf("Не удалось пообзываться в ответ на репорт на бота: %v", err),
+				pkgLogger.LogContext{
+					"reporter": reporter,
+				},
+			)
 		}
 
 		return nil
@@ -51,15 +60,18 @@ func CommandReportHandler(ctx tele.Context) error {
 	violationMessageID := m.ReplyTo.ID
 	messageLink := GenerateMessageLink(chat, violationMessageID)
 
-	pkgLog.Info(fmt.Sprintf("Новое нарушение правил от %s", GetGreetingName(reporter)), pkgLogger.LogContext{
-		"reporter_username": reporter.Username,
-		"reporter_id":       reporter.ID,
-		"violator":          violator.Username,
-		"violator_id":       violator.ID,
-		"text":              m.ReplyTo.Text,
-		"clarification":     clarification,
-		"message_link":      messageLink,
-	})
+	pkgLog.Info(
+		fmt.Sprintf("Новое нарушение правил от %s", GetGreetingName(reporter)),
+		pkgLogger.LogContext{
+			"reporter_username": reporter.Username,
+			"reporter_id":       reporter.ID,
+			"violator":          violator.Username,
+			"violator_id":       violator.ID,
+			"text":              m.ReplyTo.Text,
+			"clarification":     clarification,
+			"message_link":      messageLink,
+		},
+	)
 
 	reportMessage := fmt.Sprintf(
 		`

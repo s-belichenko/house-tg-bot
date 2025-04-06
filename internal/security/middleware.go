@@ -14,14 +14,25 @@ func AllPrivateChatsMiddleware(next tele.HandlerFunc) tele.HandlerFunc {
 	return func(ctx tele.Context) error {
 		if ctx.Chat().Type != tele.ChatPrivate && ctx.Chat().Type != tele.ChatChannelPrivate {
 			log.Warn(
-				fmt.Sprintf("Попытка использовать %q в чате типа %q", getCommandName(ctx.Message()), ctx.Chat().Type), pkgLog.LogContext{"message": ctx.Message()})
+				fmt.Sprintf(
+					"Попытка использовать %q в чате типа %q",
+					getCommandName(ctx.Message()),
+					ctx.Chat().Type,
+				), pkgLog.LogContext{"message": ctx.Message()})
 
 			if TeleID(ctx.Chat().ID) == config.HouseChatID {
-				err := ctx.Reply(fmt.Sprintf("Используйте команду %q в личной переписке с ботом.", getCommandName(ctx.Message())))
+				err := ctx.Reply(fmt.Sprintf(
+					"Используйте команду %q в личной переписке с ботом.",
+					getCommandName(ctx.Message()),
+				))
 				if err != nil {
 					log.Error(
-						fmt.Sprintf("Не удалось посоветовать использовать личную переписку с ботом: %v", err),
-						pkgLog.LogContext{"message": ctx.Message()})
+						fmt.Sprintf(
+							"Не удалось посоветовать использовать личную переписку с ботом: %v",
+							err,
+						),
+						pkgLog.LogContext{"message": ctx.Message()},
+					)
 				}
 			}
 
@@ -36,7 +47,9 @@ func HomeChatMiddleware(next tele.HandlerFunc) tele.HandlerFunc {
 	return func(ctx tele.Context) error {
 		if ctx.Chat().Type != tele.ChatGroup && ctx.Chat().Type != tele.ChatSuperGroup {
 			log.Warn(fmt.Sprintf(
-				"Попытка использовать %q в чате типа %q", getCommandName(ctx.Message()), ctx.Chat().Type,
+				"Попытка использовать %q в чате типа %q",
+				getCommandName(ctx.Message()),
+				ctx.Chat().Type,
 			), pkgLog.LogContext{"message": ctx.Message()})
 
 			return nil
@@ -44,7 +57,9 @@ func HomeChatMiddleware(next tele.HandlerFunc) tele.HandlerFunc {
 
 		if TeleID(ctx.Chat().ID) != config.HouseChatID {
 			log.Warn(fmt.Sprintf(
-				"Попытка использовать %q вне домового чата, чат: %d", getCommandName(ctx.Message()), ctx.Chat().ID,
+				"Попытка использовать %q вне домового чата, чат: %d",
+				getCommandName(ctx.Message()),
+				ctx.Chat().ID,
 			), pkgLog.LogContext{
 				"message": ctx.Message(),
 			})
@@ -60,7 +75,9 @@ func AdminChatMiddleware(next tele.HandlerFunc) tele.HandlerFunc {
 	return func(ctx tele.Context) error {
 		if ctx.Chat().Type != tele.ChatGroup && ctx.Chat().Type != tele.ChatSuperGroup {
 			log.Warn(fmt.Sprintf(
-				"Попытка использовать команду %q в чате типа %q", getCommandName(ctx.Message()), ctx.Chat().Type,
+				"Попытка использовать команду %q в чате типа %q",
+				getCommandName(ctx.Message()),
+				ctx.Chat().Type,
 			), pkgLog.LogContext{
 				"message": ctx.Message(),
 			})
@@ -70,7 +87,10 @@ func AdminChatMiddleware(next tele.HandlerFunc) tele.HandlerFunc {
 
 		if TeleID(ctx.Chat().ID) != config.AdministrationChatID {
 			log.Warn(fmt.Sprintf(
-				"Попытка использовать команду %q в чате %d", getCommandName(ctx.Message()), ctx.Chat().ID),
+				"Попытка использовать команду %q в чате %d",
+				getCommandName(ctx.Message()),
+				ctx.Chat().ID,
+			),
 				pkgLog.LogContext{"message": ctx.Message()})
 
 			return nil
@@ -78,8 +98,13 @@ func AdminChatMiddleware(next tele.HandlerFunc) tele.HandlerFunc {
 
 		if member, err := ctx.Bot().ChatMemberOf(ctx.Chat(), ctx.Sender()); err != nil {
 			log.Error(
-				fmt.Sprintf("Не удалось получить информацию об отправителе %q команды %q", hndls.GetGreetingName(ctx.Sender()), getCommandName(ctx.Message())),
-				pkgLog.LogContext{"user_id": ctx.Sender().ID})
+				fmt.Sprintf(
+					"Не удалось получить информацию об отправителе %q команды %q",
+					hndls.GetGreetingName(ctx.Sender()),
+					getCommandName(ctx.Message()),
+				),
+				pkgLog.LogContext{"user_id": ctx.Sender().ID},
+			)
 			return nil
 		} else {
 			if (tele.Creator != member.Role) && (tele.Administrator != member.Role) {
@@ -115,7 +140,13 @@ func KeysCommandMiddleware(next tele.HandlerFunc) tele.HandlerFunc {
 					cantSpeakPhrase, ctx.Sender().Username,
 				))
 				if err != nil {
-					log.Error(fmt.Sprintf("Бот не смог рассказать об ограничениях команды /keys: %v", err), nil)
+					log.Error(
+						fmt.Sprintf(
+							"Бот не смог рассказать об ограничениях команды /keys: %v",
+							err,
+						),
+						nil,
+					)
 				}
 			}
 

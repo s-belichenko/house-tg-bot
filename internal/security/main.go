@@ -8,13 +8,15 @@ import (
 	pkgLog "s-belichenko/ilovaiskaya2-bot/pkg/logger"
 )
 
-type TeleID tele.ChatID
-type TeleIDList []TeleID
-type TeleContext interface {
-	Chat() *tele.Chat
-	Sender() *tele.User
-	Message() *tele.Message
-}
+type (
+	TeleID      tele.ChatID
+	TeleIDList  []TeleID
+	TeleContext interface {
+		Chat() *tele.Chat
+		Sender() *tele.User
+		Message() *tele.Message
+	}
+)
 
 type Config struct {
 	AdministrationChatID TeleID `env:"ADMINISTRATION_CHAT_ID"`

@@ -7,6 +7,9 @@ tidy:
 lint:
 	@golangci-lint run ./...
 
+fmt:
+	@golangci-lint fmt ./...
+
 tests:
 	@go test -cover -race ./...
 

@@ -13,7 +13,7 @@ func TestParseUserID(t *testing.T) {
 		expected map[string]int64
 	}
 
-	var dpUserID = ParseUserIDDataProvider{
+	dpUserID := ParseUserIDDataProvider{
 		testData: map[string]string{
 			"Валидный user_id":      "123",
 			"Отрицательный user_id": "-123",
@@ -43,7 +43,7 @@ func TestParseUsername(t *testing.T) {
 		expected map[string]string
 	}
 
-	var dp = ParseUsernameDataProvider{
+	dp := ParseUsernameDataProvider{
 		testData: map[string]string{
 			"Валидный username":            "username1",
 			"username с собачкой":          "@username1",
@@ -79,9 +79,13 @@ func TestGetGreetingName(t *testing.T) {
 		expected map[string]string
 	}
 
-	var dp = GetGreetingDataProvider{
+	dp := GetGreetingDataProvider{
 		testData: map[string]tele.User{
-			"Все данные":             {Username: "some_username", FirstName: "Иван", LastName: "Петров"},
+			"Все данные": {
+				Username:  "some_username",
+				FirstName: "Иван",
+				LastName:  "Петров",
+			},
 			"Нет только username":    {Username: "", FirstName: "Иван", LastName: "Петров"},
 			"Нет username и имени":   {Username: "", FirstName: "", LastName: "Петров"},
 			"Нет username и фамилии": {Username: "", FirstName: "Иван", LastName: ""},
@@ -110,7 +114,7 @@ func TestCreateUserViolator(t *testing.T) {
 		testData map[string]string
 		expected map[string]*tele.User
 	}
-	var dp = CreateUserViolatorDataProvider{
+	dp := CreateUserViolatorDataProvider{
 		testData: map[string]string{
 			"Валидный user_id": "123",
 			"Пустой user_id":   "",
