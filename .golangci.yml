@@ -24,6 +24,8 @@ linters:
         ignored-fields:
           # Обход проверки для пакета logger, формат сообщений которого требует Yandex Cloud.
           - Stream
+    dupl:
+      threshold: 175
   exclusions:
     generated: lax
     warn-unused: true

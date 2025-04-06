@@ -3,6 +3,8 @@ package logger
 import (
 	"log"
 	"os"
+
+	pkgTime "s-belichenko/ilovaiskaya2-bot/pkg/time"
 )
 
 type LogLevel string
@@ -27,8 +29,19 @@ const (
 
 type LogContext map[string]interface{}
 
-func InitLog(logStreamName string) *YandexLogger {
-	logger := log.New(os.Stdout, "", 0) // Отключаем все флаги.
+type SystemLogger interface {
+	Fatal(args ...interface{})
+	Fatalf(format string, args ...interface{})
+	Fatalln(args ...interface{})
+	Print(args ...interface{})
+	Printf(format string, args ...interface{})
+	Println(args ...interface{})
+	Output(calldepth int, s string) error
+}
 
-	return newYandexLogger(logStreamName, logger)
+func InitLog(logStreamName string) *YandexLogger {
+	logger := log.New(os.Stdout, "", 0)
+	time := pkgTime.Time{} // Отключаем все флаги.
+
+	return newYandexLogger(logStreamName, logger, time)
 }

@@ -4,6 +4,8 @@ import (
 	"encoding/json"
 	"log"
 	"time"
+
+	pkgTime "s-belichenko/ilovaiskaya2-bot/pkg/time"
 )
 
 type Record struct {
@@ -16,13 +18,19 @@ type Record struct {
 
 type YandexLogger struct {
 	stream string
-	logger *log.Logger
+	logger SystemLogger
+	time   pkgTime.ClockInterface
 }
 
-func newYandexLogger(streamName string, logger *log.Logger) *YandexLogger {
+func newYandexLogger(
+	streamName string,
+	logger SystemLogger,
+	time pkgTime.ClockInterface,
+) *YandexLogger {
 	return &YandexLogger{
 		stream: streamName,
 		logger: logger,
+		time:   time,
 	}
 }
 
@@ -31,7 +39,7 @@ func (l *YandexLogger) createEntry(level LogLevel, message string, context LogCo
 		Message:   message,
 		Level:     level,
 		Stream:    l.stream,
-		Timestamp: time.Now(),
+		Timestamp: l.time.Now(),
 		Context:   context,
 	}
 }
