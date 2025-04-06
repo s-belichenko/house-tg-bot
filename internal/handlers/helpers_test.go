@@ -13,7 +13,6 @@ func TestGetGreetingName(t *testing.T) {
 		testData map[string]tele.User
 		expected map[string]string
 	}
-
 	dp := GetGreetingDataProvider{
 		testData: map[string]tele.User{
 			"Все данные": {
@@ -36,11 +35,12 @@ func TestGetGreetingName(t *testing.T) {
 	}
 
 	for testCase, data := range dp.testData {
-		// #nosec G601 FIXME: Убрать после перехода на Go 1.22
-		r := handlers.GetGreetingName(&data)
-
-		for _, problem := range deep.Equal(r, dp.expected[testCase]) {
-			t.Error(problem)
-		}
+		t.Run(testCase, func(t *testing.T) {
+			// #nosec G601 FIXME: Убрать после перехода на Go 1.22
+			r := handlers.GetGreetingName(&data)
+			for _, problem := range deep.Equal(r, dp.expected[testCase]) {
+				t.Error(problem)
+			}
+		})
 	}
 }

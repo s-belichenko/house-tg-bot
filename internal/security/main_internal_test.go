@@ -54,15 +54,16 @@ var dpIsBotHouse = DataProviderIsBotHouse{
 
 func TestIsBotHouse(t *testing.T) {
 	for testCase, testData := range dpIsBotHouse.testData {
-		config.HomeThreadBot = testData.configThreadID
+		t.Run(testCase, func(t *testing.T) {
+			config.HomeThreadBot = testData.configThreadID
 
-		c := mocks.NewTeleContext(t)
-		c.On("Message").
-			Return(&tele.Message{ThreadID: testData.threadID, ReplyTo: testData.message}).
-			Once()
+			c := mocks.NewTeleContext(t)
+			c.On("Message").
+				Return(&tele.Message{ThreadID: testData.threadID, ReplyTo: testData.message}).
+				Once()
 
-		r := isBotHouse(c)
-
-		assert.Equal(t, dpIsBotHouse.expected[testCase], r)
+			r := isBotHouse(c)
+			assert.Equal(t, dpIsBotHouse.expected[testCase], r)
+		})
 	}
 }

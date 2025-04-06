@@ -10,6 +10,9 @@ lint:
 fmt:
 	@golangci-lint fmt ./...
 
+fix:
+	@golangci-lint run --fix ./...
+
 tests:
 	@go test -cover -race ./...
 
