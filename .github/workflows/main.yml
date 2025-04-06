@@ -18,6 +18,7 @@ jobs:
           golint-path: |
             ./cmd/**/*.go
             ./internal/**/*.go
+            ./pkg/**/*.go
       # Устанавливаем Go
       - name: Setup Go
         uses: actions/setup-go@v3
@@ -66,6 +67,7 @@ jobs:
           include: |
             ./cmd/**/*.go
             ./internal/**/*.go
+            ./pkg/**/*.go
             ./go.mod
           execution-timeout: ${{ vars.EXECUTION_TIMEOUT }}
           log-level: ${{ vars.LOG_LEVEL }}

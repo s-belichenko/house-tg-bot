@@ -3,8 +3,9 @@ package handlers
 import (
 	"fmt"
 	"github.com/ilyakaznacheev/cleanenv"
+
 	tele "gopkg.in/telebot.v4"
-	intLog "s-belichenko/ilovaiskaya2-bot/internal/logger"
+	pkgLog "s-belichenko/ilovaiskaya2-bot/pkg/logger"
 )
 
 type Config struct {
@@ -17,7 +18,7 @@ type Config struct {
 // Общие переменные пакета
 var (
 	config = Config{LogStreamName: "main_stream"}
-	log    intLog.Logger
+	log    pkgLog.Logger
 )
 
 type TeleContext interface {
@@ -26,7 +27,7 @@ type TeleContext interface {
 
 func init() {
 	initConfig()
-	log = intLog.InitLog(config.LogStreamName)
+	log = pkgLog.InitLog(config.LogStreamName)
 }
 
 func initConfig() {

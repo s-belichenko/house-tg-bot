@@ -8,7 +8,7 @@ import (
 	"math/rand"
 	"time"
 
-	intLog "s-belichenko/ilovaiskaya2-bot/internal/logger"
+	pkgLog "s-belichenko/ilovaiskaya2-bot/pkg/logger"
 )
 
 const botNickname = "Тринадцатый"
@@ -42,11 +42,11 @@ var questions = []string{
 	"Придумай смешной ответ компании ПИК на вопрос \"ПИК, сколько еще можно ждать ключи?",
 }
 
-var log intLog.Logger
+var log pkgLog.Logger
 
 func init() {
 	err := cleanenv.ReadEnv(&config)
-	log = intLog.InitLog(config.LogStreamName)
+	log = pkgLog.InitLog(config.LogStreamName)
 	if err != nil {
 		fmt.Printf("Error reading LLM config: %v", err)
 	}
@@ -82,7 +82,7 @@ func GetAnswerAboutKeys() string {
 	request := createRequest(question)
 	answer := doRequest(request)
 
-	log.Info("Получен ответ про ключи.", intLog.LogContext{
+	log.Info("Получен ответ про ключи.", pkgLog.LogContext{
 		"question": question,
 		"answer":   answer,
 	})
@@ -93,7 +93,7 @@ func GetAnswerAboutKeys() string {
 func doRequest(request yandexgpt.YandexGPTRequest) string {
 	response, err := client.GetCompletion(context.Background(), request)
 	if err != nil {
-		log.Error(fmt.Sprintf("LLM request error: %s", err.Error()), intLog.LogContext{
+		log.Error(fmt.Sprintf("LLM request error: %s", err.Error()), pkgLog.LogContext{
 			"request": request,
 		})
 		return ""

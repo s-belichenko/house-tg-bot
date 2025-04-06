@@ -5,7 +5,7 @@ import (
 	"s-belichenko/ilovaiskaya2-bot/cmd/llm"
 
 	tele "gopkg.in/telebot.v4"
-	intLog "s-belichenko/ilovaiskaya2-bot/internal/logger"
+	pkgLog "s-belichenko/ilovaiskaya2-bot/pkg/logger"
 )
 
 // Команды бота для домового чата
@@ -20,7 +20,7 @@ func CommandKeysHandler(c tele.Context) error {
 
 func CommandReportHandler(c tele.Context) error {
 	m := c.Message()
-	log.Debug("ReplyTo", intLog.LogContext{
+	log.Debug("ReplyTo", pkgLog.LogContext{
 		"reply_to": m.ReplyTo,
 	})
 	if m.ReplyTo == nil {
@@ -35,7 +35,7 @@ func CommandReportHandler(c tele.Context) error {
 
 	if violator.ID == config.BotID {
 		if err := c.Reply(fmt.Sprintf("%s, ай-яй-яй! %s", GetGreetingName(reporter), llm.GetTeaser())); err != nil {
-			log.Error(fmt.Sprintf("Не удалось пообзываться в ответ на репорт на бота: %v", err), intLog.LogContext{
+			log.Error(fmt.Sprintf("Не удалось пообзываться в ответ на репорт на бота: %v", err), pkgLog.LogContext{
 				"reporter": reporter,
 			})
 		}
@@ -47,7 +47,7 @@ func CommandReportHandler(c tele.Context) error {
 	violationMessageID := m.ReplyTo.ID
 	messageLink := GenerateMessageLink(chat, violationMessageID)
 
-	log.Info(fmt.Sprintf("Новое нарушение правил от %s", GetGreetingName(reporter)), intLog.LogContext{
+	log.Info(fmt.Sprintf("Новое нарушение правил от %s", GetGreetingName(reporter)), pkgLog.LogContext{
 		"reporter_username": reporter.Username,
 		"reporter_id":       reporter.ID,
 		"violator":          violator.Username,
@@ -92,7 +92,7 @@ func CommandReportHandler(c tele.Context) error {
 	if err != nil {
 		log.Error(fmt.Sprintf(
 			"Не удалось удалить сообщение с жалобой от %s: %v", GetGreetingName(reporter), err),
-			intLog.LogContext{
+			pkgLog.LogContext{
 				"message_id":   m.ID,
 				"message_text": m.Text,
 				"violator_id":  violator.ID,

@@ -8,7 +8,7 @@ import (
 	"time"
 
 	tele "gopkg.in/telebot.v4"
-	intLog "s-belichenko/ilovaiskaya2-bot/internal/logger"
+	pkgLog "s-belichenko/ilovaiskaya2-bot/pkg/logger"
 )
 
 const usernameRegex = `^(?:[a-z_0-9]){5,64}$`
@@ -54,7 +54,7 @@ func GenerateMessageLink(chat *tele.Chat, messageID int) string {
 			return fmt.Sprintf("https://t.me/c/%d/%d", chatID, messageID)
 		}
 	} else {
-		log.Error("Невозможно сформировать ссылку для этого типа чата", intLog.LogContext{
+		log.Error("Невозможно сформировать ссылку для этого типа чата", pkgLog.LogContext{
 			"chat":       chat,
 			"message_id": messageID,
 		})
@@ -64,12 +64,12 @@ func GenerateMessageLink(chat *tele.Chat, messageID int) string {
 
 func setCommands(c TeleContext, commands []tele.Command, scope tele.CommandScope) {
 	if err := c.Bot().SetCommands(commands, scope); err != nil {
-		log.Fatal(fmt.Sprintf("Не удалось установить команды бота: %v", err), intLog.LogContext{
+		log.Fatal(fmt.Sprintf("Не удалось установить команды бота: %v", err), pkgLog.LogContext{
 			"commands": commands,
 			"scope":    scope,
 		})
 	} else {
-		log.Info("Успешно установлены команды бота", intLog.LogContext{
+		log.Info("Успешно установлены команды бота", pkgLog.LogContext{
 			"commands": commands,
 			"scope":    scope,
 		})
@@ -78,11 +78,11 @@ func setCommands(c TeleContext, commands []tele.Command, scope tele.CommandScope
 
 func deleteCommands(c TeleContext, scope tele.CommandScope) {
 	if err := c.Bot().DeleteCommands(scope); err != nil {
-		log.Fatal(fmt.Sprintf("Не удалось удалить команды бота: %v", err), intLog.LogContext{
+		log.Fatal(fmt.Sprintf("Не удалось удалить команды бота: %v", err), pkgLog.LogContext{
 			"scope": scope,
 		})
 	} else {
-		log.Info("Успешно удалены команды бота", intLog.LogContext{
+		log.Info("Успешно удалены команды бота", pkgLog.LogContext{
 			"scope": scope,
 		})
 	}
@@ -127,27 +127,27 @@ func createUserViolator(s string) *tele.User {
 		//username := parseUsername(s)
 		//if username != "" {
 		//	if chat, err := c.Bot().ChatByUsername(username); err != nil {
-		//		log.Error(fmt.Sprintf("Не удалось получить чат для блокировки пользователя: %v", err), intLog.LogContext{
+		//		log.Error(fmt.Sprintf("Не удалось получить чат для блокировки пользователя: %v", err), pkgLog.LogContext{
 		//			"username": username,
 		//		})
 		//		return nil
 		//	} else if chat != nil {
 		//		return &tele.User{ID: chat.ID}
 		//	} else {
-		//		log.Warn(fmt.Sprintf("В команду /ban передан невалидный username или user_id"), intLog.LogContext{
+		//		log.Warn(fmt.Sprintf("В команду /ban передан невалидный username или user_id"), pkgLog.LogContext{
 		//			"username_or_user_id": s,
 		//		})
 		//		if err := c.Reply(fmt.Sprintf(
 		//			"Не удалось распознать username нарушителя. Верный формат команды: %s",
 		//			muteCommandFormat,
 		//		), tele.ModeHTML); err != nil {
-		//			log.Error(fmt.Sprintf("Не удалось отправить подсказку по команде /ban: %v", err), intLog.LogContext{
+		//			log.Error(fmt.Sprintf("Не удалось отправить подсказку по команде /ban: %v", err), pkgLog.LogContext{
 		//				"message": c.Message(),
 		//			})
 		//		}
 		//	}
 		//} else {
-		//	log.Error(fmt.Sprintf("Для администрирования не удалось определить user_id и username"), intLog.LogContext{
+		//	log.Error(fmt.Sprintf("Для администрирования не удалось определить user_id и username"), pkgLog.LogContext{
 		//		"text": s,
 		//	})
 		//}

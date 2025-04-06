@@ -11,8 +11,8 @@ import (
 	tele "gopkg.in/telebot.v4"
 	teleMid "gopkg.in/telebot.v4/middleware"
 	hdls "s-belichenko/ilovaiskaya2-bot/internal/handlers"
-	intLog "s-belichenko/ilovaiskaya2-bot/internal/logger"
 	sec "s-belichenko/ilovaiskaya2-bot/internal/security"
+	pkgLog "s-belichenko/ilovaiskaya2-bot/pkg/logger"
 )
 
 type ConfigBot struct {
@@ -23,7 +23,7 @@ type ConfigBot struct {
 
 var (
 	bot    *tele.Bot
-	log    intLog.Logger
+	log    pkgLog.Logger
 	config = ConfigBot{LogStreamName: "main_stream"}
 )
 
@@ -37,7 +37,7 @@ func init() {
 
 func initModule() {
 	err := cleanenv.ReadEnv(&config)
-	log = intLog.InitLog(config.LogStreamName)
+	log = pkgLog.InitLog(config.LogStreamName)
 	log.Debug("Start init module", nil)
 	if err != nil {
 		log.Fatal(fmt.Sprintf("Не удалось прочитать конфигурацию ота: %v", err), nil)
@@ -62,7 +62,7 @@ func setBotMiddleware() {
 	bot.Use(teleMid.Recover(func(err error, context tele.Context) {
 		log.Fatal(fmt.Sprintf("Bot fatal: %v", err), nil)
 	}))
-	bot.Use(intLog.GetMiddleware(log))
+	bot.Use(pkgLog.GetMiddleware(log))
 }
 
 func registerBotCommandHandlers() {
