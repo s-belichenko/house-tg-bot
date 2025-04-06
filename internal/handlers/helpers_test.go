@@ -1,9 +1,10 @@
 package handlers
 
 import (
+	"testing"
+
 	"github.com/go-test/deep"
 	tele "gopkg.in/telebot.v4"
-	"testing"
 )
 
 func TestParseUserID(t *testing.T) {

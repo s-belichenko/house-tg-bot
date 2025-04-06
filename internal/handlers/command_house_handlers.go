@@ -2,9 +2,9 @@ package handlers
 
 import (
 	"fmt"
-	"s-belichenko/ilovaiskaya2-bot/cmd/llm"
 
 	tele "gopkg.in/telebot.v4"
+	"s-belichenko/ilovaiskaya2-bot/cmd/llm"
 	pkgLogger "s-belichenko/ilovaiskaya2-bot/pkg/logger"
 )
 

@@ -2,8 +2,8 @@ package handlers
 
 import (
 	"fmt"
-	"github.com/ilyakaznacheev/cleanenv"
 
+	"github.com/ilyakaznacheev/cleanenv"
 	tele "gopkg.in/telebot.v4"
 	pkgLogger "s-belichenko/ilovaiskaya2-bot/pkg/logger"
 )

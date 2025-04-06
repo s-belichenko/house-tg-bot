@@ -3,11 +3,11 @@ package llm
 import (
 	"context"
 	"fmt"
-	"github.com/ilyakaznacheev/cleanenv"
-	"github.com/sheeiavellie/go-yandexgpt"
 	"math/rand"
 	"time"
 
+	"github.com/ilyakaznacheev/cleanenv"
+	"github.com/sheeiavellie/go-yandexgpt"
 	pkgLog "s-belichenko/ilovaiskaya2-bot/pkg/logger"
 )
 

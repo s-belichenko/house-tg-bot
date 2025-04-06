@@ -3,11 +3,11 @@ package main
 import (
 	"encoding/json"
 	"fmt"
-	"github.com/ilyakaznacheev/cleanenv"
 	"io"
 	"net/http"
 	"os"
 
+	"github.com/ilyakaznacheev/cleanenv"
 	tele "gopkg.in/telebot.v4"
 	teleMid "gopkg.in/telebot.v4/middleware"
 	hdls "s-belichenko/ilovaiskaya2-bot/internal/handlers"

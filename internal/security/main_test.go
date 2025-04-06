@@ -1,9 +1,9 @@
 package security
 
 import (
-	"github.com/stretchr/testify/assert"
 	"testing"
 
+	"github.com/stretchr/testify/assert"
 	tele "gopkg.in/telebot.v4"
 	mocks "s-belichenko/ilovaiskaya2-bot/mocks/internal_/handlers"
 )

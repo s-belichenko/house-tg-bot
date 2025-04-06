@@ -39,8 +39,8 @@ linters:
       - legacy
 
 formatters:
-  #  enable:
-  #    - gci
+  enable:
+    - gci
   #    - gofmt
   #    - gofumpt
   #    - goimports
