@@ -7,6 +7,7 @@ linters:
     - gochecknoinits
     - godox
     - gomoddirectives
+    - perfsprint
     - depguard
     # TODO: Поправить и включить проверку.
     - exhaustruct
@@ -18,7 +19,6 @@ linters:
     - nestif
     - nilerr
     - paralleltest
-    - perfsprint
     - revive
     - staticcheck
     - tagliatelle

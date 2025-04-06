@@ -275,7 +275,7 @@ func CommandUnbanHandler(ctx tele.Context) error {
 	}
 
 	if violator == nil {
-		pkgLog.Warn(fmt.Sprintf("Вызов команды /unban без аргументов"), pkgLogger.LogContext{
+		pkgLog.Warn("Вызов команды /unban без аргументов", pkgLogger.LogContext{
 			"arguments_string": d,
 		})
 		if err := ctx.Reply(fmt.Sprintf("Верный формат команды: %s", banCommandFormat), tele.ModeHTML); err != nil {
