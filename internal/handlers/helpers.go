@@ -100,28 +100,15 @@ func deleteCommands(c TeleContext, scope tele.CommandScope) {
 }
 
 func parseUsername(str string) string {
-	var res string
-
-	if re, err := regexp.Compile(usernameRegex); err != nil {
-		pkgLog.Error(fmt.Sprintf("Не удалось распарсить username %q: %v", str, err), nil)
-
-		res = ""
-	} else {
-		res = re.FindString(str)
-	}
+	re := regexp.MustCompile(usernameRegex)
+	res := re.FindString(str)
 
 	return res
 }
 
 func parseUserID(str string) int64 {
-	var res string
-
-	if re, err := regexp.Compile(userIDRegex); err != nil {
-		return 0
-	} else {
-		res = re.FindString(str)
-	}
-
+	re := regexp.MustCompile(userIDRegex)
+	res := re.FindString(str)
 	i, _ := strconv.ParseInt(res, 10, 64)
 
 	return i
@@ -142,8 +129,8 @@ func createUserViolator(s string) *tele.User {
 		return &tele.User{ID: userID}
 	} else {
 		// FIXME: Если не найдется способа получать user_id по username, удалить закомментированный код ниже.
-		//username := parseUsername(s)
-		//if username != "" {
+		// username := parseUsername(s)
+		// if username != "" {
 		//	if chat, err := c.Bot().ChatByUsername(username); err != nil {
 		//		pkgLog.Error(fmt.Sprintf("Не удалось получить чат для блокировки пользователя: %v", err), pkgLog.LogContext{
 		//			"username": username,
@@ -164,7 +151,7 @@ func createUserViolator(s string) *tele.User {
 		//			})
 		//		}
 		//	}
-		//} else {
+		// } else {
 		//	pkgLog.Error(fmt.Sprintf("Для администрирования не удалось определить user_id и username"), pkgLog.LogContext{
 		//		"text": s,
 		//	})

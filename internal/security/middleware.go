@@ -106,16 +106,14 @@ func AdminChatMiddleware(next tele.HandlerFunc) tele.HandlerFunc {
 				pkgLog.LogContext{"user_id": ctx.Sender().ID},
 			)
 			return nil
-		} else {
-			if (tele.Creator != member.Role) && (tele.Administrator != member.Role) {
-				link := fmt.Sprintf("<a href=%q>ссылка</a>", hndls.GenerateMessageLink(ctx.Chat(), ctx.Message().ID))
-				reportMessage := fmt.Sprintf(
-					"Хакир детектед! Пользователь %q попытался использовать команду %q, ссылка: %s",
-					hndls.GetGreetingName(ctx.Sender()), getCommandName(ctx.Message()), link,
-				)
-				adminChat := &tele.Chat{ID: int64(config.AdministrationChatID)}
-				_, _ = ctx.Bot().Send(adminChat, reportMessage, tele.ModeHTML)
-			}
+		} else if (tele.Creator != member.Role) && (tele.Administrator != member.Role) {
+			link := fmt.Sprintf("<a href=%q>ссылка</a>", hndls.GenerateMessageLink(ctx.Chat(), ctx.Message().ID))
+			reportMessage := fmt.Sprintf(
+				"Хакир детектед! Пользователь %q попытался использовать команду %q, ссылка: %s",
+				hndls.GetGreetingName(ctx.Sender()), getCommandName(ctx.Message()), link,
+			)
+			adminChat := &tele.Chat{ID: int64(config.AdministrationChatID)}
+			_, _ = ctx.Bot().Send(adminChat, reportMessage, tele.ModeHTML)
 		}
 
 		return next(ctx)
