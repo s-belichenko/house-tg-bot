@@ -21,11 +21,16 @@ linters:
     - paralleltest
     - revive
     - staticcheck
-    - tagliatelle
     - nlreturn
     - tagalign
     - varnamelen
     - wsl
+  settings:
+    tagliatelle:
+      case:
+        ignored-fields:
+          # Обход проверки для пакета logger, формат сообщений которого требует Yandex Cloud.
+          - Stream
   exclusions:
     generated: lax
     warn-unused: true
