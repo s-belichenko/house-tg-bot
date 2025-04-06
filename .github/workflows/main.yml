@@ -5,28 +5,36 @@ on:
       - development
 
 jobs:
-  Tests:
+  Linters:
     runs-on: ubuntu-latest
     steps:
       # Загружаем код репозитория в окружение
       - name: Checkout repository
         uses: actions/checkout@v3
-      # Проверим стиль кода
-      - name: Run linters
-        uses: Jerome1337/golint-action@v1.0.2
-        with:
-          golint-path: |
-            ./cmd/**/*.go
-            ./internal/**/*.go
-            ./pkg/**/*.go
       # Устанавливаем Go
       - name: Setup Go
         uses: actions/setup-go@v3
         with:
           go-version: '1.21.0'
-      #      # Устанавливаем зависимости
-      #      - name: Install dependencies
-      #        run: 'go mod download'
+      - name: golangci-lint
+        uses: golangci/golangci-lint-action@v7
+        with:
+          version: v2.0
+          only-new-issues: false
+          skip-cache: true
+  Tests:
+    needs:
+      - Linters
+    runs-on: ubuntu-latest
+    steps:
+      # Загружаем код репозитория в окружение
+      - name: Checkout repository
+        uses: actions/checkout@v3
+      # Устанавливаем Go
+      - name: Setup Go
+        uses: actions/setup-go@v3
+        with:
+          go-version: '1.21.0'
       # Запускаем модульные тесты
       - name: Run Go tests
         run: 'go test -cover -race ./...'

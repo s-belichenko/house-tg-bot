@@ -10,7 +10,7 @@ import (
 
 type DataProviderIsBotHouse struct {
 	testData map[string]struct {
-		configThreadId int
+		configThreadID int
 		threadID       int
 		message        *tele.Message
 	}
@@ -19,27 +19,27 @@ type DataProviderIsBotHouse struct {
 
 var dpIsBotHouse = DataProviderIsBotHouse{
 	testData: map[string]struct {
-		configThreadId int
+		configThreadID int
 		threadID       int
 		message        *tele.Message
 	}{
 		"Сообщение в форуме вне домика бота и не ответ": {
-			configThreadId: 123,
+			configThreadID: 123,
 			threadID:       321,
 			message:        nil,
 		},
 		"Сообщение в форуме вне домика бота и ответ": {
-			configThreadId: 123,
+			configThreadID: 123,
 			threadID:       321,
 			message:        &tele.Message{ID: 12345},
 		},
 		"Сообщение в форуме в домике бота и ответ": {
-			configThreadId: 123,
+			configThreadID: 123,
 			threadID:       123,
 			message:        &tele.Message{},
 		},
 		"Сообщение в форуме в домике бота и не ответ": {
-			configThreadId: 123,
+			configThreadID: 123,
 			threadID:       123,
 			message:        nil,
 		},
@@ -54,7 +54,7 @@ var dpIsBotHouse = DataProviderIsBotHouse{
 
 func TestIsBotHouse(t *testing.T) {
 	for testCase, testData := range dpIsBotHouse.testData {
-		config.HomeThreadBot = testData.configThreadId
+		config.HomeThreadBot = testData.configThreadID
 
 		c := mocks.NewTeleContext(t)
 		c.On("Message").
@@ -63,6 +63,6 @@ func TestIsBotHouse(t *testing.T) {
 
 		r := isBotHouse(c)
 
-		assert.True(t, dpIsBotHouse.expected[testCase] == r)
+		assert.Equal(t, dpIsBotHouse.expected[testCase], r)
 	}
 }

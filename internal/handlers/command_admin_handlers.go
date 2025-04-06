@@ -5,7 +5,7 @@ import (
 	"strings"
 
 	tele "gopkg.in/telebot.v4"
-	pkgLog "s-belichenko/ilovaiskaya2-bot/pkg/logger"
+	pkgLogger "s-belichenko/ilovaiskaya2-bot/pkg/logger"
 )
 
 const (
@@ -26,68 +26,75 @@ var (
 	DeleteCommandsCommand = tele.Command{Text: "delete_commands", Description: "Удалить команды бота"}
 )
 
-func CommandMuteHandler(c tele.Context) error {
+func CommandMuteHandler(ctx tele.Context) error {
 	var violator *tele.ChatMember
-	d := c.Data()
-	f := strings.Fields(d)
+	var d = ctx.Data()
 
-	switch len(f) {
+	fields := strings.Fields(d)
+	switch len(fields) {
 	case 1:
-		if user := createUserViolator(f[0]); user != nil {
+		if user := createUserViolator(fields[0]); user != nil {
 			violator = &tele.ChatMember{
 				User:   user,
 				Rights: tele.NoRights(),
 			}
 		}
 	case 2:
-		if user := createUserViolator(f[0]); user != nil {
+		if user := createUserViolator(fields[0]); user != nil {
 			violator = &tele.ChatMember{
 				User:            user,
 				Rights:          tele.NoRights(),
-				RestrictedUntil: createUnixTimeFromDays(f[1]),
+				RestrictedUntil: createUnixTimeFromDays(fields[1]),
 			}
 		}
 	}
+
 	if violator == nil {
-		if err := c.Reply(fmt.Sprintf("Верный формат команды: %s", muteCommandFormat), tele.ModeHTML); err != nil {
-			log.Error(fmt.Sprintf("Не удалось отправить подсказку по команде /mute: %v", err), pkgLog.LogContext{
-				"message": c.Message(),
+		if err := ctx.Reply(fmt.Sprintf("Верный формат команды: %s", muteCommandFormat), tele.ModeHTML); err != nil {
+			pkgLog.Error(fmt.Sprintf("Не удалось отправить подсказку по команде /mute: %v", err), pkgLogger.LogContext{
+				"message": ctx.Message(),
 			})
 		}
-		return nil
-	}
-	if err := c.Bot().Restrict(&tele.Chat{ID: config.HouseChatId}, violator); err != nil {
-		log.Error(fmt.Sprintf("Не удалось ограничить пользователя: %v", err), pkgLog.LogContext{
-			"violator": violator,
-			"message":  c.Message(),
-		})
-		if err := c.Reply("Не удалось ограничить пользователя."); err != nil {
-			log.Error(fmt.Sprintf("Не удалось ограничить пользователя: %v", err), pkgLog.LogContext{
-				"message": c.Message(),
-			})
-		}
+
 		return nil
 	}
 
-	if err := c.Reply("Пользователь ограничен."); err != nil {
-		log.Error(fmt.Sprintf("Не удалось уведомить что пользователь ограничен: %v", err), pkgLog.LogContext{
-			"message": c.Message(),
+	if err := ctx.Bot().Restrict(&tele.Chat{ID: config.HouseChatID}, violator); err != nil {
+		pkgLog.Error(fmt.Sprintf("Не удалось ограничить пользователя: %v", err), pkgLogger.LogContext{
+			"violator": violator,
+			"message":  ctx.Message(),
+		})
+
+		if err := ctx.Reply("Не удалось ограничить пользователя."); err != nil {
+			pkgLog.Error(fmt.Sprintf("Не удалось ограничить пользователя: %v", err), pkgLogger.LogContext{
+				"message": ctx.Message(),
+			})
+		}
+
+		return nil
+	}
+
+	if err := ctx.Reply("Пользователь ограничен."); err != nil {
+		pkgLog.Error(fmt.Sprintf("Не удалось уведомить что пользователь ограничен: %v", err), pkgLogger.LogContext{
+			"message": ctx.Message(),
 		})
 	}
 	// FIXME: Посылать сообщение пользователю об ограничениях? А если он не начал общение с ботом?
-	log.Info("Пользователь ограничен", pkgLog.LogContext{
-		"admin_id":         c.Message().Sender.ID,
-		"admin_username":   c.Message().Sender.Username,
-		"admin_first_name": c.Message().Sender.FirstName,
-		"admin_last_name":  c.Message().Sender.LastName,
+	pkgLog.Info("Пользователь ограничен", pkgLogger.LogContext{
+		"admin_id":         ctx.Message().Sender.ID,
+		"admin_username":   ctx.Message().Sender.Username,
+		"admin_first_name": ctx.Message().Sender.FirstName,
+		"admin_last_name":  ctx.Message().Sender.LastName,
 		"violator":         violator,
 	})
+
 	return nil
 }
 
-func CommandUnmuteHandler(c tele.Context) error {
+func CommandUnmuteHandler(ctx tele.Context) error {
 	var violator *tele.ChatMember
-	d := c.Data()
+	var d = ctx.Data()
+
 	f := strings.Fields(d)
 	switch len(f) {
 	case 1:
@@ -95,143 +102,164 @@ func CommandUnmuteHandler(c tele.Context) error {
 			violator = &tele.ChatMember{User: user, Rights: tele.NoRestrictions()}
 		}
 	}
+
 	if violator == nil {
-		if err := c.Reply(fmt.Sprintf("Верный формат команды: %s", unmuteCommandFormat), tele.ModeHTML); err != nil {
-			log.Error(fmt.Sprintf("Не удалось отправить подсказку по команде /unmute: %v", err), pkgLog.LogContext{
-				"message": c.Message(),
+		if err := ctx.Reply(fmt.Sprintf("Верный формат команды: %s", unmuteCommandFormat), tele.ModeHTML); err != nil {
+			pkgLog.Error(fmt.Sprintf("Не удалось отправить подсказку по команде /unmute: %v", err), pkgLogger.LogContext{
+				"message": ctx.Message(),
 			})
 		}
-		return nil
-	}
-	if err := c.Bot().Promote(&tele.Chat{ID: config.HouseChatId}, violator); err != nil {
-		log.Error(fmt.Sprintf("Не удалось снять ограничения с пользователя: %v", err), pkgLog.LogContext{
-			"violator": violator,
-			"message":  c.Message(),
-		})
-		if err := c.Reply("Не удалось снять ограничения с пользователя."); err != nil {
-			log.Error(fmt.Sprintf("Не удалось снять ограничения с пользователя: %v", err), pkgLog.LogContext{
-				"message": c.Message(),
-			})
-		}
+
 		return nil
 	}
 
-	if err := c.Reply("Сняты ограничения с пользователя."); err != nil {
-		log.Error(fmt.Sprintf("Не удалось уведомить что сняты ограничения с пользователя: %v", err), pkgLog.LogContext{
-			"message": c.Message(),
+	if err := ctx.Bot().Promote(&tele.Chat{ID: config.HouseChatID}, violator); err != nil {
+		pkgLog.Error(fmt.Sprintf("Не удалось снять ограничения с пользователя: %v", err), pkgLogger.LogContext{
+			"violator": violator,
+			"message":  ctx.Message(),
+		})
+
+		if err := ctx.Reply("Не удалось снять ограничения с пользователя."); err != nil {
+			pkgLog.Error(fmt.Sprintf("Не удалось снять ограничения с пользователя: %v", err), pkgLogger.LogContext{
+				"message": ctx.Message(),
+			})
+		}
+
+		return nil
+	}
+
+	if err := ctx.Reply("Сняты ограничения с пользователя."); err != nil {
+		pkgLog.Error(fmt.Sprintf("Не удалось уведомить что сняты ограничения с пользователя: %v", err), pkgLogger.LogContext{
+			"message": ctx.Message(),
 		})
 	}
 	// FIXME: Посылать сообщение пользователю об отмене бана? А если он не начал общение с ботом?
-	log.Info("Сняты ограничения с пользователя", pkgLog.LogContext{
-		"admin_id":         c.Message().Sender.ID,
-		"admin_username":   c.Message().Sender.Username,
-		"admin_first_name": c.Message().Sender.FirstName,
-		"admin_last_name":  c.Message().Sender.LastName,
+	pkgLog.Info("Сняты ограничения с пользователя", pkgLogger.LogContext{
+		"admin_id":         ctx.Message().Sender.ID,
+		"admin_username":   ctx.Message().Sender.Username,
+		"admin_first_name": ctx.Message().Sender.FirstName,
+		"admin_last_name":  ctx.Message().Sender.LastName,
 		"violator":         violator,
 	})
+
 	return nil
 }
 
-func CommandBanHandler(c tele.Context) error {
+func CommandBanHandler(ctx tele.Context) error {
 	var violator *tele.ChatMember
-	d := c.Data()
-	f := strings.Fields(d)
-	switch len(f) {
+	var d = ctx.Data()
+
+	fields := strings.Fields(d)
+	switch len(fields) {
 	case 1:
-		if user := createUserViolator(f[0]); user != nil {
+		if user := createUserViolator(fields[0]); user != nil {
 			violator = &tele.ChatMember{User: user, RestrictedUntil: tele.Forever()}
 		}
 	case 2:
-		if user := createUserViolator(f[0]); user != nil {
-			violator = &tele.ChatMember{User: user, RestrictedUntil: createUnixTimeFromDays(f[1])}
+		if user := createUserViolator(fields[0]); user != nil {
+			violator = &tele.ChatMember{User: user, RestrictedUntil: createUnixTimeFromDays(fields[1])}
 		}
 	}
+
 	if violator == nil {
-		log.Warn(fmt.Sprintf("Вызов команды /ban без аргументов"), pkgLog.LogContext{
+		pkgLog.Warn("Вызов команды /ban без аргументов", pkgLogger.LogContext{
 			"arguments_string": d,
 		})
-		if err := c.Reply(fmt.Sprintf("Верный формат команды: %s", banCommandFormat), tele.ModeHTML); err != nil {
-			log.Error(fmt.Sprintf("Не удалось отправить подсказку по команде /ban: %v", err), pkgLog.LogContext{
-				"message": c.Message(),
+		if err := ctx.Reply(fmt.Sprintf("Верный формат команды: %s", banCommandFormat), tele.ModeHTML); err != nil {
+			pkgLog.Error(fmt.Sprintf("Не удалось отправить подсказку по команде /ban: %v", err), pkgLogger.LogContext{
+				"message": ctx.Message(),
 			})
 		}
-		return nil
-	}
-	if err := c.Bot().Ban(&tele.Chat{ID: config.HouseChatId}, violator); err != nil {
-		log.Error(fmt.Sprintf("Не удалось заблокировать пользователя: %v", err), pkgLog.LogContext{
-			"violator": violator,
-			"message":  c.Message(),
-		})
-		if err := c.Reply("Не удалось заблокировать пользователя."); err != nil {
-			log.Error(fmt.Sprintf("Не удалось заблокировать пользователя: %v", err), pkgLog.LogContext{
-				"message": c.Message(),
-			})
-		}
+
 		return nil
 	}
 
-	if err := c.Reply("Пользователь заблокирован."); err != nil {
-		log.Error(fmt.Sprintf("Не удалось уведомить что пользователь заблокирован: %v", err), pkgLog.LogContext{
-			"message": c.Message(),
+	if err := ctx.Bot().Ban(&tele.Chat{ID: config.HouseChatID}, violator); err != nil {
+		pkgLog.Error(fmt.Sprintf("Не удалось заблокировать пользователя: %v", err), pkgLogger.LogContext{
+			"violator": violator,
+			"message":  ctx.Message(),
+		})
+
+		if err := ctx.Reply("Не удалось заблокировать пользователя."); err != nil {
+			pkgLog.Error(fmt.Sprintf("Не удалось заблокировать пользователя: %v", err), pkgLogger.LogContext{
+				"message": ctx.Message(),
+			})
+		}
+
+		return nil
+	}
+
+	if err := ctx.Reply("Пользователь заблокирован."); err != nil {
+		pkgLog.Error(fmt.Sprintf("Не удалось уведомить что пользователь заблокирован: %v", err), pkgLogger.LogContext{
+			"message": ctx.Message(),
 		})
 	}
-	log.Info("Пользователь заблокирован", pkgLog.LogContext{
-		"admin_id":         c.Message().Sender.ID,
-		"admin_username":   c.Message().Sender.Username,
-		"admin_first_name": c.Message().Sender.FirstName,
-		"admin_last_name":  c.Message().Sender.LastName,
+
+	pkgLog.Info("Пользователь заблокирован", pkgLogger.LogContext{
+		"admin_id":         ctx.Message().Sender.ID,
+		"admin_username":   ctx.Message().Sender.Username,
+		"admin_first_name": ctx.Message().Sender.FirstName,
+		"admin_last_name":  ctx.Message().Sender.LastName,
 		"violator":         violator,
 	})
+
 	return nil
 }
 
-func CommandUnbanHandler(c tele.Context) error {
+func CommandUnbanHandler(ctx tele.Context) error {
 	var violator *tele.User
-	d := c.Data()
+	var d = ctx.Data()
+
 	f := strings.Fields(d)
 	switch len(f) {
 	case 1:
 		violator = createUserViolator(f[0])
 	}
+
 	if violator == nil {
-		log.Warn(fmt.Sprintf("Вызов команды /unban без аргументов"), pkgLog.LogContext{
+		pkgLog.Warn(fmt.Sprintf("Вызов команды /unban без аргументов"), pkgLogger.LogContext{
 			"arguments_string": d,
 		})
-		if err := c.Reply(fmt.Sprintf("Верный формат команды: %s", banCommandFormat), tele.ModeHTML); err != nil {
-			log.Error(fmt.Sprintf("Не удалось отправить подсказку по команде /unban: %v", err), pkgLog.LogContext{
-				"message": c.Message(),
+		if err := ctx.Reply(fmt.Sprintf("Верный формат команды: %s", banCommandFormat), tele.ModeHTML); err != nil {
+			pkgLog.Error(fmt.Sprintf("Не удалось отправить подсказку по команде /unban: %v", err), pkgLogger.LogContext{
+				"message": ctx.Message(),
 			})
 		}
 	}
-	if err := c.Bot().Unban(&tele.Chat{ID: config.HouseChatId}, violator, true); err != nil {
-		log.Error(fmt.Sprintf("Не удалось разблокировать пользователя: %v", err), pkgLog.LogContext{
+
+	if err := ctx.Bot().Unban(&tele.Chat{ID: config.HouseChatID}, violator, true); err != nil {
+		pkgLog.Error(fmt.Sprintf("Не удалось разблокировать пользователя: %v", err), pkgLogger.LogContext{
 			"violator": violator,
-			"message":  c.Message(),
+			"message":  ctx.Message(),
 		})
-		if err := c.Reply("Не удалось разблокировать пользователя."); err != nil {
-			log.Error(fmt.Sprintf("Не удалось разблокировать пользователя: %v", err), pkgLog.LogContext{
-				"message": c.Message(),
+
+		if err := ctx.Reply("Не удалось разблокировать пользователя."); err != nil {
+			pkgLog.Error(fmt.Sprintf("Не удалось разблокировать пользователя: %v", err), pkgLogger.LogContext{
+				"message": ctx.Message(),
 			})
 		}
+
 		return nil
 	}
 
-	if err := c.Reply("Пользователь разблокирован."); err != nil {
-		log.Error(fmt.Sprintf("Не удалось уведомить что пользователь разблокирован: %v", err), pkgLog.LogContext{
-			"message": c.Message(),
+	if err := ctx.Reply("Пользователь разблокирован."); err != nil {
+		pkgLog.Error(fmt.Sprintf("Не удалось уведомить что пользователь разблокирован: %v", err), pkgLogger.LogContext{
+			"message": ctx.Message(),
 		})
 	}
-	log.Info("Пользователь разблокирован", pkgLog.LogContext{
-		"admin_id":         c.Message().Sender.ID,
-		"admin_username":   c.Message().Sender.Username,
-		"admin_first_name": c.Message().Sender.FirstName,
-		"admin_last_name":  c.Message().Sender.LastName,
+
+	pkgLog.Info("Пользователь разблокирован", pkgLogger.LogContext{
+		"admin_id":         ctx.Message().Sender.ID,
+		"admin_username":   ctx.Message().Sender.Username,
+		"admin_first_name": ctx.Message().Sender.FirstName,
+		"admin_last_name":  ctx.Message().Sender.LastName,
 		"violator":         violator,
 	})
+
 	return nil
 }
 
-func CommandHelpAdminHandler(c tele.Context) error {
+func CommandHelpAdminHandler(ctx tele.Context) error {
 	help := fmt.Sprintf(`
 Справка для администратора. Все команды ниже используются только в чате администраторов.
 
@@ -249,9 +277,10 @@ func CommandHelpAdminHandler(c tele.Context) error {
 		banCommandFormat,
 		unbanCommandFormat,
 	)
-	err := c.Send(help, tele.ModeHTML, tele.NoPreview)
-	if err != nil {
-		log.Error(fmt.Sprintf("Не удалось отправить текст справки: %v", err), nil)
+
+	if err := ctx.Send(help, tele.ModeHTML, tele.NoPreview); err != nil {
+		pkgLog.Error(fmt.Sprintf("Не удалось отправить текст справки: %v", err), nil)
 	}
+
 	return nil
 }

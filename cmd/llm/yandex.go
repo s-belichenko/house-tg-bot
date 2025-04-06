@@ -16,7 +16,7 @@ const botNickname = "Тринадцатый"
 type ConfigLLM struct {
 	LLMApiToken    string `env:"LLM_API_TOKEN"`
 	SystemPrompt   string
-	LLMFolderId    string  `env:"LLM_FOLDER_ID"`
+	LLMFolderID    string  `env:"LLM_FOLDER_ID"`
 	LLMTemperature float32 `env:"LLM_TEMPERATURE" env-default:"0.7"`
 	MaxTokens      int     `env:"LLM_MAX_TOKENS" env-default:"8000"`
 	LogStreamName  string
@@ -45,11 +45,12 @@ var questions = []string{
 var log pkgLog.Logger
 
 func init() {
-	err := cleanenv.ReadEnv(&config)
 	log = pkgLog.InitLog(config.LogStreamName)
-	if err != nil {
-		fmt.Printf("Error reading LLM config: %v", err)
+
+	if err := cleanenv.ReadEnv(&config); err != nil {
+		log.Error(fmt.Sprintf("Error reading LLM config: %v", err), nil)
 	}
+
 	config.SystemPrompt = fmt.Sprintf(
 		"Тебя зовут %s. Ты чат-бот в чате про дом по Адресу Москва, Иловайская, 2.\n"+
 			"Люди любят тебя за юмор и за то, что ты всегда остро и смешно отвечаешь.\n"+
@@ -77,7 +78,6 @@ func GetTeaser() string {
 }
 
 func GetAnswerAboutKeys() string {
-
 	question := fmt.Sprintf("%s. %s?", getRandomElement(clarifications), getRandomElement(questions))
 	request := createRequest(question)
 	answer := doRequest(request)
@@ -96,6 +96,7 @@ func doRequest(request yandexgpt.YandexGPTRequest) string {
 		log.Error(fmt.Sprintf("LLM request error: %s", err.Error()), pkgLog.LogContext{
 			"request": request,
 		})
+
 		return ""
 	}
 
@@ -104,7 +105,7 @@ func doRequest(request yandexgpt.YandexGPTRequest) string {
 
 func createRequest(question string) yandexgpt.YandexGPTRequest {
 	return yandexgpt.YandexGPTRequest{
-		ModelURI: yandexgpt.MakeModelURI(config.LLMFolderId, yandexgpt.YandexGPT4Model),
+		ModelURI: yandexgpt.MakeModelURI(config.LLMFolderID, yandexgpt.YandexGPT4Model),
 		CompletionOptions: yandexgpt.YandexGPTCompletionOptions{
 			Stream:      false,
 			Temperature: config.LLMTemperature,

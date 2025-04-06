@@ -1,0 +1,78 @@
+version: "2"
+
+linters:
+  default: all
+  disable:
+    - copyloopvar
+    - depguard
+    - exhaustruct
+    - intrange
+    - gochecknoglobals
+    - funlen
+    - gochecknoinits
+    - gocritic
+    - godox
+    - lll
+    - gomoddirectives
+    - wrapcheck
+    - gosec
+    - mnd
+    - nestif
+    - nilerr
+    - paralleltest
+    - perfsprint
+    - revive
+    - staticcheck
+    - tagliatelle
+    - testpackage
+    - nlreturn
+    - tagalign
+    - varnamelen
+    - wsl
+  exclusions:
+    generated: lax
+    warn-unused: true
+    presets:
+      - comments
+      - std-error-handling
+      - common-false-positives
+      - legacy
+
+formatters:
+  #  enable:
+  #    - gci
+  #    - gofmt
+  #    - gofumpt
+  #    - goimports
+  #    - golines
+  exclusions:
+    generated: lax
+
+issues:
+  max-issues-per-linter: 0
+  max-same-issues: 0
+  fix: false
+
+output:
+  formats:
+    text:
+      path: stdout
+      print-linter-name: true
+      print-issued-lines: true
+      colors: true
+  sort-order:
+    - linter
+    - severity
+    - file # filepath, line, and column.
+  show-stats: true
+
+run:
+  timeout: "0"
+  relative-path-mode: gomod
+  issues-exit-code: 2
+  tests: true
+  modules-download-mode: readonly
+  allow-parallel-runners: true
+  allow-serial-runners: true
+  go: '1.21'
+  concurrency: 4

@@ -21,21 +21,19 @@ func parseChatID(s string) (TeleID, error) {
 	return 0, nil
 }
 
-func getCommandName(m *tele.Message) string {
-	for _, e := range m.Entities {
+func getCommandName(msg *tele.Message) string {
+	for _, e := range msg.Entities {
 		if e.Type == tele.EntityCommand {
 			o := e.Offset
 			l := e.Length
-			return m.Text[o:l]
+
+			return msg.Text[o:l]
 		}
 	}
+
 	return ""
 }
 
 func isBotHouse(c TeleContext) bool {
-	if c.Message().ThreadID == config.HomeThreadBot {
-		return true
-	} else {
-		return false
-	}
+	return c.Message().ThreadID == config.HomeThreadBot
 }

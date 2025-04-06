@@ -5,10 +5,10 @@ import (
 	"s-belichenko/ilovaiskaya2-bot/cmd/llm"
 
 	tele "gopkg.in/telebot.v4"
-	pkgLog "s-belichenko/ilovaiskaya2-bot/pkg/logger"
+	pkgLogger "s-belichenko/ilovaiskaya2-bot/pkg/logger"
 )
 
-// Команды бота для домового чата
+// Команды бота для домового чата.
 var (
 	KeysCommand   = tele.Command{Text: "keys", Description: "ПИК, где ключи?"}
 	ReportCommand = tele.Command{Text: "report", Description: "Сообщить о нарушении правил, формат: /report [уточнение]"}
@@ -18,15 +18,18 @@ func CommandKeysHandler(c tele.Context) error {
 	return c.Send(llm.GetAnswerAboutKeys())
 }
 
-func CommandReportHandler(c tele.Context) error {
-	m := c.Message()
-	log.Debug("ReplyTo", pkgLog.LogContext{
+func CommandReportHandler(ctx tele.Context) error {
+	var m = ctx.Message()
+
+	pkgLog.Debug("ReplyTo", pkgLogger.LogContext{
 		"reply_to": m.ReplyTo,
 	})
+
 	if m.ReplyTo == nil {
-		if err := c.Reply("Пожалуйста, используйте эту команду в ответе на сообщение с нарушением. Подробнее: выполните /help в личной переписке с @lp_13x_bot."); err != nil {
-			log.Error(fmt.Sprintf("Не удалось отправить уточнение про команду /report: %v", err), nil)
+		if err := ctx.Reply("Пожалуйста, используйте эту команду в ответе на сообщение с нарушением. Подробнее: выполните /help в личной переписке с @lp_13x_bot."); err != nil {
+			pkgLog.Error(fmt.Sprintf("Не удалось отправить уточнение про команду /report: %v", err), nil)
 		}
+
 		return nil
 	}
 
@@ -34,20 +37,21 @@ func CommandReportHandler(c tele.Context) error {
 	violator := m.ReplyTo.Sender
 
 	if violator.ID == config.BotID {
-		if err := c.Reply(fmt.Sprintf("%s, ай-яй-яй! %s", GetGreetingName(reporter), llm.GetTeaser())); err != nil {
-			log.Error(fmt.Sprintf("Не удалось пообзываться в ответ на репорт на бота: %v", err), pkgLog.LogContext{
+		if err := ctx.Reply(fmt.Sprintf("%s, ай-яй-яй! %s", GetGreetingName(reporter), llm.GetTeaser())); err != nil {
+			pkgLog.Error(fmt.Sprintf("Не удалось пообзываться в ответ на репорт на бота: %v", err), pkgLogger.LogContext{
 				"reporter": reporter,
 			})
 		}
+
 		return nil
 	}
 
-	clarification := c.Data()
+	clarification := ctx.Data()
 	chat := m.ReplyTo.Chat
 	violationMessageID := m.ReplyTo.ID
 	messageLink := GenerateMessageLink(chat, violationMessageID)
 
-	log.Info(fmt.Sprintf("Новое нарушение правил от %s", GetGreetingName(reporter)), pkgLog.LogContext{
+	pkgLog.Info(fmt.Sprintf("Новое нарушение правил от %s", GetGreetingName(reporter)), pkgLogger.LogContext{
 		"reporter_username": reporter.Username,
 		"reporter_id":       reporter.ID,
 		"violator":          violator.Username,
@@ -79,8 +83,8 @@ func CommandReportHandler(c tele.Context) error {
 	)
 
 	adminChat := &tele.Chat{ID: config.AdministrationChatID}
-	if _, err := c.Bot().Send(adminChat, reportMessage, tele.ModeHTML, tele.NoPreview); err != nil {
-		log.Error(fmt.Sprintf(
+	if _, err := ctx.Bot().Send(adminChat, reportMessage, tele.ModeHTML, tele.NoPreview); err != nil {
+		pkgLog.Error(fmt.Sprintf(
 			"Не удалось послать в чат админов жалобу от %s на %s: %v",
 			GetGreetingName(reporter),
 			GetGreetingName(violator),
@@ -88,11 +92,11 @@ func CommandReportHandler(c tele.Context) error {
 		), nil)
 	}
 
-	err := c.Bot().Delete(m)
+	err := ctx.Bot().Delete(m)
 	if err != nil {
-		log.Error(fmt.Sprintf(
+		pkgLog.Error(fmt.Sprintf(
 			"Не удалось удалить сообщение с жалобой от %s: %v", GetGreetingName(reporter), err),
-			pkgLog.LogContext{
+			pkgLogger.LogContext{
 				"message_id":   m.ID,
 				"message_text": m.Text,
 				"violator_id":  violator.ID,
@@ -105,8 +109,8 @@ func CommandReportHandler(c tele.Context) error {
 
 <blockquote>%s</blockquote>`, m.ReplyTo.Text)
 
-	if _, err := c.Bot().Send(reporter, thx, tele.ModeHTML, tele.NoPreview); err != nil {
-		log.Error(fmt.Sprintf(
+	if _, err := ctx.Bot().Send(reporter, thx, tele.ModeHTML, tele.NoPreview); err != nil {
+		pkgLog.Error(fmt.Sprintf(
 			"Не удалось послать благодарность за жалобу %s: %v",
 			GetGreetingName(reporter),
 			err,

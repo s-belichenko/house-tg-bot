@@ -7,13 +7,26 @@ import (
 	"time"
 )
 
+type Record struct {
+	Message   string     `json:"message"`
+	Level     LogLevel   `json:"level"`
+	Stream    string     `json:"stream_name"`
+	Timestamp time.Time  `json:"timestamp"`
+	Context   LogContext `json:"extra"`
+}
+
+func InitLog(logStreamName string) *YandexLogger {
+	return newYandexLogger(logStreamName)
+}
+
 type YandexLogger struct {
 	stream string
 	logger *log.Logger
 }
 
-func newYandexLogger(streamName string) Logger {
+func newYandexLogger(streamName string) *YandexLogger {
 	logger := log.New(os.Stdout, "", 0) // Отключаем все флаги
+
 	return &YandexLogger{
 		stream: streamName,
 		logger: logger,
@@ -34,6 +47,7 @@ func (l *YandexLogger) write(entry *Record) {
 	jsonBytes, err := json.Marshal(entry)
 	if err != nil {
 		log.Println("Ошибка при маршалинге JSON:", err)
+
 		return
 	}
 

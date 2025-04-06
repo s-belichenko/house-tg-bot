@@ -6,7 +6,7 @@ import (
 	tele "gopkg.in/telebot.v4"
 )
 
-// Команды бота для административного чата
+// Команды бота для административного чата.
 var (
 	StartCommand = tele.Command{Text: "start", Description: "Начать работу с ботом"}
 	HelpCommand  = tele.Command{Text: "help", Description: "Справка по боту"}
@@ -17,13 +17,14 @@ func CommandStartHandler(c tele.Context) error {
 		"Привет, %s! Ознакомься со справкой по работе с ботом: /help", GetGreetingName(c.Sender()),
 	))
 	if err != nil {
-		log.Error(fmt.Sprintf("Не удалось отправить ответ на команду /start: %v", err), nil)
+		pkgLog.Error(fmt.Sprintf("Не удалось отправить ответ на команду /start: %v", err), nil)
 	}
+
 	return err
 }
 
-func CommandHelpHandler(c tele.Context) error {
-	help := fmt.Sprintf(`
+func CommandHelpHandler(ctx tele.Context) error {
+	help := `
 Привет, это бот чата дома Иловайская, 2.
 
 Команды:
@@ -35,10 +36,11 @@ func CommandHelpHandler(c tele.Context) error {
 <blockquote>/report Ругается матом, редиска!</blockquote>
 Сообщение с жалобой будет отправлено администраторам, а ваше сообщение с командой удалено.
 
-<a href="https://ilovaiskaya2.homes/#rules">Ссылка на правила</a>.`)
-	err := c.Send(help, tele.ModeHTML, tele.NoPreview)
-	if err != nil {
-		log.Error(fmt.Sprintf("Не удалось отправить текст справки: %v", err), nil)
+<a href="https://ilovaiskaya2.homes/#rules">Ссылка на правила</a>.`
+
+	if err := ctx.Send(help, tele.ModeHTML, tele.NoPreview); err != nil {
+		pkgLog.Error(fmt.Sprintf("Не удалось отправить текст справки: %v", err), nil)
 	}
+
 	return nil
 }

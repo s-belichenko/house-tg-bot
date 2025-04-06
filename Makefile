@@ -4,6 +4,9 @@ download:
 tidy:
 	@go mod tidy
 
+lint:
+	@golangci-lint run ./...
+
 tests:
 	@go test -cover -race ./...
 

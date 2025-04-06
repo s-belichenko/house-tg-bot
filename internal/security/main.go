@@ -18,7 +18,7 @@ type TeleContext interface {
 
 type Config struct {
 	AdministrationChatID TeleID `env:"ADMINISTRATION_CHAT_ID"`
-	HouseChatId          TeleID `env:"HOUSE_CHAT_ID"`   // Домовой чат, управляемый ботом
+	HouseChatID          TeleID `env:"HOUSE_CHAT_ID"`   // Домовой чат, управляемый ботом
 	HomeThreadBot        int    `env:"HOME_THREAD_BOT"` // Тема в супергруппе, где нет ограничений для бота
 	LogStreamName        string
 }
@@ -29,23 +29,24 @@ var (
 )
 
 func init() {
-	initConfig()
 	log = pkgLog.InitLog(config.LogStreamName)
+
+	initConfig()
 }
 
 func initConfig() {
-	err := cleanenv.ReadEnv(&config)
-	if err != nil {
-		fmt.Printf("Error reading Bot config: %v", err)
+	if err := cleanenv.ReadEnv(&config); err != nil {
+		log.Error(fmt.Sprintf("Error reading Bot config: %v", err), nil)
 	}
 }
 
-// SetValue сеттер для загрузки в конфигурацию типа TeleID
+// SetValue сеттер для загрузки в конфигурацию типа TeleID.
 func (f *TeleID) SetValue(s string) error {
-	r, err := parseChatID(s)
-	if err != nil {
+	if r, err := parseChatID(s); err != nil {
 		return nil
+	} else {
+		*f = r
 	}
-	*f = r
+
 	return nil
 }

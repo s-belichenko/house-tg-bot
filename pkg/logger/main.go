@@ -1,9 +1,5 @@
 package logger
 
-import (
-	"time"
-)
-
 type LogLevel string
 
 type Logger interface {
@@ -25,15 +21,3 @@ const (
 )
 
 type LogContext map[string]interface{}
-
-type Record struct {
-	Message   string     `json:"message"`
-	Level     LogLevel   `json:"level"`
-	Stream    string     `json:"stream_name"`
-	Timestamp time.Time  `json:"timestamp"`
-	Context   LogContext `json:"extra"`
-}
-
-func InitLog(logStreamName string) Logger {
-	return newYandexLogger(logStreamName)
-}

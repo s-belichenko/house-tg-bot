@@ -119,6 +119,7 @@ func TestCreateUserViolator(t *testing.T) {
 			"Пустой user_id":   nil,
 		},
 	}
+
 	for testCase, data := range dp.testData {
 		r := createUserViolator(data)
 

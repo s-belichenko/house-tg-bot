@@ -2,48 +2,48 @@ package handlers
 
 import tele "gopkg.in/telebot.v4"
 
-func CommandSetCommandsHandler(c tele.Context) error {
+func CommandSetCommandsHandler(ctx tele.Context) error {
 	// По умолчанию
-	setCommands(c,
+	setCommands(ctx,
 		[]tele.Command{StartCommand},
 		tele.CommandScope{Type: tele.CommandScopeDefault})
 	// Для личных чатов со всеми подряд
-	setCommands(c,
+	setCommands(ctx,
 		[]tele.Command{StartCommand, HelpCommand},
 		tele.CommandScope{Type: tele.CommandScopeAllPrivateChats})
 	// Для участников домового чата
-	setCommands(c,
+	setCommands(ctx,
 		[]tele.Command{KeysCommand, ReportCommand},
-		tele.CommandScope{Type: tele.CommandScopeChat, ChatID: config.HouseChatId})
+		tele.CommandScope{Type: tele.CommandScopeChat, ChatID: config.HouseChatID})
 	// Для админов домового чата
-	setCommands(c,
+	setCommands(ctx,
 		[]tele.Command{KeysCommand, ReportCommand},
-		tele.CommandScope{Type: tele.CommandScopeChatAdmin, ChatID: config.HouseChatId})
+		tele.CommandScope{Type: tele.CommandScopeChatAdmin, ChatID: config.HouseChatID})
 	// Для участников админского чата
-	setCommands(c,
+	setCommands(ctx,
 		[]tele.Command{HelpAdminChatCommand, MuteCommand, UnmuteCommand, BanCommand, UnbanCommand},
 		tele.CommandScope{Type: tele.CommandScopeChat, ChatID: config.AdministrationChatID})
 	// Для админов админского чата
-	setCommands(c,
+	setCommands(ctx,
 		[]tele.Command{SetCommandsCommand, DeleteCommandsCommand, HelpAdminChatCommand, MuteCommand, UnmuteCommand, BanCommand, UnbanCommand},
 		tele.CommandScope{Type: tele.CommandScopeChatAdmin, ChatID: config.AdministrationChatID})
 
 	return nil
 }
 
-func CommandDeleteCommandsHandler(c tele.Context) error {
+func CommandDeleteCommandsHandler(ctx tele.Context) error {
 	// По умолчанию
-	deleteCommands(c, tele.CommandScope{Type: tele.CommandScopeDefault})
+	deleteCommands(ctx, tele.CommandScope{Type: tele.CommandScopeDefault})
 	// Для личных чатов со всеми подряд
-	deleteCommands(c, tele.CommandScope{Type: tele.CommandScopeAllPrivateChats})
+	deleteCommands(ctx, tele.CommandScope{Type: tele.CommandScopeAllPrivateChats})
 	// Для участников домового чата
-	deleteCommands(c, tele.CommandScope{Type: tele.CommandScopeChat, ChatID: config.HouseChatId})
+	deleteCommands(ctx, tele.CommandScope{Type: tele.CommandScopeChat, ChatID: config.HouseChatID})
 	// Для админов домового чата
-	deleteCommands(c, tele.CommandScope{Type: tele.CommandScopeChatAdmin, ChatID: config.HouseChatId})
+	deleteCommands(ctx, tele.CommandScope{Type: tele.CommandScopeChatAdmin, ChatID: config.HouseChatID})
 	// Для участников админского чата
-	deleteCommands(c, tele.CommandScope{Type: tele.CommandScopeChat, ChatID: config.AdministrationChatID})
+	deleteCommands(ctx, tele.CommandScope{Type: tele.CommandScopeChat, ChatID: config.AdministrationChatID})
 	// Для админов админского чата
-	deleteCommands(c, tele.CommandScope{Type: tele.CommandScopeChatAdmin, ChatID: config.AdministrationChatID})
+	deleteCommands(ctx, tele.CommandScope{Type: tele.CommandScopeChatAdmin, ChatID: config.AdministrationChatID})
 
 	return nil
 }

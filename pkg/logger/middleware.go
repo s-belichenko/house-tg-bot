@@ -10,6 +10,7 @@ func GetMiddleware(logger Logger) tele.MiddlewareFunc {
 			logger.Debug("Получен Update от Telegram", LogContext{
 				"update": c.Update(),
 			})
+
 			return next(c)
 		}
 	}
