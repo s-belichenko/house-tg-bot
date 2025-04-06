@@ -22,13 +22,13 @@ func CommandKeysHandler(c tele.Context) error {
 }
 
 func CommandReportHandler(ctx tele.Context) error {
-	m := ctx.Message()
+	msg := ctx.Message()
 
 	pkgLog.Debug("ReplyTo", pkgLogger.LogContext{
-		"reply_to": m.ReplyTo,
+		"reply_to": msg.ReplyTo,
 	})
 
-	if m.ReplyTo == nil {
+	if msg.ReplyTo == nil {
 		if err := ctx.Reply("Пожалуйста, используйте эту команду в ответе на сообщение с нарушением. " +
 			"Подробнее: выполните /help в личной переписке с @lp_13x_bot."); err != nil {
 			pkgLog.Error(
@@ -40,8 +40,8 @@ func CommandReportHandler(ctx tele.Context) error {
 		return nil
 	}
 
-	reporter := m.Sender
-	violator := m.ReplyTo.Sender
+	reporter := msg.Sender
+	violator := msg.ReplyTo.Sender
 
 	if violator.ID == config.BotID {
 		if err := ctx.Reply(fmt.Sprintf("%s, ай-яй-яй! %s", GetGreetingName(reporter), llm.GetTeaser())); err != nil {
@@ -57,8 +57,8 @@ func CommandReportHandler(ctx tele.Context) error {
 	}
 
 	clarification := ctx.Data()
-	chat := m.ReplyTo.Chat
-	violationMessageID := m.ReplyTo.ID
+	chat := msg.ReplyTo.Chat
+	violationMessageID := msg.ReplyTo.ID
 	messageLink := GenerateMessageLink(chat, violationMessageID)
 
 	pkgLog.Info(
@@ -68,7 +68,7 @@ func CommandReportHandler(ctx tele.Context) error {
 			"reporter_id":       reporter.ID,
 			"violator":          violator.Username,
 			"violator_id":       violator.ID,
-			"text":              m.ReplyTo.Text,
+			"text":              msg.ReplyTo.Text,
 			"clarification":     clarification,
 			"message_link":      messageLink,
 		},
@@ -92,7 +92,7 @@ func CommandReportHandler(ctx tele.Context) error {
 		messageLink,
 		violator.Username,
 		violator.ID,
-		m.ReplyTo.Text,
+		msg.ReplyTo.Text,
 	)
 
 	adminChat := &tele.Chat{ID: config.AdministrationChatID}
@@ -105,13 +105,13 @@ func CommandReportHandler(ctx tele.Context) error {
 		), nil)
 	}
 
-	err := ctx.Bot().Delete(m)
+	err := ctx.Bot().Delete(msg)
 	if err != nil {
 		pkgLog.Error(fmt.Sprintf(
 			"Не удалось удалить сообщение с жалобой от %s: %v", GetGreetingName(reporter), err),
 			pkgLogger.LogContext{
-				"message_id":   m.ID,
-				"message_text": m.Text,
+				"message_id":   msg.ID,
+				"message_text": msg.Text,
 				"violator_id":  violator.ID,
 			},
 		)
@@ -120,7 +120,7 @@ func CommandReportHandler(ctx tele.Context) error {
 	thx := fmt.Sprintf(`
 Спасибо за ваше сообщение. Администрация рассмотрит жалобу. Сообщение:
 
-<blockquote>%s</blockquote>`, m.ReplyTo.Text)
+<blockquote>%s</blockquote>`, msg.ReplyTo.Text)
 
 	if _, err := ctx.Bot().Send(reporter, thx, tele.ModeHTML, tele.NoPreview); err != nil {
 		pkgLog.Error(fmt.Sprintf(

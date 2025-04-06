@@ -21,7 +21,6 @@ linters:
     - nilerr
     - revive
     - staticcheck
-    - varnamelen
   settings:
     tagliatelle:
       case:

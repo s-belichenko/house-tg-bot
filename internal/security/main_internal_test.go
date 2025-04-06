@@ -9,7 +9,7 @@ import (
 )
 
 func TestIsBotHouse(t *testing.T) {
-	dp := struct {
+	dataProvider := struct {
 		testData map[string]struct {
 			configThreadID int
 			threadID       int
@@ -51,7 +51,7 @@ func TestIsBotHouse(t *testing.T) {
 		},
 	}
 
-	for testCase, testData := range dp.testData {
+	for testCase, testData := range dataProvider.testData {
 		t.Run(testCase, func(t *testing.T) {
 			config.HomeThreadBot = testData.configThreadID
 
@@ -61,7 +61,7 @@ func TestIsBotHouse(t *testing.T) {
 				Once()
 
 			r := isBotHouse(c)
-			assert.Equal(t, dp.expected[testCase], r)
+			assert.Equal(t, dataProvider.expected[testCase], r)
 		})
 	}
 }

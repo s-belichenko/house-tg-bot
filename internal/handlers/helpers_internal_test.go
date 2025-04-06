@@ -37,7 +37,7 @@ func TestParseUserID(t *testing.T) {
 }
 
 func TestParseUsername(t *testing.T) {
-	dp := struct {
+	dataProvider := struct {
 		testData map[string]string
 		expected map[string]string
 	}{
@@ -62,10 +62,10 @@ func TestParseUsername(t *testing.T) {
 		},
 	}
 
-	for testCase, data := range dp.testData {
+	for testCase, data := range dataProvider.testData {
 		t.Run(testCase, func(t *testing.T) {
 			r := parseUsername(data)
-			for _, problem := range deep.Equal(r, dp.expected[testCase]) {
+			for _, problem := range deep.Equal(r, dataProvider.expected[testCase]) {
 				t.Error(problem)
 			}
 		})
@@ -73,7 +73,7 @@ func TestParseUsername(t *testing.T) {
 }
 
 func TestCreateUserViolator(t *testing.T) {
-	dp := struct {
+	dataProvider := struct {
 		testData map[string]string
 		expected map[string]*tele.User
 	}{
@@ -87,10 +87,10 @@ func TestCreateUserViolator(t *testing.T) {
 		},
 	}
 
-	for testCase, data := range dp.testData {
+	for testCase, data := range dataProvider.testData {
 		t.Run(testCase, func(t *testing.T) {
 			r := createUserViolator(data)
-			for _, problem := range deep.Equal(r, dp.expected[testCase]) {
+			for _, problem := range deep.Equal(r, dataProvider.expected[testCase]) {
 				t.Error(problem)
 			}
 		})

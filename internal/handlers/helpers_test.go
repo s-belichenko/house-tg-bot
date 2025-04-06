@@ -9,7 +9,7 @@ import (
 )
 
 func TestGetGreetingName(t *testing.T) {
-	dp := struct {
+	dataProvider := struct {
 		testData map[string]tele.User
 		expected map[string]string
 	}{
@@ -33,11 +33,11 @@ func TestGetGreetingName(t *testing.T) {
 		},
 	}
 
-	for testCase, data := range dp.testData {
+	for testCase, data := range dataProvider.testData {
 		t.Run(testCase, func(t *testing.T) {
 			// #nosec G601 FIXME: Убрать после перехода на Go 1.22
 			r := handlers.GetGreetingName(&data)
-			for _, problem := range deep.Equal(r, dp.expected[testCase]) {
+			for _, problem := range deep.Equal(r, dataProvider.expected[testCase]) {
 				t.Error(problem)
 			}
 		})
