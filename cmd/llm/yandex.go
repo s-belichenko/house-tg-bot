@@ -2,13 +2,13 @@ package llm
 
 import (
 	"context"
+	"crypto/rand"
 	"fmt"
-	"math/rand"
-	"time"
+	"math/big"
 
 	"github.com/ilyakaznacheev/cleanenv"
 	"github.com/sheeiavellie/go-yandexgpt"
-	pkgLog "s-belichenko/ilovaiskaya2-bot/pkg/logger"
+	pkgLogger "s-belichenko/ilovaiskaya2-bot/pkg/logger"
 )
 
 const botNickname = "Тринадцатый"
@@ -44,13 +44,13 @@ var questions = []string{
 	"Придумай смешной ответ компании ПИК на вопрос \"ПИК, сколько еще можно ждать ключи?",
 }
 
-var log pkgLog.Logger
+var pkgLog pkgLogger.Logger
 
 func init() {
-	log = pkgLog.InitLog(config.LogStreamName)
+	pkgLog = pkgLogger.InitLog(config.LogStreamName)
 
 	if err := cleanenv.ReadEnv(&config); err != nil {
-		log.Error(fmt.Sprintf("Error reading LLM config: %v", err), nil)
+		pkgLog.Error(fmt.Sprintf("Error reading LLM config: %v", err), nil)
 	}
 
 	config.SystemPrompt = fmt.Sprintf(
@@ -90,7 +90,7 @@ func GetAnswerAboutKeys() string {
 	request := createRequest(question)
 	answer := doRequest(request)
 
-	log.Info("Получен ответ про ключи.", pkgLog.LogContext{
+	pkgLog.Info("Получен ответ про ключи.", pkgLogger.LogContext{
 		"question": question,
 		"answer":   answer,
 	})
@@ -101,7 +101,7 @@ func GetAnswerAboutKeys() string {
 func doRequest(request yandexgpt.YandexGPTRequest) string {
 	response, err := client.GetCompletion(context.Background(), request)
 	if err != nil {
-		log.Error(fmt.Sprintf("LLM request error: %s", err.Error()), pkgLog.LogContext{
+		pkgLog.Error(fmt.Sprintf("LLM request error: %s", err.Error()), pkgLogger.LogContext{
 			"request": request,
 		})
 
@@ -133,8 +133,12 @@ func createRequest(question string) yandexgpt.YandexGPTRequest {
 }
 
 func getRandomElement(slice []string) string {
-	rand.New(rand.NewSource(time.Now().UnixNano()))
-	randomIndex := rand.Intn(len(slice))
+	var randomIndex int
+	randomInt, err := rand.Int(rand.Reader, big.NewInt(int64(len(slice))))
+	if err != nil {
+		pkgLog.Error(fmt.Sprintf("Ошибка генерации случайного числа: %v", err), nil)
+	}
+	randomIndex = int(randomInt.Int64())
 
 	return slice[randomIndex]
 }

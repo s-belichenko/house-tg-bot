@@ -36,6 +36,7 @@ func TestGetGreetingName(t *testing.T) {
 	}
 
 	for testCase, data := range dp.testData {
+		// #nosec G601 FIXME: Убрать после перехода на Go 1.22
 		r := handlers.GetGreetingName(&data)
 
 		for _, problem := range deep.Equal(r, dp.expected[testCase]) {
