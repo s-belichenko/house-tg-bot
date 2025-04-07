@@ -2,6 +2,17 @@ package handlers
 
 import tele "gopkg.in/telebot.v4"
 
+var (
+	SetCommandsCommand = tele.Command{
+		Text:        "set_commands",
+		Description: "Установить команды бота",
+	}
+	DeleteCommandsCommand = tele.Command{
+		Text:        "delete_commands",
+		Description: "Удалить команды бота",
+	}
+)
+
 func CommandSetCommandsHandler(ctx tele.Context) error {
 	// По умолчанию
 	setCommands(ctx,

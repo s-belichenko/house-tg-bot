@@ -36,15 +36,6 @@ var (
 		Text:        "unban",
 		Description: "Разблокировать пользователя из домового чата",
 	}
-
-	SetCommandsCommand = tele.Command{
-		Text:        "set_commands",
-		Description: "Установить команды бота",
-	}
-	DeleteCommandsCommand = tele.Command{
-		Text:        "delete_commands",
-		Description: "Удалить команды бота",
-	}
 )
 
 func CommandMuteHandler(ctx tele.Context) error {
