@@ -5,7 +5,7 @@ import (
 
 	"github.com/ilyakaznacheev/cleanenv"
 	tele "gopkg.in/telebot.v4"
-	pkgLog "s-belichenko/ilovaiskaya2-bot/pkg/logger"
+	pkgLog "s-belichenko/house-tg-bot/pkg/logger"
 )
 
 type (

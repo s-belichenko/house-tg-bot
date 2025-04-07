@@ -1,4 +1,4 @@
-module s-belichenko/ilovaiskaya2-bot
+module s-belichenko/house-tg-bot
 
 go 1.21.0
 

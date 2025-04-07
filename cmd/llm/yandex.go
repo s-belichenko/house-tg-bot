@@ -8,7 +8,7 @@ import (
 
 	"github.com/ilyakaznacheev/cleanenv"
 	"github.com/sheeiavellie/go-yandexgpt"
-	pkgLogger "s-belichenko/ilovaiskaya2-bot/pkg/logger"
+	pkgLogger "s-belichenko/house-tg-bot/pkg/logger"
 )
 
 const botNickname = "Тринадцатый"

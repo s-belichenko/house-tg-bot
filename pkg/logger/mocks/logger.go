@@ -3,7 +3,7 @@
 package logger
 
 import (
-	pkglogger "s-belichenko/ilovaiskaya2-bot/pkg/logger"
+	pkglogger "s-belichenko/house-tg-bot/pkg/logger"
 
 	mock "github.com/stretchr/testify/mock"
 )

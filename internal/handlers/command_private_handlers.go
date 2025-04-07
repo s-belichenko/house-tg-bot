@@ -38,7 +38,7 @@ func CommandHelpHandler(ctx tele.Context) error {
 <blockquote>/report Ругается матом, редиска!</blockquote>
 Сообщение с жалобой будет отправлено администраторам, а ваше сообщение с командой удалено.
 
-<a href="https://ilovaiskaya2.homes/#rules">Ссылка на правила</a>.`
+<a href="` + config.RulesURL.String() + `">Ссылка на правила</a>.`
 
 	if err := ctx.Send(help, tele.ModeHTML, tele.NoPreview); err != nil {
 		pkgLog.Error(fmt.Sprintf("Не удалось отправить текст справки: %v", err), nil)

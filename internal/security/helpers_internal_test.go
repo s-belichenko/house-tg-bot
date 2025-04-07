@@ -5,7 +5,7 @@ import (
 
 	"github.com/stretchr/testify/assert"
 	tele "gopkg.in/telebot.v4"
-	mocks "s-belichenko/ilovaiskaya2-bot/mocks/internal_/security"
+	mocks "s-belichenko/house-tg-bot/mocks/internal_/security"
 )
 
 func TestIsBotHouse(t *testing.T) {

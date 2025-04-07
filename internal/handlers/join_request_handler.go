@@ -4,7 +4,7 @@ import (
 	"fmt"
 
 	tele "gopkg.in/telebot.v4"
-	pkgLogger "s-belichenko/ilovaiskaya2-bot/pkg/logger"
+	pkgLogger "s-belichenko/house-tg-bot/pkg/logger"
 )
 
 const hiMsg = "Привет, вы подали заявку на вступление в чат дома по адресу Иловайская, 2 (бывшие 13-е корпуса) " +

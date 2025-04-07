@@ -5,7 +5,7 @@ import (
 
 	"github.com/go-test/deep"
 	tele "gopkg.in/telebot.v4"
-	handlers "s-belichenko/ilovaiskaya2-bot/internal/handlers"
+	handlers "s-belichenko/house-tg-bot/internal/handlers"
 )
 
 func TestGetGreetingName(t *testing.T) {

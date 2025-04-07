@@ -4,12 +4,13 @@ import (
 	"fmt"
 
 	tele "gopkg.in/telebot.v4"
-	llm "s-belichenko/ilovaiskaya2-bot/cmd/llm"
-	pkgLogger "s-belichenko/ilovaiskaya2-bot/pkg/logger"
+	llm "s-belichenko/house-tg-bot/cmd/llm"
+	pkgLogger "s-belichenko/house-tg-bot/pkg/logger"
 )
 
 // Команды бота для домового чата.
 var (
+	// KeysCommand TODO: Добавить возможность изменять название застройщика.
 	KeysCommand   = tele.Command{Text: "keys", Description: "ПИК, где ключи?"}
 	ReportCommand = tele.Command{
 		Text:        "report",

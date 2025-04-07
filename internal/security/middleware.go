@@ -5,9 +5,9 @@ import (
 	"strings"
 
 	tele "gopkg.in/telebot.v4"
-	llm "s-belichenko/ilovaiskaya2-bot/cmd/llm"
-	hndls "s-belichenko/ilovaiskaya2-bot/internal/handlers"
-	pkgLog "s-belichenko/ilovaiskaya2-bot/pkg/logger"
+	llm "s-belichenko/house-tg-bot/cmd/llm"
+	hndls "s-belichenko/house-tg-bot/internal/handlers"
+	pkgLog "s-belichenko/house-tg-bot/pkg/logger"
 )
 
 func AllPrivateChatsMiddleware(next tele.HandlerFunc) tele.HandlerFunc {

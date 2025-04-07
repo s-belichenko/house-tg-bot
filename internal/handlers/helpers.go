@@ -8,7 +8,7 @@ import (
 	"time"
 
 	tele "gopkg.in/telebot.v4"
-	pkgLogger "s-belichenko/ilovaiskaya2-bot/pkg/logger"
+	pkgLogger "s-belichenko/house-tg-bot/pkg/logger"
 )
 
 const (

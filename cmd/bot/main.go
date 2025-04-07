@@ -10,9 +10,9 @@ import (
 	"github.com/ilyakaznacheev/cleanenv"
 	tele "gopkg.in/telebot.v4"
 	teleMid "gopkg.in/telebot.v4/middleware"
-	hdls "s-belichenko/ilovaiskaya2-bot/internal/handlers"
-	sec "s-belichenko/ilovaiskaya2-bot/internal/security"
-	pkgLogger "s-belichenko/ilovaiskaya2-bot/pkg/logger"
+	hdls "s-belichenko/house-tg-bot/internal/handlers"
+	sec "s-belichenko/house-tg-bot/internal/security"
+	pkgLogger "s-belichenko/house-tg-bot/pkg/logger"
 )
 
 type ConfigBot struct {

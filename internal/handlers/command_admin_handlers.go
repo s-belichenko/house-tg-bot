@@ -5,7 +5,7 @@ import (
 	"strings"
 
 	tele "gopkg.in/telebot.v4"
-	pkgLogger "s-belichenko/ilovaiskaya2-bot/pkg/logger"
+	pkgLogger "s-belichenko/house-tg-bot/pkg/logger"
 )
 
 const (
@@ -347,7 +347,7 @@ func CommandHelpAdminHandler(ctx tele.Context) error {
 %s – Забанить пользователя в домовом чата.
 %s – Разбанить пользователя в домовом чата.
 
-<a href="https://ilovaiskaya2.homes/#rules">Ссылка на правила</a>.`,
+<a href="`+config.RulesURL.String()+`">Ссылка на правила</a>.`,
 		muteCommandFormat,
 		unmuteCommandFormat,
 		banCommandFormat,

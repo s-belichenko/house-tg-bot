@@ -4,9 +4,9 @@ import (
 	"testing"
 	"time"
 
-	pkgLogger "s-belichenko/ilovaiskaya2-bot/pkg/logger"
-	mocks "s-belichenko/ilovaiskaya2-bot/pkg/logger/mocks"
-	timeMocks "s-belichenko/ilovaiskaya2-bot/pkg/time/mocks"
+	pkgLogger "s-belichenko/house-tg-bot/pkg/logger"
+	mocks "s-belichenko/house-tg-bot/pkg/logger/mocks"
+	timeMocks "s-belichenko/house-tg-bot/pkg/time/mocks"
 )
 
 type dataProvider struct {

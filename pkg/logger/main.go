@@ -4,7 +4,7 @@ import (
 	"log"
 	"os"
 
-	pkgTime "s-belichenko/ilovaiskaya2-bot/pkg/time"
+	pkgTime "s-belichenko/house-tg-bot/pkg/time"
 )
 
 type LogLevel string

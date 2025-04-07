@@ -64,10 +64,10 @@ jobs:
           entrypoint: 'cmd/bot/main.Handler'
           service-account: ${{ secrets.YC_SERVICE_ACCOUT_ID }}
           environment: |
-            CHAT_ADMINS=${{ vars.CHAT_ADMINS }}
             HOUSE_CHAT_ID=${{ vars.HOUSE_CHAT_ID }}
             HOME_THREAD_BOT=${{ vars.HOME_THREAD_BOT }}
             ADMINISTRATION_CHAT_ID=${{ vars.ADMINISTRATION_CHAT_ID }}
+            RULES_URL=${{ vars.RULES_URL }}
           secrets: |
             TELEGRAM_BOT_TOKEN=${{ secrets.YC_LOCKBOX_ID }}/${{ secrets.YC_LOCKBOX_VERSION }}/TELEGRAM_BOT_TOKEN
             LLM_API_TOKEN=${{ secrets.YC_LOCKBOX_ID }}/${{ secrets.YC_LOCKBOX_VERSION }}/LLM_API_TOKEN
