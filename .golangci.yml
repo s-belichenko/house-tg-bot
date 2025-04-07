@@ -5,19 +5,18 @@ linters:
   disable:
     - copyloopvar
     - gochecknoinits
-    - godox
+    - godox # Служебные комментарии в коде
     - gomoddirectives
     - perfsprint
-    - depguard
+    - depguard # Белый список разрешенных зависимостей
     - paralleltest
-    - mnd
+    - mnd # Магические числа
     - intrange
     # TODO: Поправить и включить проверку.
     - exhaustruct
     - gochecknoglobals
     - funlen
     - wrapcheck
-    - nestif
   settings:
     tagliatelle:
       case:

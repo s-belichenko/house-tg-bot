@@ -5,6 +5,7 @@ import (
 	"crypto/rand"
 	"fmt"
 	"math/big"
+	"strings"
 
 	"github.com/ilyakaznacheev/cleanenv"
 	"github.com/sheeiavellie/go-yandexgpt"
@@ -68,6 +69,12 @@ func GetCantSpeakPhrase() string {
 		"Напиши только саму фразу без кавычек."
 	request := createRequest(question)
 	answer := doRequest(request)
+
+	if !strings.HasSuffix(answer, ".") &&
+		!strings.HasSuffix(answer, "!") &&
+		!strings.HasSuffix(answer, "?") {
+		answer += "."
+	}
 
 	return answer
 }

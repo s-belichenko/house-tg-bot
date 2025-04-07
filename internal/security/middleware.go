@@ -2,7 +2,6 @@ package security
 
 import (
 	"fmt"
-	"strings"
 
 	tele "gopkg.in/telebot.v4"
 	llm "s-belichenko/house-tg-bot/cmd/llm"
@@ -124,35 +123,29 @@ func AdminChatMiddleware(next tele.HandlerFunc) tele.HandlerFunc {
 
 func KeysCommandMiddleware(next tele.HandlerFunc) tele.HandlerFunc {
 	return func(ctx tele.Context) error {
-		if !isBotHouse(ctx) {
-			cantSpeakPhrase := llm.GetCantSpeakPhrase()
-			if cantSpeakPhrase != "" {
-				if !strings.HasSuffix(cantSpeakPhrase, ".") &&
-					!strings.HasSuffix(cantSpeakPhrase, "!") &&
-					!strings.HasSuffix(cantSpeakPhrase, "?") {
-					cantSpeakPhrase += "."
-				}
-				// TODO: Через очереди записывать команды не в тех местах и удалять их по истечении некоего времени.
-				//  Писать также куда-то злоупотребляющих командой не в тех местах? Писать вообще все команды куда-либо?
-				//  Использовать DeleteAfter()?
-				err := ctx.Reply(fmt.Sprintf(
-					"%s @%s, попробуйте использовать команду в теме \"Оффтоп.\"",
-					cantSpeakPhrase, ctx.Sender().Username,
-				))
-				if err != nil {
-					log.Error(
-						fmt.Sprintf(
-							"Бот не смог рассказать об ограничениях команды /keys: %v",
-							err,
-						),
-						nil,
-					)
-				}
-			}
-
-			return nil
+		if isBotHouse(ctx) {
+			return next(ctx)
 		}
 
-		return next(ctx)
+		if cantSpeakPhrase := llm.GetCantSpeakPhrase(); cantSpeakPhrase != "" {
+			// TODO: Через очереди записывать команды не в тех местах и удалять их по истечении некоего времени.
+			//  Писать также куда-то злоупотребляющих командой не в тех местах? Писать вообще все команды куда-либо?
+			//  Использовать DeleteAfter()?
+			err := ctx.Reply(fmt.Sprintf(
+				"%s @%s, попробуйте использовать команду в теме \"Оффтоп.\"",
+				cantSpeakPhrase, ctx.Sender().Username,
+			))
+			if err != nil {
+				log.Error(
+					fmt.Sprintf(
+						"Бот не смог рассказать об ограничениях команды /keys: %v",
+						err,
+					),
+					nil,
+				)
+			}
+		}
+
+		return nil
 	}
 }
