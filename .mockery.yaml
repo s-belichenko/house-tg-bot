@@ -1,3 +1,19 @@
 testonly: False
 with-expecter: True
 keeptree: True
+
+packages:
+  s-belichenko/ilovaiskaya2-bot/pkg/time:
+    config:
+      filename: "{{.InterfaceName | snakecase}}.go"
+      dir: "{{.InterfaceDir}}/mocks"
+      mockname: "Mock{{.InterfaceName}}"
+      outpkg: "mocks"
+      inpackage: true
+  s-belichenko/ilovaiskaya2-bot/pkg/logger:
+    config:
+      filename: "{{.InterfaceName | snakecase}}.go"
+      dir: "{{.InterfaceDir}}/mocks"
+      mockname: "Mock{{.InterfaceName}}"
+      outpkg: "mocks"
+      inpackage: true

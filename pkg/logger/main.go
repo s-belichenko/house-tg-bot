@@ -43,5 +43,5 @@ func InitLog(logStreamName string) *YandexLogger {
 	logger := log.New(os.Stdout, "", 0)
 	time := pkgTime.Time{} // Отключаем все флаги.
 
-	return newYandexLogger(logStreamName, logger, time)
+	return NewYandexLogger(logStreamName, logger, time)
 }

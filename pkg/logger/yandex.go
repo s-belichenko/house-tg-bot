@@ -22,7 +22,7 @@ type YandexLogger struct {
 	time   pkgTime.ClockInterface
 }
 
-func newYandexLogger(
+func NewYandexLogger(
 	streamName string,
 	logger SystemLogger,
 	time pkgTime.ClockInterface,

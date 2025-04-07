@@ -1,17 +1,18 @@
-package logger
+package logger_test
 
 import (
 	"testing"
 	"time"
 
-	mocks "s-belichenko/ilovaiskaya2-bot/mocks/pkg/logger"
-	mocks2 "s-belichenko/ilovaiskaya2-bot/mocks/pkg/time"
+	pkgLogger "s-belichenko/ilovaiskaya2-bot/pkg/logger"
+	mocks "s-belichenko/ilovaiskaya2-bot/pkg/logger/mocks"
+	timeMocks "s-belichenko/ilovaiskaya2-bot/pkg/time/mocks"
 )
 
 type dataProvider struct {
 	testData map[string]struct {
 		msg string
-		ctx LogContext
+		ctx pkgLogger.LogContext
 	}
 	expected map[string]string
 }
@@ -20,7 +21,7 @@ func TestYandexLogger_Debug(t *testing.T) {
 	dataProvider := dataProvider{
 		testData: map[string]struct {
 			msg string
-			ctx LogContext
+			ctx pkgLogger.LogContext
 		}{
 			"Debug без контекста": {
 				msg: "Debug text",
@@ -28,7 +29,7 @@ func TestYandexLogger_Debug(t *testing.T) {
 			},
 			"Debug с контекстом": {
 				msg: "Debug text",
-				ctx: LogContext{
+				ctx: pkgLogger.LogContext{
 					"user_id": 123,
 					"chat_id": 456,
 				},
@@ -42,8 +43,8 @@ func TestYandexLogger_Debug(t *testing.T) {
 		},
 	}
 
-	sysLog := mocks.NewSystemLogger(t)
-	clock := mocks2.NewClockInterface(t)
+	sysLog := mocks.NewMockSystemLogger(t)
+	clock := timeMocks.NewMockClockInterface(t)
 	now := time.Date(2019, 1, 1, 0, 0, 0, 0, time.UTC)
 
 	for testCase, testData := range dataProvider.testData {
@@ -52,7 +53,7 @@ func TestYandexLogger_Debug(t *testing.T) {
 				Return(nil)
 			clock.On("Now").Return(now)
 
-			yandexLogger := newYandexLogger("stream", sysLog, clock)
+			yandexLogger := pkgLogger.NewYandexLogger("stream", sysLog, clock)
 			yandexLogger.Debug(testData.msg, testData.ctx)
 		})
 	}
@@ -62,7 +63,7 @@ func TestYandexLogger_Trace(t *testing.T) {
 	dataProvider := dataProvider{
 		testData: map[string]struct {
 			msg string
-			ctx LogContext
+			ctx pkgLogger.LogContext
 		}{
 			"Trace без контекста": {
 				msg: "Trace text",
@@ -70,7 +71,7 @@ func TestYandexLogger_Trace(t *testing.T) {
 			},
 			"Trace с контекстом": {
 				msg: "Trace text",
-				ctx: LogContext{
+				ctx: pkgLogger.LogContext{
 					"user_id": 234,
 					"chat_id": 567,
 				},
@@ -84,8 +85,8 @@ func TestYandexLogger_Trace(t *testing.T) {
 		},
 	}
 
-	sysLog := mocks.NewSystemLogger(t)
-	clock := mocks2.NewClockInterface(t)
+	sysLog := mocks.NewMockSystemLogger(t)
+	clock := timeMocks.NewMockClockInterface(t)
 	now := time.Date(2018, 2, 2, 1, 1, 1, 1, time.UTC)
 
 	for testCase, testData := range dataProvider.testData {
@@ -94,7 +95,7 @@ func TestYandexLogger_Trace(t *testing.T) {
 				Return(nil)
 			clock.On("Now").Return(now)
 
-			yandexLogger := newYandexLogger("stream", sysLog, clock)
+			yandexLogger := pkgLogger.NewYandexLogger("stream", sysLog, clock)
 			yandexLogger.Trace(testData.msg, testData.ctx)
 		})
 	}
@@ -104,7 +105,7 @@ func TestYandexLogger_Info(t *testing.T) {
 	dataProvider := dataProvider{
 		testData: map[string]struct {
 			msg string
-			ctx LogContext
+			ctx pkgLogger.LogContext
 		}{
 			"Info без контекста": {
 				msg: "Info text",
@@ -112,7 +113,7 @@ func TestYandexLogger_Info(t *testing.T) {
 			},
 			"Info с контекстом": {
 				msg: "Info text",
-				ctx: LogContext{
+				ctx: pkgLogger.LogContext{
 					"user_id": 345,
 					"chat_id": 678,
 				},
@@ -126,8 +127,8 @@ func TestYandexLogger_Info(t *testing.T) {
 		},
 	}
 
-	sysLog := mocks.NewSystemLogger(t)
-	clock := mocks2.NewClockInterface(t)
+	sysLog := mocks.NewMockSystemLogger(t)
+	clock := timeMocks.NewMockClockInterface(t)
 	now := time.Date(2017, 3, 3, 2, 2, 2, 0, time.UTC)
 
 	for testCase, testData := range dataProvider.testData {
@@ -136,7 +137,7 @@ func TestYandexLogger_Info(t *testing.T) {
 				Return(nil)
 			clock.On("Now").Return(now)
 
-			yandexLogger := newYandexLogger("stream", sysLog, clock)
+			yandexLogger := pkgLogger.NewYandexLogger("stream", sysLog, clock)
 			yandexLogger.Info(testData.msg, testData.ctx)
 		})
 	}
@@ -146,7 +147,7 @@ func TestYandexLogger_Warn(t *testing.T) {
 	dataProvider := dataProvider{
 		testData: map[string]struct {
 			msg string
-			ctx LogContext
+			ctx pkgLogger.LogContext
 		}{
 			"Warn без контекста": {
 				msg: "Warn text",
@@ -154,7 +155,7 @@ func TestYandexLogger_Warn(t *testing.T) {
 			},
 			"Warn с контекстом": {
 				msg: "Warn text",
-				ctx: LogContext{
+				ctx: pkgLogger.LogContext{
 					"user_id": 456,
 					"chat_id": 789,
 				},
@@ -168,8 +169,8 @@ func TestYandexLogger_Warn(t *testing.T) {
 		},
 	}
 
-	sysLog := mocks.NewSystemLogger(t)
-	clock := mocks2.NewClockInterface(t)
+	sysLog := mocks.NewMockSystemLogger(t)
+	clock := timeMocks.NewMockClockInterface(t)
 	now := time.Date(2016, 4, 4, 3, 3, 3, 0, time.UTC)
 
 	for testCase, testData := range dataProvider.testData {
@@ -178,7 +179,7 @@ func TestYandexLogger_Warn(t *testing.T) {
 				Return(nil)
 			clock.On("Now").Return(now)
 
-			yandexLogger := newYandexLogger("stream", sysLog, clock)
+			yandexLogger := pkgLogger.NewYandexLogger("stream", sysLog, clock)
 			yandexLogger.Warn(testData.msg, testData.ctx)
 		})
 	}
@@ -188,7 +189,7 @@ func TestYandexLogger_Error(t *testing.T) {
 	dataProvider := dataProvider{
 		testData: map[string]struct {
 			msg string
-			ctx LogContext
+			ctx pkgLogger.LogContext
 		}{
 			"Error без контекста": {
 				msg: "Error text",
@@ -196,7 +197,7 @@ func TestYandexLogger_Error(t *testing.T) {
 			},
 			"Error с контекстом": {
 				msg: "Error text",
-				ctx: LogContext{
+				ctx: pkgLogger.LogContext{
 					"user_id": 567,
 					"chat_id": 890,
 				},
@@ -210,8 +211,8 @@ func TestYandexLogger_Error(t *testing.T) {
 		},
 	}
 
-	sysLog := mocks.NewSystemLogger(t)
-	clock := mocks2.NewClockInterface(t)
+	sysLog := mocks.NewMockSystemLogger(t)
+	clock := timeMocks.NewMockClockInterface(t)
 	now := time.Date(2015, 5, 5, 4, 4, 4, 0, time.UTC)
 
 	for testCase, testData := range dataProvider.testData {
@@ -220,7 +221,7 @@ func TestYandexLogger_Error(t *testing.T) {
 				Return(nil)
 			clock.On("Now").Return(now)
 
-			yandexLogger := newYandexLogger("stream", sysLog, clock)
+			yandexLogger := pkgLogger.NewYandexLogger("stream", sysLog, clock)
 			yandexLogger.Error(testData.msg, testData.ctx)
 		})
 	}
@@ -230,7 +231,7 @@ func TestYandexLogger_Fatal(t *testing.T) {
 	dataProvider := dataProvider{
 		testData: map[string]struct {
 			msg string
-			ctx LogContext
+			ctx pkgLogger.LogContext
 		}{
 			"Fatal без контекста": {
 				msg: "Fatal text",
@@ -238,7 +239,7 @@ func TestYandexLogger_Fatal(t *testing.T) {
 			},
 			"Fatal с контекстом": {
 				msg: "Fatal text",
-				ctx: LogContext{
+				ctx: pkgLogger.LogContext{
 					"user_id": 678,
 					"chat_id": 901,
 				},
@@ -252,8 +253,8 @@ func TestYandexLogger_Fatal(t *testing.T) {
 		},
 	}
 
-	sysLog := mocks.NewSystemLogger(t)
-	clock := mocks2.NewClockInterface(t)
+	sysLog := mocks.NewMockSystemLogger(t)
+	clock := timeMocks.NewMockClockInterface(t)
 	now := time.Date(2014, 6, 6, 5, 5, 5, 0, time.UTC)
 
 	for testCase, testData := range dataProvider.testData {
@@ -262,19 +263,8 @@ func TestYandexLogger_Fatal(t *testing.T) {
 				Return(nil)
 			clock.On("Now").Return(now)
 
-			yandexLogger := newYandexLogger("stream", sysLog, clock)
+			yandexLogger := pkgLogger.NewYandexLogger("stream", sysLog, clock)
 			yandexLogger.Fatal(testData.msg, testData.ctx)
 		})
 	}
-}
-
-func TestWrite(t *testing.T) {
-	sysLog := mocks.NewSystemLogger(t)
-	clock := mocks2.NewClockInterface(t)
-
-	sysLog.On("Output", 2, "null").
-		Return(nil)
-
-	yandexLogger := newYandexLogger("stream", sysLog, clock)
-	yandexLogger.write(nil)
 }
