@@ -1,11 +1,11 @@
-package security
+package middleware
 
 import (
 	"testing"
 
 	"github.com/stretchr/testify/assert"
 	tele "gopkg.in/telebot.v4"
-	mocks "s-belichenko/house-tg-bot/mocks/internal_/security"
+	mocks "s-belichenko/house-tg-bot/mocks/internal_/infrastructure/external/telegram/middleware"
 )
 
 func TestIsBotHouse(t *testing.T) {

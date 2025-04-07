@@ -36,10 +36,9 @@ linters:
 
 formatters:
   enable:
+#    - goimports
     - gci
-    - gofmt
-    - gofumpt
-    #    - goimports
+#    - gofumpt
     - golines
   exclusions:
     generated: lax

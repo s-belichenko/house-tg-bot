@@ -10,8 +10,8 @@ import (
 	"github.com/ilyakaznacheev/cleanenv"
 	tele "gopkg.in/telebot.v4"
 	teleMid "gopkg.in/telebot.v4/middleware"
-	hndls "s-belichenko/house-tg-bot/internal/infrastructure/handlers"
-	sec "s-belichenko/house-tg-bot/internal/security"
+	"s-belichenko/house-tg-bot/internal/infrastructure/external/telegram/handlers"
+	mid "s-belichenko/house-tg-bot/internal/infrastructure/external/telegram/middleware"
 	pkgLogger "s-belichenko/house-tg-bot/pkg/logger"
 )
 
@@ -57,7 +57,7 @@ func initBot() {
 		os.Exit(1)
 	}
 
-	hndls.SetBotID(bot.Me.ID)
+	handlers.SetBotID(bot.Me.ID)
 }
 
 func setBotMiddleware() {
@@ -65,30 +65,35 @@ func setBotMiddleware() {
 	bot.Use(teleMid.Recover(func(err error, _ tele.Context) {
 		pkgLog.Fatal(fmt.Sprintf("Bot fatal: %v", err), nil)
 	}))
-	bot.Use(pkgLogger.GetMiddleware(pkgLog))
+	bot.Use(mid.GetLogUpdateMiddleware(pkgLog))
 }
 
 func registerBotCommandHandlers() {
 	pkgLog.Debug("Start register command hndls", nil)
 	// Личные сообщения.
-	bot.Handle("/"+hndls.StartCommand.Text, hndls.CommandStartHandler, sec.AllPrivateChatsMiddleware)
-	bot.Handle("/"+hndls.HelpCommand.Text, hndls.CommandHelpHandler, sec.AllPrivateChatsMiddleware)
+	bot.Handle("/"+handlers.StartCommand.Text, handlers.CommandStartHandler, mid.AllPrivateChatsMiddleware)
+	bot.Handle("/"+handlers.HelpCommand.Text, handlers.CommandHelpHandler, mid.AllPrivateChatsMiddleware)
 	// Домашний чат.
-	bot.Handle("/"+hndls.KeysCommand.Text, hndls.CommandKeysHandler, sec.HomeChatMiddleware, sec.KeysCommandMiddleware)
-	bot.Handle("/"+hndls.ReportCommand.Text, hndls.CommandReportHandler, sec.HomeChatMiddleware)
+	bot.Handle(
+		"/"+handlers.KeysCommand.Text,
+		handlers.CommandKeysHandler,
+		mid.HomeChatMiddleware,
+		mid.KeysCommandMiddleware,
+	)
+	bot.Handle("/"+handlers.ReportCommand.Text, handlers.CommandReportHandler, mid.HomeChatMiddleware)
 	// Административный чат (админы).
-	bot.Handle("/"+hndls.SetCommandsCommand.Text, hndls.CommandSetCommandsHandler, sec.AdminChatMiddleware)
-	bot.Handle("/"+hndls.DeleteCommandsCommand.Text, hndls.CommandDeleteCommandsHandler, sec.AdminChatMiddleware)
+	bot.Handle("/"+handlers.SetCommandsCommand.Text, handlers.CommandSetCommandsHandler, mid.AdminChatMiddleware)
+	bot.Handle("/"+handlers.DeleteCommandsCommand.Text, handlers.CommandDeleteCommandsHandler, mid.AdminChatMiddleware)
 	// Административный чат (участники).
-	bot.Handle("/"+hndls.HelpAdminChatCommand.Text, hndls.CommandHelpAdminHandler, sec.AdminChatMiddleware)
-	bot.Handle("/"+hndls.MuteCommand.Text, hndls.CommandMuteHandler, sec.AdminChatMiddleware)
-	bot.Handle("/"+hndls.UnmuteCommand.Text, hndls.CommandUnmuteHandler, sec.AdminChatMiddleware)
-	bot.Handle("/"+hndls.BanCommand.Text, hndls.CommandBanHandler, sec.AdminChatMiddleware)
-	bot.Handle("/"+hndls.UnbanCommand.Text, hndls.CommandUnbanHandler, sec.AdminChatMiddleware)
+	bot.Handle("/"+handlers.HelpAdminChatCommand.Text, handlers.CommandHelpAdminHandler, mid.AdminChatMiddleware)
+	bot.Handle("/"+handlers.MuteCommand.Text, handlers.CommandMuteHandler, mid.AdminChatMiddleware)
+	bot.Handle("/"+handlers.UnmuteCommand.Text, handlers.CommandUnmuteHandler, mid.AdminChatMiddleware)
+	bot.Handle("/"+handlers.BanCommand.Text, handlers.CommandBanHandler, mid.AdminChatMiddleware)
+	bot.Handle("/"+handlers.UnbanCommand.Text, handlers.CommandUnbanHandler, mid.AdminChatMiddleware)
 }
 
 func registerJoinRequestHandler() {
-	bot.Handle(tele.OnChatJoinRequest, hndls.JoinRequestHandler)
+	bot.Handle(tele.OnChatJoinRequest, handlers.JoinRequestHandler)
 }
 
 // Handler Функция-обработчик для Yandex Cloud Function.

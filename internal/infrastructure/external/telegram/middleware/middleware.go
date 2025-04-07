@@ -1,11 +1,11 @@
-package security
+package middleware
 
 import (
 	"fmt"
 
 	tele "gopkg.in/telebot.v4"
-	llm "s-belichenko/house-tg-bot/internal/infrastructure/external/llm"
-	hndls "s-belichenko/house-tg-bot/internal/infrastructure/handlers"
+	"s-belichenko/house-tg-bot/internal/infrastructure/external/llm"
+	hndls "s-belichenko/house-tg-bot/internal/infrastructure/external/telegram/handlers"
 	pkgLog "s-belichenko/house-tg-bot/pkg/logger"
 )
 
@@ -147,5 +147,17 @@ func KeysCommandMiddleware(next tele.HandlerFunc) tele.HandlerFunc {
 		}
 
 		return nil
+	}
+}
+
+func GetLogUpdateMiddleware(logger pkgLog.Logger) tele.MiddlewareFunc {
+	return func(next tele.HandlerFunc) tele.HandlerFunc {
+		return func(c tele.Context) error {
+			logger.Debug("Получен Update от Telegram", pkgLog.LogContext{
+				"update": c.Update(),
+			})
+
+			return next(c)
+		}
 	}
 }
