@@ -4,8 +4,8 @@ import (
 	"fmt"
 
 	tele "gopkg.in/telebot.v4"
-	llm "s-belichenko/house-tg-bot/cmd/llm"
-	hndls "s-belichenko/house-tg-bot/internal/handlers"
+	llm "s-belichenko/house-tg-bot/internal/infrastructure/external/llm"
+	hndls "s-belichenko/house-tg-bot/internal/infrastructure/handlers"
 	pkgLog "s-belichenko/house-tg-bot/pkg/logger"
 )
 

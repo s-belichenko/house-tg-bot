@@ -43,6 +43,9 @@ formatters:
     - golines
   exclusions:
     generated: lax
+  settings:
+    golines:
+      max-len: 120
 
 issues:
   max-issues-per-linter: 0

@@ -5,7 +5,7 @@ import (
 
 	"github.com/go-test/deep"
 	tele "gopkg.in/telebot.v4"
-	handlers "s-belichenko/house-tg-bot/internal/handlers"
+	hndls "s-belichenko/house-tg-bot/internal/infrastructure/handlers"
 )
 
 func TestGetGreetingName(t *testing.T) {
@@ -36,7 +36,7 @@ func TestGetGreetingName(t *testing.T) {
 	for testCase, data := range dataProvider.testData {
 		t.Run(testCase, func(t *testing.T) {
 			// #nosec G601 FIXME: Убрать после перехода на Go 1.22
-			r := handlers.GetGreetingName(&data)
+			r := hndls.GetGreetingName(&data)
 			for _, problem := range deep.Equal(r, dataProvider.expected[testCase]) {
 				t.Error(problem)
 			}
