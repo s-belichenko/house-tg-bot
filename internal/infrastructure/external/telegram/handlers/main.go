@@ -14,7 +14,7 @@ type Config struct {
 	AdministrationChatID int64   `env:"ADMINISTRATION_CHAT_ID"` // Чат администраторов, куда поступают уведомления и тп
 	RulesURL             url.URL `env:"RULES_URL"`              // Ссылка на правила чата
 	OwnerNickname        string  `env:"OWNER_NICKNAME"`         // Никнейм владельца чата
-	InviteURL            string  `env:"INVITE_URL"`             // Ссылка для вступления в домовой чат
+	InviteURL            url.URL `env:"INVITE_URL"`             // Ссылка для вступления в домовой чат
 	BotID                int64   // Собственный идентификатор бота
 	LogStreamName        string  // Имя потока в YC Logs
 }

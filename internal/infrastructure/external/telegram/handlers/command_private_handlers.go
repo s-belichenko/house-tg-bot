@@ -25,7 +25,7 @@ func CommandStartHandler(c tele.Context) error {
 
 func CommandHelpHandler(ctx tele.Context) error {
 	help := `
-Привет, это бот чата дома Иловайская, 2.
+Привет, это бот <a href="` + config.InviteURL.String() + `">чата</a> дома Иловайская, 2.
 
 Команды:
 
