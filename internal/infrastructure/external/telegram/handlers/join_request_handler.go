@@ -35,7 +35,7 @@ func JoinRequestHandler(ctx tele.Context) error {
 		fmt.Sprintf(hiMsg, config.InviteURL.String(), config.RulesURL.String(), config.OwnerNickname),
 		tele.ModeHTML, tele.NoPreview,
 	); err != nil {
-		pkgLog.Error(fmt.Sprintf("Не удалось ответить на заявку: %v", err), pkgLogger.LogContext{
+		pkgLog.Error(fmt.Sprintf("Не удалось отправить правила вступления: %v", err), pkgLogger.LogContext{
 			"user_id":   ctx.Sender().ID,
 			"username":  ctx.Sender().Username,
 			"firstname": ctx.Sender().FirstName,
@@ -58,7 +58,7 @@ lastname: %s
 
 	if _, err := ctx.Bot().Send(adminChat, requestMsg); err != nil {
 		pkgLog.Error(
-			fmt.Sprintf("Не удалось ответить на заявку на вступление: %v", err),
+			fmt.Sprintf("Не удалось оповестить администраторов о заявке на вступление: %v", err),
 			pkgLogger.LogContext{
 				"user_id":   ctx.Sender().ID,
 				"username":  ctx.Sender().Username,
