@@ -15,7 +15,7 @@ import (
 	pkgLogger "s-belichenko/house-tg-bot/pkg/logger"
 )
 
-type ConfigBot struct {
+type Config struct {
 	BotToken             string `env:"TELEGRAM_BOT_TOKEN"`
 	AdministrationChatID int64  `env:"ADMINISTRATION_CHAT_ID"` // Чат администраторов, куда поступают уведомления и тп
 	LogStreamName        string
@@ -24,7 +24,7 @@ type ConfigBot struct {
 var (
 	bot    *tele.Bot
 	pkgLog pkgLogger.Logger
-	config = ConfigBot{LogStreamName: "main_stream"}
+	config = Config{LogStreamName: "main_stream"}
 )
 
 func init() {
@@ -70,6 +70,8 @@ func setBotMiddleware() {
 
 func registerBotCommandHandlers() {
 	pkgLog.Debug("Start register command hndls", nil)
+	// Общие команды
+	bot.Handle("/"+handlers.RulesCommand.Text, handlers.CommandRulesHandler, mid.CommonCommandMiddleware)
 	// Личные сообщения.
 	bot.Handle("/"+handlers.StartCommand.Text, handlers.CommandStartHandler, mid.AllPrivateChatsMiddleware)
 	bot.Handle("/"+handlers.HelpCommand.Text, handlers.CommandHelpHandler, mid.AllPrivateChatsMiddleware)

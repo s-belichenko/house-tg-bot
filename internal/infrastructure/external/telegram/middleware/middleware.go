@@ -9,6 +9,14 @@ import (
 	pkgLog "s-belichenko/house-tg-bot/pkg/logger"
 )
 
+func CommonCommandMiddleware(next tele.HandlerFunc) tele.HandlerFunc {
+	if privateChatResult := AllPrivateChatsMiddleware(next); privateChatResult != nil {
+		return privateChatResult
+	}
+
+	return HomeChatMiddleware(next)
+}
+
 func AllPrivateChatsMiddleware(next tele.HandlerFunc) tele.HandlerFunc {
 	return func(ctx tele.Context) error {
 		if ctx.Chat().Type != tele.ChatPrivate && ctx.Chat().Type != tele.ChatChannelPrivate {

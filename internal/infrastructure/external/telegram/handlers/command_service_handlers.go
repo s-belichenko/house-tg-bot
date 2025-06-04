@@ -20,15 +20,15 @@ func CommandSetCommandsHandler(ctx tele.Context) error {
 		tele.CommandScope{Type: tele.CommandScopeDefault})
 	// Для личных чатов со всеми подряд
 	setCommands(ctx,
-		[]tele.Command{StartCommand, HelpCommand},
+		[]tele.Command{StartCommand, HelpCommand, RulesCommand},
 		tele.CommandScope{Type: tele.CommandScopeAllPrivateChats})
 	// Для участников домового чата
 	setCommands(ctx,
-		[]tele.Command{KeysCommand, ReportCommand},
+		[]tele.Command{KeysCommand, ReportCommand, RulesCommand},
 		tele.CommandScope{Type: tele.CommandScopeChat, ChatID: config.HouseChatID})
 	// Для админов домового чата
 	setCommands(ctx,
-		[]tele.Command{KeysCommand, ReportCommand},
+		[]tele.Command{KeysCommand, ReportCommand, RulesCommand},
 		tele.CommandScope{Type: tele.CommandScopeChatAdmin, ChatID: config.HouseChatID})
 	// Для участников админского чата
 	setCommands(ctx,

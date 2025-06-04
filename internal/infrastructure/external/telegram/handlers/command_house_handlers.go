@@ -16,6 +16,10 @@ var (
 		Text:        "report",
 		Description: "Сообщить о нарушении правил, формат: /report [уточнение]",
 	}
+	RulesCommand = tele.Command{
+		Text:        "rules",
+		Description: "Посмотреть правила чата",
+	}
 )
 
 func CommandKeysHandler(c tele.Context) error {
@@ -129,6 +133,25 @@ func CommandReportHandler(ctx tele.Context) error {
 			GetGreetingName(reporter),
 			err,
 		), nil)
+	}
+
+	return nil
+}
+
+func CommandRulesHandler(ctx tele.Context) error {
+	msg := fmt.Sprintf(
+		"Привет, сосед! Вот <a href=\"%s\">правила чата</a>, ознакомься.",
+		config.RulesURL.String(),
+	)
+	err := ctx.Reply(msg, tele.ModeHTML, tele.NoPreview)
+
+	if err != nil {
+		pkgLog.Error(
+			fmt.Sprintf("Не удалось отправить правила чата по команде /rules: %v", err),
+			pkgLogger.LogContext{
+				"ctx": ctx,
+			},
+		)
 	}
 
 	return nil
