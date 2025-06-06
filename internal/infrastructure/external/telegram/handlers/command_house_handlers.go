@@ -140,7 +140,8 @@ func CommandReportHandler(ctx tele.Context) error {
 
 func CommandRulesHandler(ctx tele.Context) error {
 	msg := fmt.Sprintf(
-		"Привет, сосед! Вот <a href=\"%s\">правила чата</a>, ознакомься.",
+		"Привет, %s! Вот <a href=\"%s\">правила чата</a>, ознакомься.",
+		GetGreetingName(ctx.Message().Sender),
 		config.RulesURL.String(),
 	)
 	err := ctx.Reply(msg, tele.ModeHTML, tele.NoPreview)

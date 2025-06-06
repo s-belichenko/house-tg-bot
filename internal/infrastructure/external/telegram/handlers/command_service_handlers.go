@@ -60,20 +60,11 @@ func CommandDeleteCommandsHandler(ctx tele.Context) error {
 	// Для участников домового чата
 	deleteCommands(ctx, tele.CommandScope{Type: tele.CommandScopeChat, ChatID: config.HouseChatID})
 	// Для админов домового чата
-	deleteCommands(
-		ctx,
-		tele.CommandScope{Type: tele.CommandScopeChatAdmin, ChatID: config.HouseChatID},
-	)
+	deleteCommands(ctx, tele.CommandScope{Type: tele.CommandScopeChatAdmin, ChatID: config.HouseChatID})
 	// Для участников админского чата
-	deleteCommands(
-		ctx,
-		tele.CommandScope{Type: tele.CommandScopeChat, ChatID: config.AdministrationChatID},
-	)
+	deleteCommands(ctx, tele.CommandScope{Type: tele.CommandScopeChat, ChatID: config.AdministrationChatID})
 	// Для админов админского чата
-	deleteCommands(
-		ctx,
-		tele.CommandScope{Type: tele.CommandScopeChatAdmin, ChatID: config.AdministrationChatID},
-	)
+	deleteCommands(ctx, tele.CommandScope{Type: tele.CommandScopeChatAdmin, ChatID: config.AdministrationChatID})
 
 	return nil
 }
