@@ -10,11 +10,36 @@ import (
 )
 
 func CommonCommandMiddleware(next tele.HandlerFunc) tele.HandlerFunc {
-	if privateChatResult := AllPrivateChatsMiddleware(next); privateChatResult != nil {
-		return privateChatResult
-	}
+	return func(ctx tele.Context) error {
+		if ctx.Chat().Type != tele.ChatPrivate &&
+			ctx.Chat().Type != tele.ChatChannelPrivate &&
+			ctx.Chat().Type != tele.ChatGroup &&
+			ctx.Chat().Type != tele.ChatSuperGroup {
+			log.Warn(
+				fmt.Sprintf(
+					"Попытка использовать %q в чате типа %q",
+					getCommandName(ctx.Message()),
+					ctx.Chat().Type,
+				), pkgLog.LogContext{"message": ctx.Message()})
 
-	return HomeChatMiddleware(next)
+			return nil
+		}
+
+		if (ctx.Chat().Type == tele.ChatSuperGroup || ctx.Chat().Type == tele.ChatGroup) &&
+			TeleID(ctx.Chat().ID) != config.HouseChatID {
+			log.Warn(fmt.Sprintf(
+				"Попытка использовать %q вне домового чата, чат: %d",
+				getCommandName(ctx.Message()),
+				ctx.Chat().ID,
+			), pkgLog.LogContext{
+				"message": ctx.Message(),
+			})
+
+			return nil
+		}
+
+		return next(ctx)
+	}
 }
 
 func AllPrivateChatsMiddleware(next tele.HandlerFunc) tele.HandlerFunc {
