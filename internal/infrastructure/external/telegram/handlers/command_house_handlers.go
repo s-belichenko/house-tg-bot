@@ -155,5 +155,17 @@ func CommandRulesHandler(ctx tele.Context) error {
 		)
 	}
 
+	if err := ctx.Reply("Hi!", Selector); err != nil {
+		pkgLog.Error(
+			fmt.Sprintf("Не удалось отправить inline-клавиатуру: %v", err),
+			pkgLogger.LogContext{
+				"user_id":   ctx.Sender().ID,
+				"username":  ctx.Sender().Username,
+				"firstname": ctx.Sender().FirstName,
+				"lastname":  ctx.Sender().LastName,
+			},
+		)
+	}
+
 	return nil
 }
