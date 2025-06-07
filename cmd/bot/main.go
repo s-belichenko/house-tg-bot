@@ -9,6 +9,7 @@ import (
 
 	"github.com/ilyakaznacheev/cleanenv"
 	tele "gopkg.in/telebot.v4"
+	"gopkg.in/telebot.v4/layout"
 	teleMid "gopkg.in/telebot.v4/middleware"
 	"s-belichenko/house-tg-bot/internal/infrastructure/external/telegram/handlers"
 	mid "s-belichenko/house-tg-bot/internal/infrastructure/external/telegram/middleware"
@@ -32,7 +33,7 @@ func init() {
 	initBot()
 	setBotMiddleware()
 	registerBotCommandHandlers()
-	registerJoinRequestHandler()
+	registerJoinRequestsHandler()
 }
 
 func initModule() {
@@ -94,8 +95,81 @@ func registerBotCommandHandlers() {
 	bot.Handle("/"+handlers.UnbanCommand.Text, handlers.CommandUnbanHandler, mid.AdminChatMiddleware)
 }
 
-func registerJoinRequestHandler() {
+func registerJoinRequestsHandler() {
 	bot.Handle(tele.OnChatJoinRequest, handlers.JoinRequestHandler)
+
+	handlers.Selector.Inline(
+		handlers.Selector.Row(handlers.BtnCopyInviteText, handlers.BtnOpenDialog),
+		handlers.Selector.Row(handlers.BtnApprove),
+	)
+
+	bot.Handle(&handlers.BtnCopyInviteText, func(ctx tele.Context) error {
+		comment := tele.InputTextMessageContent{Text: "Пользователь добавлен в чат"}
+
+		results := make(tele.Results, 1)
+		results[0] = &tele.ResultBase{
+			ReplyMarkup: handlers.Selector,
+			Content:     &comment,
+		}
+
+		err := ctx.Answer(&tele.QueryResponse{
+			Results: results,
+		})
+
+		if err != nil {
+			pkgLog.Error(fmt.Sprintf("Ошибка BtnCopyInviteText: %v", err), nil)
+		}
+
+		return nil
+	})
+
+	bot.Handle(&handlers.BtnOpenDialog, func(ctx tele.Context) error {
+		comment := tele.InputTextMessageContent{Text: "Пользователь добавлен в чат"}
+
+		keyAnswer := &tele.ReplyMarkup{}
+		BtnAnswer := keyAnswer.Data("Скопировать текст", "copy_invite_text")
+
+		keyAnswer.Inline(
+			handlers.Selector.Row(BtnAnswer),
+		)
+
+		results := make(tele.Results, 1)
+		results[0] = &tele.ResultBase{
+			ReplyMarkup: keyAnswer,
+			Content:     &comment,
+		}
+
+		err := ctx.Answer(&tele.QueryResponse{
+			Results: results,
+		})
+
+		if err != nil {
+			pkgLog.Error(fmt.Sprintf("Ошибка BtnOpenDialog: %v", err), nil)
+		}
+
+		return nil
+	})
+
+	bot.Handle(&handlers.BtnApprove, func(ctx tele.Context) error {
+		comment := layout.ResultContent{}
+		comment["Индекс"] = "Пользователь добавлен в чат"
+
+		results := make(tele.Results, 1)
+		results[0] = &tele.ResultBase{
+			ReplyMarkup: handlers.Selector,
+			Content:     comment,
+		}
+
+		err := ctx.Answer(&tele.QueryResponse{
+			Results: results,
+		})
+
+		if err != nil {
+			pkgLog.Error(fmt.Sprintf("Ошибка BtnApprove: %v", err), nil)
+		}
+
+		return nil
+	})
 }
 
 // Handler Функция-обработчик для Yandex Cloud Function.

@@ -140,8 +140,9 @@ func CommandReportHandler(ctx tele.Context) error {
 
 func CommandRulesHandler(ctx tele.Context) error {
 	msg := fmt.Sprintf(
-		"Привет, %s! Вот <a href=\"%s\">правила чата</a>, ознакомься.",
-		GetGreetingName(ctx.Message().Sender),
+		"Привет, [inline mention of a user](tg://user?id=2088558540)! Вот <a href=\"%s\">правила чата</a>, ознакомься.",
+		// GetGreetingName(ctx.Message().Sender),
+		// ctx.Message().Sender.ID,
 		config.RulesURL.String(),
 	)
 	err := ctx.Reply(msg, tele.ModeHTML, tele.NoPreview)
@@ -151,6 +152,18 @@ func CommandRulesHandler(ctx tele.Context) error {
 			fmt.Sprintf("Не удалось отправить правила чата по команде /rules: %v", err),
 			pkgLogger.LogContext{
 				"ctx": ctx,
+			},
+		)
+	}
+
+	if err := ctx.Reply("Hi!", Selector); err != nil {
+		pkgLog.Error(
+			fmt.Sprintf("Не удалось отправить inline-клавиатуру: %v", err),
+			pkgLogger.LogContext{
+				"user_id":   ctx.Sender().ID,
+				"username":  ctx.Sender().Username,
+				"firstname": ctx.Sender().FirstName,
+				"lastname":  ctx.Sender().LastName,
 			},
 		)
 	}
