@@ -140,7 +140,7 @@ func CommandReportHandler(ctx tele.Context) error {
 
 func CommandRulesHandler(ctx tele.Context) error {
 	msg := fmt.Sprintf(
-		"Привет, [inline mention of a user](tg://user?id=2088558540)! Вот <a href=\"%s\">правила чата</a>, ознакомься.",
+		"Привет, <a href=\"tg://user?id=2088558540\">66</a>! Вот <a href=\"%s\">правила чата</a>, ознакомься.",
 		// GetGreetingName(ctx.Message().Sender),
 		// ctx.Message().Sender.ID,
 		config.RulesURL.String(),
