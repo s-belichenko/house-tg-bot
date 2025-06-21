@@ -73,12 +73,11 @@
 - `YC_FOLDER_ID` – идентификатор заранее созданного каталога в YC.
 - `YC_FUNCTION_NAME` – имя функции для бота в YC (может быть создана при первой доставке бота в YC).
 - `YC_SERVICE_ACCOUT_ID` – идентификатор заранее созданного сервисного аккаунта в YC.
-- `LOG_GROUP_ID` – идентификатор заранее созданной группы логов в YC.
-
-Секреты для установки секретов бота из Lockbox:
-
-- `YC_LOCKBOX_ID` – идентификатор секретов в Lockbox.
-- `YC_LOCKBOX_VERSION` – версия секретов в Lockbox.
+- `LOG_GROUP_ID` – идентификатор заранее созданной группы логов в YC.\
+- `TELEGRAM_BOT_TOKEN` – токен Telegram-бота, полученный от [@BotFather](https://t.me/BotFather).
+- `LLM_API_TOKEN` – токен для работы с YandexGPT.
+  API ([инструкция для получения](https://yandex.cloud/ru/docs/iam/operations/authentication/manage-api-keys)).
+- `LLM_FOLDER_ID` – идентификатор заранее созданного каталога в YC.
 
 В указываемой версии должны быть созданы все [секреты бота](#настройки-бота).
 
@@ -90,13 +89,6 @@
 - `LOG_LEVEL` – минимальный уровень журналирования бота. Оставьте пустую строку, если не уверены.
 
 ### Настройки бота
-
-Секреты (при работе бота в YC будут установлены автоматически из Lockbox):
-
-- `TELEGRAM_BOT_TOKEN` – токен Telegram-бота, полученный от [@BotFather](https://t.me/BotFather).
-- `LLM_API_TOKEN` – токен для работы с YandexGPT
-  API ([инструкция для получения](https://yandex.cloud/ru/docs/iam/operations/authentication/manage-api-keys)).
-- `LLM_FOLDER_ID` – идентификатор заранее созданного каталога в YC.
 
 Переменные:
 

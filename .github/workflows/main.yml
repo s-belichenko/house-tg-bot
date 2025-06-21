@@ -70,10 +70,9 @@ jobs:
             RULES_URL=${{ vars.RULES_URL }}
             OWNER_NICKNAME=${{ vars.OWNER_NICKNAME }}
             INVITE_URL=${{ vars.INVITE_URL }}
-          secrets: |
-            TELEGRAM_BOT_TOKEN=${{ secrets.YC_LOCKBOX_ID }}/${{ secrets.YC_LOCKBOX_VERSION }}/TELEGRAM_BOT_TOKEN
-            LLM_API_TOKEN=${{ secrets.YC_LOCKBOX_ID }}/${{ secrets.YC_LOCKBOX_VERSION }}/LLM_API_TOKEN
-            LLM_FOLDER_ID=${{ secrets.YC_LOCKBOX_ID }}/${{ secrets.YC_LOCKBOX_VERSION }}/LLM_FOLDER_ID
+            TELEGRAM_BOT_TOKEN=${{ secrets.TELEGRAM_BOT_TOKEN }}
+            LLM_API_TOKEN=${{ secrets.LLM_API_TOKEN }}
+            LLM_FOLDER_ID=${{ secrets.LLM_FOLDER_ID }}
           include: |
             ./cmd/**/*.go
             ./internal/**/*.go
