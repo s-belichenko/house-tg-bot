@@ -24,6 +24,7 @@ const hiMsg = "Привет, вы подали заявку на вступле�
 
 func JoinRequestHandler(ctx tele.Context) error {
 	pkgLog.Info("Получена заявка на вступление в чат", pkgLogger.LogContext{
+		"chat_id":   ctx.Chat().ID,
 		"user_id":   ctx.Sender().ID,
 		"username":  ctx.Sender().Username,
 		"firstname": ctx.Sender().FirstName,
