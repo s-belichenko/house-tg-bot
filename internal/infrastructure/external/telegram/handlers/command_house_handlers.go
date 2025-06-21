@@ -61,7 +61,11 @@ func CommandReportHandler(ctx tele.Context) error {
 		return nil
 	}
 
-	clarification := ctx.Data()
+	clarification := "Не оставлено."
+	if ctx.Data() != "" {
+		clarification = ctx.Data()
+	}
+
 	chat := msg.ReplyTo.Chat
 	violationMessageID := msg.ReplyTo.ID
 	messageLink := GenerateMessageLink(chat, violationMessageID)
@@ -123,9 +127,11 @@ func CommandReportHandler(ctx tele.Context) error {
 	}
 
 	thx := fmt.Sprintf(`
-Спасибо за ваше сообщение. Администрация рассмотрит жалобу. Сообщение:
+Спасибо за ваш отчет о нарушении правил. Администрация рассмотрит жалобу. Текст сообщения нарушителя:
 
-<blockquote>%s</blockquote>`, msg.ReplyTo.Text)
+<blockquote>%s</blockquote>
+
+Ваше уточнение: %s`, msg.ReplyTo.Text, clarification)
 
 	if _, err := ctx.Bot().Send(reporter, thx, tele.ModeHTML, tele.NoPreview); err != nil {
 		pkgLog.Error(fmt.Sprintf(
