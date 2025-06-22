@@ -7,6 +7,7 @@ import (
 	"github.com/ilyakaznacheev/cleanenv"
 	tele "gopkg.in/telebot.v4"
 	pkgLogger "s-belichenko/house-tg-bot/pkg/logger"
+	pkgTemplate "s-belichenko/house-tg-bot/pkg/template"
 )
 
 type Config struct {
@@ -20,12 +21,14 @@ type Config struct {
 	VerifyRules          string  `env:"VERIFY_RULES"`           // Правила верификации
 	BotID                int64   // Собственный идентификатор бота
 	LogStreamName        string  // Имя потока в YC Logs
+	TemplatesPath        string  // Путь к шаблонам
 }
 
 // Общие переменные пакета.
 var (
-	config = Config{LogStreamName: "main_stream"}
-	pkgLog pkgLogger.Logger
+	config     = Config{LogStreamName: "main_stream", TemplatesPath: "resources/templates/text/handlers/"}
+	pkgLog     pkgLogger.Logger
+	templating pkgTemplate.RenderInterface
 )
 
 type TeleContext interface {
@@ -34,6 +37,7 @@ type TeleContext interface {
 
 func init() {
 	pkgLog = pkgLogger.InitLog(config.LogStreamName)
+	templating = pkgTemplate.NewTemplate(config.TemplatesPath, pkgLog)
 
 	initConfig()
 }

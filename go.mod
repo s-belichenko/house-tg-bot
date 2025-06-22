@@ -4,6 +4,7 @@ go 1.21.0
 
 require (
 	github.com/go-test/deep v1.1.1
+	github.com/golang/mock v1.6.0
 	github.com/ilyakaznacheev/cleanenv v1.5.0
 	github.com/sheeiavellie/go-yandexgpt v0.0.0-00010101000000-000000000000
 	github.com/stretchr/testify v1.9.0

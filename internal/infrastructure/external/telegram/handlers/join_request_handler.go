@@ -8,10 +8,6 @@ import (
 )
 
 func JoinRequestHandler(ctx tele.Context) error {
-	tmplHi := `Привет! Я бот <a href="%s">чата</a> дома по адресу %s. Правила добавления в чат:
-
-%s`
-
 	pkgLog.Info("Получена заявка на вступление в чат", pkgLogger.LogContext{
 		"chat_id":   ctx.Chat().ID,
 		"user_id":   ctx.Sender().ID,
@@ -22,12 +18,7 @@ func JoinRequestHandler(ctx tele.Context) error {
 
 	if _, err := ctx.Bot().Send(
 		ctx.Sender(),
-		fmt.Sprintf(
-			tmplHi,
-			config.InviteURL.String(),
-			config.HomeAddress,
-			config.VerifyRules,
-		),
+		templating.RenderText(`hi.txt`, config),
 		tele.ModeHTML, tele.NoPreview,
 	); err != nil {
 		pkgLog.Error(fmt.Sprintf("Не удалось отправить правила вступления: %v", err), pkgLogger.LogContext{
@@ -36,8 +27,6 @@ func JoinRequestHandler(ctx tele.Context) error {
 			"firstname": ctx.Sender().FirstName,
 			"lastname":  ctx.Sender().LastName,
 		})
-
-		return err
 	}
 
 	tmplInfo := `#JOIN_REQUEST
