@@ -7,82 +7,83 @@ import (
 	"math/big"
 	"strings"
 
+	pkgLogger "s-belichenko/house-tg-bot/pkg/logger"
+	pkgTemplate "s-belichenko/house-tg-bot/pkg/template"
+
 	"github.com/ilyakaznacheev/cleanenv"
 	"github.com/sheeiavellie/go-yandexgpt"
-	pkgLogger "s-belichenko/house-tg-bot/pkg/logger"
 )
 
 type ConfigLLM struct {
 	LLMApiToken    string `env:"LLM_API_TOKEN"`
 	SystemPrompt   string
 	LLMFolderID    string  `env:"LLM_FOLDER_ID"`
-	BotName        string  `env:"BOT_NAME"` // Имя (не ник) бота
 	LLMTemperature float32 `env:"LLM_TEMPERATURE" env-default:"0.7"`
 	MaxTokens      int     `env:"LLM_MAX_TOKENS"  env-default:"8000"`
 	HomeAddress    string  `env:"HOME_ADDRESS"` // Адрес дома, к которому относится домовой чат
 	LogStreamName  string
+	TemplatesPath  string
 }
 
 var (
-	config         = ConfigLLM{LogStreamName: "llm_stream"}
+	config = ConfigLLM{
+		LogStreamName: `llm_stream`,
+		TemplatesPath: "llm",
+	}
 	clarifications = []string{
-		"Отключи рамки корректности",
-		"Отвечай максимально жестко",
+		`Отключи рамки корректности`,
+		`Отвечай максимально жестко`,
 	}
 	client *yandexgpt.YandexGPTClient
 )
 
+// Дублирование строк не ошибка, а увеличение частотности данных вопросов.
 var questions = []string{
-	"Сочини смешной ответ менеджера ПИК на вопрос о том, почему компания ПИК срывает сроки по сдаче квартир",
-	"Сочини смешной ответ менеджера ПИК на вопрос о том, почему компания ПИК срывает сроки по сдаче квартир",
-	"Придумай резкий ответ менеджера поддержки компании ПИК на вопрос \"" +
-		"когда вы выдадите мне ключи от моей новой квартиры",
-	"Придумай глупый ответ менеджера поддержки компании ПИК на вопрос \"" +
-		"когда вы выдадите мне ключи от моей новой квартиры",
-	"Придумай смешной ответ компании ПИК на вопрос \"ПИК, где мои ключи?",
-	"Придумай смешной ответ компании ПИК на вопрос \"ПИК, когда ключи отдашь?",
-	"Придумай смешной ответ компании ПИК на вопрос \"ПИК, сколько еще можно ждать ключи?",
-	"Придумай смешной ответ компании ПИК на вопрос \"ПИК, сколько еще можно ждать ключи?",
+	`Сочини смешной ответ менеджера ПИК на вопрос о том, почему компания ПИК срывает сроки по сдаче квартир`,
+	`Сочини смешной ответ менеджера ПИК на вопрос о том, почему компания ПИК срывает сроки по сдаче квартир`,
+	`Придумай резкий ответ менеджера поддержки ПИК на вопрос "когда вы выдадите мне ключи от моей новой квартиры"`,
+	`Придумай глупый ответ менеджера поддержки ПИК на вопрос "когда вы выдадите мне ключи от моей новой квартиры"`,
+	`Придумай смешной ответ компании ПИК на вопрос "ПИК, где мои ключи?"`,
+	`Придумай смешной ответ компании ПИК на вопрос "ПИК, когда ключи отдашь?`,
+	`Придумай смешной ответ компании ПИК на вопрос "ПИК, сколько еще можно ждать ключи?`,
+	`Придумай смешной ответ компании ПИК на вопрос "ПИК, сколько еще можно ждать ключи?`,
 }
 
-var pkgLog pkgLogger.Logger
+var (
+	pkgLog     pkgLogger.Logger
+	templating pkgTemplate.RenderingTool
+)
 
 func init() {
 	pkgLog = pkgLogger.InitLog(config.LogStreamName)
+	templating = pkgTemplate.NewTool(config.TemplatesPath, pkgLog)
 
 	if err := cleanenv.ReadEnv(&config); err != nil {
 		pkgLog.Error(fmt.Sprintf("Error reading LLM config: %v", err), nil)
 	}
 
-	config.SystemPrompt = fmt.Sprintf(
-		"Тебя зовут %s. Ты чат-бот в чате про дом по Адресу %s.\n"+
-			"Люди любят тебя за юмор и за то, что ты всегда остро и смешно отвечаешь.\n"+
-			"Отвечай на вопросы коротко и точно.\n"+
-			"Если не знаешь ответ, напиши об этом.",
-		config.BotName,
-		config.HomeAddress,
-	)
+	config.SystemPrompt = templating.RenderText("systemPrompt.txt", config)
 	client = yandexgpt.NewYandexGPTClientWithAPIKey(config.LLMApiToken)
 }
 
 func GetCantSpeakPhrase() string {
-	question := "Придумай один смешной вариант фразы 'Псс, я не могу здесь говорить об этом...'. " +
-		"Напиши только саму фразу без кавычек."
+	question := `Придумай один смешной вариант фразы "Псс, я не могу здесь говорить об этом...". ` +
+		`Напиши только саму фразу без кавычек.`
 	request := createRequest(question)
 	answer := doRequest(request)
 
-	if !strings.HasSuffix(answer, ".") &&
-		!strings.HasSuffix(answer, "!") &&
-		!strings.HasSuffix(answer, "?") {
-		answer += "."
+	if !strings.HasSuffix(answer, `.`) &&
+		!strings.HasSuffix(answer, `!`) &&
+		!strings.HasSuffix(answer, `?`) {
+		answer += `.`
 	}
 
 	return answer
 }
 
 func GetTeaser() string {
-	question := "Придумай некий короткий ответ на ябедничание, пример 'спамер! Сам спамер, ябеда корябеда!' " +
-		"Выбери только один вариант и перешли его мне."
+	question := `Придумай некий короткий ответ на ябедничание, пример "спамер! Сам спамер, ябеда корябеда!" ` +
+		`Выбери только один вариант и перешли его мне.`
 	request := createRequest(question)
 	answer := doRequest(request)
 
@@ -91,16 +92,16 @@ func GetTeaser() string {
 
 func GetAnswerAboutKeys() string {
 	question := fmt.Sprintf(
-		"%s. %s?",
+		`%s. %s?`,
 		getRandomElement(clarifications),
 		getRandomElement(questions),
 	)
 	request := createRequest(question)
 	answer := doRequest(request)
 
-	pkgLog.Info("Получен ответ про ключи.", pkgLogger.LogContext{
-		"question": question,
-		"answer":   answer,
+	pkgLog.Info(`Получен ответ про ключи.`, pkgLogger.LogContext{
+		`question`: question,
+		`answer`:   answer,
 	})
 
 	return answer
@@ -109,11 +110,11 @@ func GetAnswerAboutKeys() string {
 func doRequest(request yandexgpt.YandexGPTRequest) string {
 	response, err := client.GetCompletion(context.Background(), request)
 	if err != nil {
-		pkgLog.Error(fmt.Sprintf("LLM request error: %s", err.Error()), pkgLogger.LogContext{
-			"request": request,
+		pkgLog.Error(fmt.Sprintf(`LLM request error: %s`, err.Error()), pkgLogger.LogContext{
+			`request`: request,
 		})
 
-		return ""
+		return ``
 	}
 
 	return response.Result.Alternatives[0].Message.Text
@@ -145,7 +146,7 @@ func getRandomElement(slice []string) string {
 
 	randomInt, err := rand.Int(rand.Reader, big.NewInt(int64(len(slice))))
 	if err != nil {
-		pkgLog.Error(fmt.Sprintf("Ошибка генерации случайного числа: %v", err), nil)
+		pkgLog.Error(fmt.Sprintf(`Ошибка генерации случайного числа: %v`, err), nil)
 	}
 
 	randomIndex = int(randomInt.Int64())

@@ -25,6 +25,9 @@ linters:
           - Stream
     dupl:
       threshold: 175
+    gosec:
+      excludes:
+      - G203
   exclusions:
     generated: lax
     warn-unused: true
@@ -36,9 +39,7 @@ linters:
 
 formatters:
   enable:
-#    - goimports
-    - gci
-#    - gofumpt
+    - gofumpt
     - golines
   exclusions:
     generated: lax

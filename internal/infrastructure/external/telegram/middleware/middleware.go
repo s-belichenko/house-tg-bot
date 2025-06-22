@@ -2,9 +2,10 @@ package middleware
 
 import (
 	"fmt"
+	"s-belichenko/house-tg-bot/internal/infrastructure/external/llm"
 
 	tele "gopkg.in/telebot.v4"
-	"s-belichenko/house-tg-bot/internal/infrastructure/external/llm"
+
 	hndls "s-belichenko/house-tg-bot/internal/infrastructure/external/telegram/handlers"
 	pkgLog "s-belichenko/house-tg-bot/pkg/logger"
 )
@@ -143,7 +144,7 @@ func AdminChatMiddleware(next tele.HandlerFunc) tele.HandlerFunc {
 		} else if (tele.Creator != member.Role) && (tele.Administrator != member.Role) {
 			link := fmt.Sprintf("<a href=%q>ссылка</a>", hndls.GenerateMessageLink(ctx.Chat(), ctx.Message().ID))
 			reportMessage := fmt.Sprintf(
-				"Хакир детектед! Пользователь %q попытался использовать команду %q, ссылка: %s",
+				`Хакир детектед! Пользователь %q попытался использовать команду %q, ссылка: %s`,
 				hndls.GetGreetingName(ctx.Sender()), getCommandName(ctx.Message()), link,
 			)
 			adminChat := &tele.Chat{ID: int64(config.AdministrationChatID)}
@@ -156,7 +157,7 @@ func AdminChatMiddleware(next tele.HandlerFunc) tele.HandlerFunc {
 
 func KeysCommandMiddleware(next tele.HandlerFunc) tele.HandlerFunc {
 	return func(ctx tele.Context) error {
-		if isBotHouse(ctx) {
+		if IsBotHouse(ctx) {
 			return next(ctx)
 		}
 
@@ -165,13 +166,13 @@ func KeysCommandMiddleware(next tele.HandlerFunc) tele.HandlerFunc {
 			//  Писать также куда-то злоупотребляющих командой не в тех местах? Писать вообще все команды куда-либо?
 			//  Использовать DeleteAfter()?
 			err := ctx.Reply(fmt.Sprintf(
-				"%s @%s, попробуйте использовать команду в теме \"Оффтоп.\"",
+				`%s @%s, попробуйте использовать команду в теме "Оффтоп."`,
 				cantSpeakPhrase, ctx.Sender().Username,
 			))
 			if err != nil {
 				log.Error(
 					fmt.Sprintf(
-						"Бот не смог рассказать об ограничениях команды /keys: %v",
+						`Бот не смог рассказать об ограничениях команды /keys: %v`,
 						err,
 					),
 					nil,

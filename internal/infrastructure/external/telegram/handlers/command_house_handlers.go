@@ -2,9 +2,10 @@ package handlers
 
 import (
 	"fmt"
+	"s-belichenko/house-tg-bot/internal/infrastructure/external/llm"
 
 	tele "gopkg.in/telebot.v4"
-	"s-belichenko/house-tg-bot/internal/infrastructure/external/llm"
+
 	pkgLogger "s-belichenko/house-tg-bot/pkg/logger"
 )
 
@@ -152,8 +153,8 @@ func CommandRulesHandler(ctx tele.Context) error {
 		GetGreetingName(ctx.Message().Sender),
 		config.RulesURL.String(),
 	)
-	err := ctx.Reply(msg, tele.ModeHTML, tele.NoPreview)
 
+	err := ctx.Reply(msg, tele.ModeHTML, tele.NoPreview)
 	if err != nil {
 		pkgLog.Error(
 			fmt.Sprintf("Не удалось отправить правила чата по команде /rules: %v", err),
