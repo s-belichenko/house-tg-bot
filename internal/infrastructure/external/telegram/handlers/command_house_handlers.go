@@ -4,7 +4,7 @@ import (
 	"fmt"
 
 	tele "gopkg.in/telebot.v4"
-	llm "s-belichenko/house-tg-bot/internal/infrastructure/external/llm"
+	"s-belichenko/house-tg-bot/internal/infrastructure/external/llm"
 	pkgLogger "s-belichenko/house-tg-bot/pkg/logger"
 )
 
@@ -34,8 +34,10 @@ func CommandReportHandler(ctx tele.Context) error {
 	})
 
 	if msg.ReplyTo == nil {
-		if err := ctx.Reply("Пожалуйста, используйте эту команду в ответе на сообщение с нарушением. " +
-			"Подробнее: выполните /help в личной переписке с @lp_13x_bot."); err != nil {
+		if err := ctx.Reply(fmt.Sprintf(
+			"Пожалуйста, используйте эту команду в ответе на сообщение с нарушением. "+
+				"Подробнее: выполните /help в личной переписке с @%s.", config.BotNickname),
+		); err != nil {
 			pkgLog.Error(
 				fmt.Sprintf("Не удалось отправить уточнение про команду /report: %v", err),
 				nil,

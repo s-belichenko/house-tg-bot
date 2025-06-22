@@ -24,26 +24,38 @@ func CommandStartHandler(c tele.Context) error {
 }
 
 func CommandHelpHandler(ctx tele.Context) error {
-	help := `
-Привет, это бот <a href="` + config.InviteURL.String() + `">чата дома</a> по адресу Москва, ул. Иловайская, дом 2.
+	tmpl := `Привет, это бот <a href="%s">чата дома</a> по адресу %s.
 
 <b>Команды в переписке с ботом:</b>
 
-/` + StartCommand.Text + ` – Начало работы с ботом. В домовом чате не требуется.
-/` + HelpCommand.Text + ` – Текущая справка.
-/` + RulesCommand.Text + ` – Посмотреть правила чата.
+/%s – Начало работы с ботом. В домовом чате не требуется.
+/%s – Текущая справка.
+/%s – Посмотреть правила чата.
 
 <b>Команды в домовом чате:</b>
 
-/` + KeysCommand.Text + ` – Шуточная команда, заставляющая бота ответить на вопрос "ПИК, где мои ключи?" Работает ` +
+/%s – Шуточная команда, заставляющая бота ответить на вопрос "ПИК, где мои ключи?" Работает ` +
 		`только в теме "Оффтоп". Но осторожнее, половина соседей уже ненавидит эту команду.
-/` + ReportCommand.Text + ` – Сообщить о нарушении правил. Напишите ее в ответе на сообщение с нарушением правил ` +
+/%s – Сообщить о нарушении правил. Напишите ее в ответе на сообщение с нарушением правил ` +
 		`чата, после команды через пробел можете уточнить причину жалобы, например:
 <blockquote>/report Ругается матом, редиска!</blockquote>
 Сообщение с жалобой будет отправлено администраторам, а ваше сообщение с командой удалено.
-/` + RulesCommand.Text + ` – Посмотреть правила чата.
+/%s – Посмотреть правила чата.
 
-<a href="` + config.RulesURL.String() + `">Ссылка на правила</a>.`
+<a href="%s">Ссылка на правила</a>.`
+
+	help := fmt.Sprintf(
+		tmpl,
+		config.InviteURL.String(),
+		config.HomeAddress,
+		StartCommand.Text,
+		HelpCommand.Text,
+		RulesCommand.Text,
+		KeysCommand.Text,
+		ReportCommand.Text,
+		RulesCommand.Text,
+		config.RulesURL.String(),
+	)
 
 	if err := ctx.Send(help, tele.ModeHTML, tele.NoPreview); err != nil {
 		pkgLog.Error(fmt.Sprintf("Не удалось отправить текст справки: %v", err), nil)

@@ -12,14 +12,14 @@ import (
 	pkgLogger "s-belichenko/house-tg-bot/pkg/logger"
 )
 
-const botNickname = "Тринадцатый"
-
 type ConfigLLM struct {
 	LLMApiToken    string `env:"LLM_API_TOKEN"`
 	SystemPrompt   string
 	LLMFolderID    string  `env:"LLM_FOLDER_ID"`
+	BotName        string  `env:"BOT_NAME"` // Имя (не ник) бота
 	LLMTemperature float32 `env:"LLM_TEMPERATURE" env-default:"0.7"`
 	MaxTokens      int     `env:"LLM_MAX_TOKENS"  env-default:"8000"`
+	HomeAddress    string  `env:"HOME_ADDRESS"` // Адрес дома, к которому относится домовой чат
 	LogStreamName  string
 }
 
@@ -55,11 +55,12 @@ func init() {
 	}
 
 	config.SystemPrompt = fmt.Sprintf(
-		"Тебя зовут %s. Ты чат-бот в чате про дом по Адресу Москва, Иловайская, 2.\n"+
+		"Тебя зовут %s. Ты чат-бот в чате про дом по Адресу %s.\n"+
 			"Люди любят тебя за юмор и за то, что ты всегда остро и смешно отвечаешь.\n"+
 			"Отвечай на вопросы коротко и точно.\n"+
 			"Если не знаешь ответ, напиши об этом.",
-		botNickname,
+		config.BotName,
+		config.HomeAddress,
 	)
 	client = yandexgpt.NewYandexGPTClientWithAPIKey(config.LLMApiToken)
 }

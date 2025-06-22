@@ -15,6 +15,9 @@ type Config struct {
 	RulesURL             url.URL `env:"RULES_URL"`              // Ссылка на правила чата
 	OwnerNickname        string  `env:"OWNER_NICKNAME"`         // Никнейм владельца чата
 	InviteURL            url.URL `env:"INVITE_URL"`             // Ссылка для вступления в домовой чат
+	BotNickname          string  `env:"BOT_NICKNAME"`           // Ник бота
+	HomeAddress          string  `env:"HOME_ADDRESS"`           // Адрес дома, к которому относится домовой чат
+	VerifyRules          string  `env:"VERIFY_RULES"`           // Правила верификации
 	BotID                int64   // Собственный идентификатор бота
 	LogStreamName        string  // Имя потока в YC Logs
 }

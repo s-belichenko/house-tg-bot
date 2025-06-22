@@ -63,7 +63,7 @@ jobs:
           memory: ${{ vars.FUNCTION_MEMORY }}
           entrypoint: 'cmd/bot/main.Handler'
           service-account: ${{ secrets.YC_SERVICE_ACCOUT_ID }}
-          environment: |
+          environment: |-
             HOUSE_CHAT_ID=${{ vars.HOUSE_CHAT_ID }}
             HOME_THREAD_BOT=${{ vars.HOME_THREAD_BOT }}
             ADMINISTRATION_CHAT_ID=${{ vars.ADMINISTRATION_CHAT_ID }}
@@ -73,6 +73,10 @@ jobs:
             TELEGRAM_BOT_TOKEN=${{ secrets.TELEGRAM_BOT_TOKEN }}
             LLM_API_TOKEN=${{ secrets.LLM_API_TOKEN }}
             LLM_FOLDER_ID=${{ secrets.LLM_FOLDER_ID }}
+            BOT_NAME=${{ vars.BOT_NAME }}
+            BOT_NICKNAME=${{ vars.BOT_NICKNAME }}
+            HOME_ADDRESS=${{ vars.HOME_ADDRESS }}
+            VERIFY_RULES='${{ vars.VERIFY_RULES }}'
           include: |
             ./cmd/**/*.go
             ./internal/**/*.go
