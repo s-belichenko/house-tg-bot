@@ -1,0 +1,10 @@
+#REPORT
+Новое нарушение правил:
+
+Челобитчик: {{ .ReporterUsername }} (ID: {{ .ReporterID }})
+Уточнение: {{ .Clarification }}
+Ссылка: {{ .MessageLink }}
+Нарушитель: {{ .ViolatorUsername }} (ID: {{ .ViolatorID }})
+
+Сообщение:
+<blockquote>{{ .Text }}</blockquote>
