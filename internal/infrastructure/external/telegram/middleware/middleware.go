@@ -43,6 +43,16 @@ func CommonCommandMiddleware(next tele.HandlerFunc) tele.HandlerFunc {
 	}
 }
 
+func OnMediaMiddleware(next tele.HandlerFunc) tele.HandlerFunc {
+	return func(ctx tele.Context) error {
+		if ctx.Chat().Type != tele.ChatPrivate && ctx.Chat().Type != tele.ChatChannelPrivate {
+			return nil
+		}
+
+		return next(ctx)
+	}
+}
+
 func AllPrivateChatsMiddleware(next tele.HandlerFunc) tele.HandlerFunc {
 	return func(ctx tele.Context) error {
 		if ctx.Chat().Type != tele.ChatPrivate && ctx.Chat().Type != tele.ChatChannelPrivate {
