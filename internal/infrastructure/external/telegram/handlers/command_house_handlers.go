@@ -148,14 +148,23 @@ func CommandReportHandler(ctx tele.Context) error {
 }
 
 func CommandRulesHandler(ctx tele.Context) error {
-	msg := fmt.Sprintf(
-		"Привет, %s! Вот <a href=\"%s\">правила чата</a>, ознакомься.",
-		GetGreetingName(ctx.Message().Sender),
-		config.RulesURL.String(),
+	pkgLog.Info(
+		`Получен запрос правил`,
+		pkgLogger.LogContext{
+			"message":             ctx.Message(),
+			"message_reply_to_id": ctx.Message().ReplyTo,
+		},
 	)
 
-	err := ctx.Reply(msg, tele.ModeHTML, tele.NoPreview)
-	if err != nil {
+	if err := ctx.Reply(
+		fmt.Sprintf(
+			`Привет, %s! Вот <a href="%s">правила чата</a>, ознакомься.`,
+			GetGreetingName(ctx.Message().Sender),
+			config.RulesURL.String(),
+		),
+		tele.ModeHTML,
+		tele.NoPreview,
+	); err != nil {
 		pkgLog.Error(
 			fmt.Sprintf("Не удалось отправить правила чата по команде /rules: %v", err),
 			pkgLogger.LogContext{
