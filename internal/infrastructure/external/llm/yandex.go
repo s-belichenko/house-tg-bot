@@ -18,6 +18,7 @@ type ConfigLLM struct {
 	LLMApiToken    string `env:"LLM_API_TOKEN"`
 	SystemPrompt   string
 	LLMFolderID    string  `env:"LLM_FOLDER_ID"`
+	BotName        string  `env:"BOT_NAME"` // Имя (не ник) бота
 	LLMTemperature float32 `env:"LLM_TEMPERATURE" env-default:"0.7"`
 	MaxTokens      int     `env:"LLM_MAX_TOKENS"  env-default:"8000"`
 	HomeAddress    string  `env:"HOME_ADDRESS"` // Адрес дома, к которому относится домовой чат
@@ -62,7 +63,16 @@ func init() {
 		pkgLog.Error(fmt.Sprintf("Error reading LLM config: %v", err), nil)
 	}
 
-	config.SystemPrompt = templating.RenderText("systemPrompt.txt", config)
+	config.SystemPrompt = templating.RenderText(
+		"systemPrompt.txt",
+		struct {
+			BotName     string
+			HomeAddress string
+		}{
+			BotName:     config.BotName,
+			HomeAddress: config.HomeAddress,
+		},
+	)
 	client = yandexgpt.NewYandexGPTClientWithAPIKey(config.LLMApiToken)
 }
 
