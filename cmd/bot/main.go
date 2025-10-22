@@ -34,6 +34,7 @@ func init() {
 	setBotMiddleware()
 	registerBotCommandHandlers()
 	registerJoinRequestHandler()
+	registerMediaHandler()
 }
 
 func initModule() {
@@ -133,6 +134,10 @@ func registerBotCommandHandlers() {
 
 func registerJoinRequestHandler() {
 	bot.Handle(tele.OnChatJoinRequest, handlers.JoinRequestHandler)
+}
+
+func registerMediaHandler() {
+	bot.Handle(tele.OnMedia, handlers.MediaHandler)
 }
 
 // Handler Функция-обработчик для Yandex Cloud Function.
