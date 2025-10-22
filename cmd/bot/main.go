@@ -137,7 +137,7 @@ func registerJoinRequestHandler() {
 }
 
 func registerMediaHandler() {
-	bot.Handle(tele.OnMedia, handlers.MediaHandler)
+	// bot.Handle(tele.OnMedia, handlers.MediaHandler)
 }
 
 // Handler Функция-обработчик для Yandex Cloud Function.
