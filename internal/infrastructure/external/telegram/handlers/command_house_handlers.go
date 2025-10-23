@@ -24,7 +24,7 @@ var (
 )
 
 func CommandKeysHandler(c tele.Context) error {
-	if config.HouseIsCompleted {
+	if !config.HouseIsCompleted {
 		return c.Send(llm.GetAnswerAboutKeys())
 	}
 
