@@ -22,13 +22,21 @@ func CommandSetCommandsHandler(ctx tele.Context) error {
 	setCommands(ctx,
 		[]tele.Command{StartCommand, HelpCommand, RulesCommand},
 		tele.CommandScope{Type: tele.CommandScopeAllPrivateChats})
+
+	var homeCommands []tele.Command
+	if config.HouseIsCompleted {
+		homeCommands = []tele.Command{ReportCommand, RulesCommand}
+	} else {
+		homeCommands = []tele.Command{KeysCommand, ReportCommand, RulesCommand}
+	}
 	// Для участников домового чата
 	setCommands(ctx,
-		[]tele.Command{KeysCommand, ReportCommand, RulesCommand},
-		tele.CommandScope{Type: tele.CommandScopeChat, ChatID: config.HouseChatID})
+		homeCommands,
+		tele.CommandScope{Type: tele.CommandScopeChat, ChatID: config.HouseChatID},
+	)
 	// Для админов домового чата
 	setCommands(ctx,
-		[]tele.Command{KeysCommand, ReportCommand, RulesCommand},
+		homeCommands,
 		tele.CommandScope{Type: tele.CommandScopeChatAdmin, ChatID: config.HouseChatID})
 	// Для участников админского чата
 	setCommands(ctx,

@@ -6,7 +6,9 @@ import (
 	"io"
 	"net/http"
 	"os"
+	"runtime/debug"
 	"s-belichenko/house-tg-bot/internal/infrastructure/external/telegram/handlers"
+	"s-belichenko/house-tg-bot/internal/utils"
 
 	"github.com/ilyakaznacheev/cleanenv"
 	tele "gopkg.in/telebot.v4"
@@ -64,14 +66,21 @@ func initBot() {
 
 func setBotMiddleware() {
 	pkgLog.Debug("Start use middleware bot", nil)
-	bot.Use(teleMid.Recover(func(err error, _ tele.Context) {
-		pkgLog.Fatal(fmt.Sprintf("Bot fatal: %v", err), nil)
-	}))
+	bot.Use(
+		teleMid.Recover(
+			func(err error, _ tele.Context) {
+				pkgLog.Fatal(
+					fmt.Sprintf("Bot fatal: %v", err),
+					pkgLogger.LogContext{"stack_trace": utils.GetStackTraceAsJSON(debug.Stack())},
+				)
+			},
+		),
+	)
 	bot.Use(mid.GetLogUpdateMiddleware(pkgLog))
 }
 
 func registerBotCommandHandlers() {
-	pkgLog.Debug("Start register command hndls", nil)
+	pkgLog.Debug("Start register command handlers", nil)
 	// Общие команды
 	bot.Handle(
 		"/"+handlers.RulesCommand.Text,

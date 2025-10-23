@@ -77,7 +77,8 @@ jobs:
             BOT_NAME=${{ vars.BOT_NAME }}\n
             BOT_NICKNAME=${{ vars.BOT_NICKNAME }}\n
             HOME_ADDRESS=${{ vars.HOME_ADDRESS }}\n
-            VERIFY_RULES=${{ vars.VERIFY_RULES }}\n"
+            VERIFY_RULES=${{ vars.VERIFY_RULES }}\n
+            HOUSE_IS_COMPLETED=${{ vars.HOUSE_IS_COMPLETED }}\n"
           include: |
             ./cmd/**/*.go
             ./internal/**/*.go

@@ -20,6 +20,7 @@ type Config struct {
 	BotNickname          string  `env:"BOT_NICKNAME"`           // Ник бота
 	HomeAddress          string  `env:"HOME_ADDRESS"`           // Адрес дома, к которому относится домовой чат
 	VerifyRules          string  `env:"VERIFY_RULES"`           // Правила верификации
+	HouseIsCompleted     bool    `env:"HOUSE_IS_COMPLETED"`     // Признак, что дом уже сдан
 	BotID                int64   // Собственный идентификатор бота
 	LogStreamName        string  // Имя потока в YC Logs
 	TemplatesPath        string  // Путь к шаблонам
