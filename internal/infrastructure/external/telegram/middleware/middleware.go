@@ -167,6 +167,10 @@ func AdminChatMiddleware(next tele.HandlerFunc) tele.HandlerFunc {
 
 func KeysCommandMiddleware(next tele.HandlerFunc) tele.HandlerFunc {
 	return func(ctx tele.Context) error {
+		if cfg.HouseIsCompleted {
+			return nil
+		}
+
 		if IsBotHouse(ctx) {
 			return next(ctx)
 		}

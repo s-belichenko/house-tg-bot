@@ -21,8 +21,9 @@ type (
 
 type config struct {
 	AdministrationChatID TeleID `env:"ADMINISTRATION_CHAT_ID"`
-	HouseChatID          TeleID `env:"HOUSE_CHAT_ID"`   // Домовой чат, управляемый ботом
-	HomeThreadBot        int    `env:"HOME_THREAD_BOT"` // Тема в супергруппе, где нет ограничений для бота
+	HouseChatID          TeleID `env:"HOUSE_CHAT_ID"`      // Домовой чат, управляемый ботом
+	HomeThreadBot        int    `env:"HOME_THREAD_BOT"`    // Тема в супергруппе, где нет ограничений для бота
+	HouseIsCompleted     bool   `env:"HOUSE_IS_COMPLETED"` // Признак, что дом уже сдан
 	LogStreamName        string
 }
 
