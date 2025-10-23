@@ -25,7 +25,7 @@ func JoinRequestHandler(ctx tele.Context) error {
 
 func notifyAdmins(ctx tele.Context) {
 	if _, err := ctx.Bot().Send(
-		&tele.Chat{ID: config.AdministrationChatID},
+		&tele.Chat{ID: cfg.AdministrationChatID},
 		renderingTool.RenderText(`join_request.txt`, struct {
 			ChatURL   template.URL
 			ChatName  string
@@ -34,7 +34,7 @@ func notifyAdmins(ctx tele.Context) {
 			Firstname string
 			Lastname  string
 		}{
-			ChatURL:   template.URL(config.InviteURL.String()),
+			ChatURL:   template.URL(cfg.InviteURL.String()),
 			ChatName:  ctx.Chat().Title,
 			UserID:    ctx.Sender().ID,
 			Username:  ctx.Sender().Username,
@@ -64,7 +64,7 @@ func sendHi(ctx tele.Context) {
 		}
 		btnContactAdmin = menuInline.URL(
 			"Написать администратору",
-			"https://t.me/"+config.OwnerNickname,
+			"https://t.me/"+cfg.OwnerNickname,
 		)
 	)
 
@@ -79,9 +79,9 @@ func sendHi(ctx tele.Context) {
 				HomeAddress template.HTML
 				VerifyRules template.HTML
 			}{
-				InviteURL:   template.URL(config.InviteURL.String()),
-				HomeAddress: template.HTML(config.HomeAddress),
-				VerifyRules: template.HTML(config.VerifyRules),
+				InviteURL:   template.URL(cfg.InviteURL.String()),
+				HomeAddress: template.HTML(cfg.HomeAddress),
+				VerifyRules: template.HTML(cfg.VerifyRules),
 			},
 			[]string{"VerifyRules"},
 		),

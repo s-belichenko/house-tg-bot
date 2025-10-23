@@ -24,7 +24,7 @@ func CommandSetCommandsHandler(ctx tele.Context) error {
 		tele.CommandScope{Type: tele.CommandScopeAllPrivateChats})
 
 	var homeCommands []tele.Command
-	if config.HouseIsCompleted {
+	if cfg.HouseIsCompleted {
 		homeCommands = []tele.Command{ReportCommand, RulesCommand}
 	} else {
 		homeCommands = []tele.Command{KeysCommand, ReportCommand, RulesCommand}
@@ -32,16 +32,16 @@ func CommandSetCommandsHandler(ctx tele.Context) error {
 	// Для участников домового чата
 	setCommands(ctx,
 		homeCommands,
-		tele.CommandScope{Type: tele.CommandScopeChat, ChatID: config.HouseChatID},
+		tele.CommandScope{Type: tele.CommandScopeChat, ChatID: cfg.HouseChatID},
 	)
 	// Для админов домового чата
 	setCommands(ctx,
 		homeCommands,
-		tele.CommandScope{Type: tele.CommandScopeChatAdmin, ChatID: config.HouseChatID})
+		tele.CommandScope{Type: tele.CommandScopeChatAdmin, ChatID: cfg.HouseChatID})
 	// Для участников админского чата
 	setCommands(ctx,
 		[]tele.Command{HelpAdminChatCommand, MuteCommand, UnmuteCommand, BanCommand, UnbanCommand},
-		tele.CommandScope{Type: tele.CommandScopeChat, ChatID: config.AdministrationChatID})
+		tele.CommandScope{Type: tele.CommandScopeChat, ChatID: cfg.AdministrationChatID})
 	// Для админов админского чата
 	setCommands(
 		ctx,
@@ -54,7 +54,7 @@ func CommandSetCommandsHandler(ctx tele.Context) error {
 			BanCommand,
 			UnbanCommand,
 		},
-		tele.CommandScope{Type: tele.CommandScopeChatAdmin, ChatID: config.AdministrationChatID},
+		tele.CommandScope{Type: tele.CommandScopeChatAdmin, ChatID: cfg.AdministrationChatID},
 	)
 
 	return nil
@@ -66,21 +66,21 @@ func CommandDeleteCommandsHandler(ctx tele.Context) error {
 	// Для личных чатов со всеми подряд
 	deleteCommands(ctx, tele.CommandScope{Type: tele.CommandScopeAllPrivateChats})
 	// Для участников домового чата
-	deleteCommands(ctx, tele.CommandScope{Type: tele.CommandScopeChat, ChatID: config.HouseChatID})
+	deleteCommands(ctx, tele.CommandScope{Type: tele.CommandScopeChat, ChatID: cfg.HouseChatID})
 	// Для админов домового чата
 	deleteCommands(
 		ctx,
-		tele.CommandScope{Type: tele.CommandScopeChatAdmin, ChatID: config.HouseChatID},
+		tele.CommandScope{Type: tele.CommandScopeChatAdmin, ChatID: cfg.HouseChatID},
 	)
 	// Для участников админского чата
 	deleteCommands(
 		ctx,
-		tele.CommandScope{Type: tele.CommandScopeChat, ChatID: config.AdministrationChatID},
+		tele.CommandScope{Type: tele.CommandScopeChat, ChatID: cfg.AdministrationChatID},
 	)
 	// Для админов админского чата
 	deleteCommands(
 		ctx,
-		tele.CommandScope{Type: tele.CommandScopeChatAdmin, ChatID: config.AdministrationChatID},
+		tele.CommandScope{Type: tele.CommandScopeChatAdmin, ChatID: cfg.AdministrationChatID},
 	)
 
 	return nil

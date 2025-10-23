@@ -46,15 +46,15 @@ func CommandHelpHandler(ctx tele.Context) error {
 
 	help := fmt.Sprintf(
 		tmpl,
-		config.InviteURL.String(),
-		config.HomeAddress,
+		cfg.InviteURL.String(),
+		cfg.HomeAddress,
 		StartCommand.Text,
 		HelpCommand.Text,
 		RulesCommand.Text,
 		KeysCommand.Text,
 		ReportCommand.Text,
 		RulesCommand.Text,
-		config.RulesURL.String(),
+		cfg.RulesURL.String(),
 	)
 
 	if err := ctx.Send(help, tele.ModeHTML, tele.NoPreview); err != nil {

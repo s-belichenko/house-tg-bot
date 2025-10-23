@@ -27,7 +27,7 @@ func CommonCommandMiddleware(next tele.HandlerFunc) tele.HandlerFunc {
 		}
 
 		if (ctx.Chat().Type == tele.ChatSuperGroup || ctx.Chat().Type == tele.ChatGroup) &&
-			TeleID(ctx.Chat().ID) != config.HouseChatID {
+			TeleID(ctx.Chat().ID) != cfg.HouseChatID {
 			log.Warn(fmt.Sprintf(
 				"Попытка использовать %q вне домового чата, чат: %d",
 				getCommandName(ctx.Message()),
@@ -63,7 +63,7 @@ func AllPrivateChatsMiddleware(next tele.HandlerFunc) tele.HandlerFunc {
 					ctx.Chat().Type,
 				), pkgLog.LogContext{"message": ctx.Message()})
 
-			if TeleID(ctx.Chat().ID) == config.HouseChatID {
+			if TeleID(ctx.Chat().ID) == cfg.HouseChatID {
 				err := ctx.Reply(fmt.Sprintf(
 					"Используйте команду %q в личной переписке с ботом.",
 					getCommandName(ctx.Message()),
@@ -98,7 +98,7 @@ func HomeChatMiddleware(next tele.HandlerFunc) tele.HandlerFunc {
 			return nil
 		}
 
-		if TeleID(ctx.Chat().ID) != config.HouseChatID {
+		if TeleID(ctx.Chat().ID) != cfg.HouseChatID {
 			log.Warn(fmt.Sprintf(
 				"Попытка использовать %q вне домового чата, чат: %d",
 				getCommandName(ctx.Message()),
@@ -128,7 +128,7 @@ func AdminChatMiddleware(next tele.HandlerFunc) tele.HandlerFunc {
 			return nil
 		}
 
-		if TeleID(ctx.Chat().ID) != config.AdministrationChatID {
+		if TeleID(ctx.Chat().ID) != cfg.AdministrationChatID {
 			log.Warn(fmt.Sprintf(
 				"Попытка использовать команду %q в чате %d",
 				getCommandName(ctx.Message()),
@@ -157,7 +157,7 @@ func AdminChatMiddleware(next tele.HandlerFunc) tele.HandlerFunc {
 				`Хакир детектед! Пользователь %q попытался использовать команду %q, ссылка: %s`,
 				hndls.GetGreetingName(ctx.Sender()), getCommandName(ctx.Message()), link,
 			)
-			adminChat := &tele.Chat{ID: int64(config.AdministrationChatID)}
+			adminChat := &tele.Chat{ID: int64(cfg.AdministrationChatID)}
 			_, _ = ctx.Bot().Send(adminChat, reportMessage, tele.ModeHTML)
 		}
 

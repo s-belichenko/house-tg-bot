@@ -35,5 +35,5 @@ func getCommandName(msg *tele.Message) string {
 }
 
 func IsBotHouse(c TeleContext) bool {
-	return c.Message().ThreadID == config.HomeThreadBot
+	return c.Message().ThreadID == cfg.HomeThreadBot
 }

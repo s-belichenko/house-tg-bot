@@ -11,7 +11,7 @@ import (
 	tele "gopkg.in/telebot.v4"
 )
 
-type Config struct {
+type config struct {
 	HouseChatID          int64   `env:"HOUSE_CHAT_ID"`          // Домовой чат, управляемый ботом
 	AdministrationChatID int64   `env:"ADMINISTRATION_CHAT_ID"` // Чат администраторов, куда поступают уведомления и тп
 	RulesURL             url.URL `env:"RULES_URL"`              // Ссылка на правила чата
@@ -28,7 +28,7 @@ type Config struct {
 
 // Общие переменные пакета.
 var (
-	config        = Config{LogStreamName: "main_stream", TemplatesPath: "handlers"}
+	cfg           = config{LogStreamName: "main_stream", TemplatesPath: "handlers"}
 	pkgLog        pkgLogger.Logger
 	renderingTool pkgTemplate.RenderingTool
 )
@@ -38,19 +38,23 @@ type TeleContext interface {
 }
 
 func init() {
-	pkgLog = pkgLogger.InitLog(config.LogStreamName)
-	renderingTool = pkgTemplate.NewTool(config.TemplatesPath, pkgLog)
+	pkgLog = pkgLogger.InitLog(cfg.LogStreamName)
+	renderingTool = pkgTemplate.NewTool(cfg.TemplatesPath, pkgLog)
 
 	initConfig()
 }
 
 func initConfig() {
-	err := cleanenv.ReadEnv(&config)
+	err := cleanenv.ReadEnv(&cfg)
 	if err != nil {
 		pkgLog.Error(fmt.Sprintf("Error reading Bot config: %v", err), nil)
 	}
+
+	pkgLog.Debug("Загружена конфигурация пакета handlers", pkgLogger.LogContext{
+		"config": cfg,
+	})
 }
 
 func SetBotID(botID int64) {
-	config.BotID = botID
+	cfg.BotID = botID
 }

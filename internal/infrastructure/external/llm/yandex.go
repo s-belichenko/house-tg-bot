@@ -14,7 +14,7 @@ import (
 	"github.com/sheeiavellie/go-yandexgpt"
 )
 
-type ConfigLLM struct {
+type configLLM struct {
 	LLMApiToken    string `env:"LLM_API_TOKEN"`
 	SystemPrompt   string
 	LLMFolderID    string  `env:"LLM_FOLDER_ID"`
@@ -27,7 +27,7 @@ type ConfigLLM struct {
 }
 
 var (
-	config = ConfigLLM{
+	cfg = configLLM{
 		LogStreamName: `llm_stream`,
 		TemplatesPath: "llm",
 	}
@@ -56,24 +56,28 @@ var (
 )
 
 func init() {
-	pkgLog = pkgLogger.InitLog(config.LogStreamName)
-	templating = pkgTemplate.NewTool(config.TemplatesPath, pkgLog)
+	pkgLog = pkgLogger.InitLog(cfg.LogStreamName)
+	templating = pkgTemplate.NewTool(cfg.TemplatesPath, pkgLog)
 
-	if err := cleanenv.ReadEnv(&config); err != nil {
+	if err := cleanenv.ReadEnv(&cfg); err != nil {
 		pkgLog.Error(fmt.Sprintf("Error reading LLM config: %v", err), nil)
 	}
 
-	config.SystemPrompt = templating.RenderText(
+	pkgLog.Debug("Загружена конфигурация пакета llm", pkgLogger.LogContext{
+		"config": cfg,
+	})
+
+	cfg.SystemPrompt = templating.RenderText(
 		"systemPrompt.txt",
 		struct {
 			BotName     string
 			HomeAddress string
 		}{
-			BotName:     config.BotName,
-			HomeAddress: config.HomeAddress,
+			BotName:     cfg.BotName,
+			HomeAddress: cfg.HomeAddress,
 		},
 	)
-	client = yandexgpt.NewYandexGPTClientWithAPIKey(config.LLMApiToken)
+	client = yandexgpt.NewYandexGPTClientWithAPIKey(cfg.LLMApiToken)
 }
 
 func GetCantSpeakPhrase() string {
@@ -132,16 +136,16 @@ func doRequest(request yandexgpt.YandexGPTRequest) string {
 
 func createRequest(question string) yandexgpt.YandexGPTRequest {
 	return yandexgpt.YandexGPTRequest{
-		ModelURI: yandexgpt.MakeModelURI(config.LLMFolderID, yandexgpt.YandexGPT4Model),
+		ModelURI: yandexgpt.MakeModelURI(cfg.LLMFolderID, yandexgpt.YandexGPT4Model),
 		CompletionOptions: yandexgpt.YandexGPTCompletionOptions{
 			Stream:      false,
-			Temperature: config.LLMTemperature,
-			MaxTokens:   config.MaxTokens,
+			Temperature: cfg.LLMTemperature,
+			MaxTokens:   cfg.MaxTokens,
 		},
 		Messages: []yandexgpt.YandexGPTMessage{
 			{
 				Role: yandexgpt.YandexGPTMessageRoleSystem,
-				Text: config.SystemPrompt,
+				Text: cfg.SystemPrompt,
 			},
 			{
 				Role: yandexgpt.YandexGPTMessageRoleUser,

@@ -23,7 +23,7 @@ func MediaHandler(ctx tele.Context) error {
 		}
 		btnContactAdmin = menuInline.URL(
 			"Написать администратору",
-			"https://t.me/"+config.OwnerNickname,
+			"https://t.me/"+cfg.OwnerNickname,
 		)
 	)
 

@@ -24,8 +24,10 @@ var (
 )
 
 func CommandKeysHandler(c tele.Context) error {
-	if !config.HouseIsCompleted {
-		return c.Send(llm.GetAnswerAboutKeys())
+	if !cfg.HouseIsCompleted {
+		if err := c.Send(llm.GetAnswerAboutKeys()); err != nil {
+			return err
+		}
 	}
 
 	return nil
@@ -125,7 +127,7 @@ func cleanUpReport(ctx tele.Context, msg *tele.Message, reporter *tele.User) {
 }
 
 func reportAboutBot(ctx tele.Context, violatorID int64, reporter *tele.User) bool {
-	if violatorID == config.BotID {
+	if violatorID == cfg.BotID {
 		if err := ctx.Reply(fmt.Sprintf("%s, ай-яй-яй! %s", GetGreetingName(reporter), llm.GetTeaser())); err != nil {
 			pkgLog.Error(
 				fmt.Sprintf("Не удалось пообзываться в ответ на репорт на бота: %v", err),
@@ -171,7 +173,7 @@ func sendNotification(
 	messageLink string,
 ) {
 	if _, err := ctx.Bot().Send(
-		&tele.Chat{ID: config.AdministrationChatID},
+		&tele.Chat{ID: cfg.AdministrationChatID},
 		renderingTool.RenderText(`report_notice.txt`, struct {
 			ReporterUsername string
 			ReporterID       int64
@@ -227,7 +229,7 @@ func CommandRulesHandler(ctx tele.Context) error {
 			fmt.Sprintf(
 				`Привет, %s! Вот <a href="%s">правила чата</a>, ознакомься.`,
 				GetGreetingName(targetUser),
-				config.RulesURL.String(),
+				cfg.RulesURL.String(),
 			),
 			tele.ModeHTML,
 			tele.NoPreview,
@@ -245,7 +247,7 @@ func CommandRulesHandler(ctx tele.Context) error {
 			fmt.Sprintf(
 				`Привет, %s! Вот <a href="%s">правила чата</a>, ознакомься.`,
 				GetGreetingName(targetUser),
-				config.RulesURL.String(),
+				cfg.RulesURL.String(),
 			),
 			tele.ModeHTML,
 			tele.NoPreview,

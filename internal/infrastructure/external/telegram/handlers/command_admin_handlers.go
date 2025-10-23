@@ -75,7 +75,7 @@ func CommandMuteHandler(ctx tele.Context) error {
 		return nil
 	}
 
-	if err := ctx.Bot().Restrict(&tele.Chat{ID: config.HouseChatID}, violator); err != nil {
+	if err := ctx.Bot().Restrict(&tele.Chat{ID: cfg.HouseChatID}, violator); err != nil {
 		pkgLog.Error(
 			fmt.Sprintf("Не удалось ограничить пользователя: %v", err),
 			pkgLogger.LogContext{
@@ -141,7 +141,7 @@ func CommandUnmuteHandler(ctx tele.Context) error {
 		return nil
 	}
 
-	if err := ctx.Bot().Promote(&tele.Chat{ID: config.HouseChatID}, violator); err != nil {
+	if err := ctx.Bot().Promote(&tele.Chat{ID: cfg.HouseChatID}, violator); err != nil {
 		pkgLog.Error(
 			fmt.Sprintf("Не удалось снять ограничения с пользователя: %v", err),
 			pkgLogger.LogContext{
@@ -219,7 +219,7 @@ func CommandBanHandler(ctx tele.Context) error {
 		return nil
 	}
 
-	if err := ctx.Bot().Ban(&tele.Chat{ID: config.HouseChatID}, violator); err != nil {
+	if err := ctx.Bot().Ban(&tele.Chat{ID: cfg.HouseChatID}, violator); err != nil {
 		pkgLog.Error(
 			fmt.Sprintf("Не удалось заблокировать пользователя: %v", err),
 			pkgLogger.LogContext{
@@ -285,7 +285,7 @@ func CommandUnbanHandler(ctx tele.Context) error {
 		}
 	}
 
-	if err := ctx.Bot().Unban(&tele.Chat{ID: config.HouseChatID}, violator, true); err != nil {
+	if err := ctx.Bot().Unban(&tele.Chat{ID: cfg.HouseChatID}, violator, true); err != nil {
 		pkgLog.Error(
 			fmt.Sprintf("Не удалось разблокировать пользователя: %v", err),
 			pkgLogger.LogContext{
@@ -338,7 +338,7 @@ func CommandHelpAdminHandler(ctx tele.Context) error {
 %s – Забанить пользователя в домовом чата.
 %s – Разбанить пользователя в домовом чата.
 
-<a href="`+config.RulesURL.String()+`">Ссылка на правила</a>.`,
+<a href="`+cfg.RulesURL.String()+`">Ссылка на правила</a>.`,
 		muteCommandFormat,
 		unmuteCommandFormat,
 		banCommandFormat,

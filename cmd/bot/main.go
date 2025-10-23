@@ -18,7 +18,7 @@ import (
 	pkgLogger "s-belichenko/house-tg-bot/pkg/logger"
 )
 
-type Config struct {
+type config struct {
 	BotToken             string `env:"TELEGRAM_BOT_TOKEN"`
 	AdministrationChatID int64  `env:"ADMINISTRATION_CHAT_ID"` // Чат администраторов, куда поступают уведомления и тп
 	LogStreamName        string
@@ -27,7 +27,7 @@ type Config struct {
 var (
 	bot    *tele.Bot
 	pkgLog pkgLogger.Logger
-	config = Config{LogStreamName: "main_stream"}
+	cfg    = config{LogStreamName: "main_stream"}
 )
 
 func init() {
@@ -40,14 +40,18 @@ func init() {
 }
 
 func initModule() {
-	pkgLog = pkgLogger.InitLog(config.LogStreamName)
+	pkgLog = pkgLogger.InitLog(cfg.LogStreamName)
 
 	pkgLog.Debug("Start init module", nil)
 
-	if err := cleanenv.ReadEnv(&config); err != nil {
+	if err := cleanenv.ReadEnv(&cfg); err != nil {
 		pkgLog.Fatal(fmt.Sprintf("Не удалось прочитать конфигурацию ота: %v", err), nil)
 		os.Exit(1)
 	}
+
+	pkgLog.Debug("Загружена конфигурация пакета main", pkgLogger.LogContext{
+		"config": cfg,
+	})
 }
 
 func initBot() {
@@ -55,7 +59,7 @@ func initBot() {
 
 	pkgLog.Debug("Start init bot", nil)
 
-	bot, err = tele.NewBot(tele.Settings{Token: config.BotToken})
+	bot, err = tele.NewBot(tele.Settings{Token: cfg.BotToken})
 	if err != nil {
 		pkgLog.Fatal(fmt.Sprintf("Не удалось инициализировать бота: %v", err), nil)
 		os.Exit(1)

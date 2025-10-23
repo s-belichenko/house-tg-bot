@@ -3,9 +3,10 @@ package middleware
 import (
 	"fmt"
 
+	pkgLog "s-belichenko/house-tg-bot/pkg/logger"
+
 	"github.com/ilyakaznacheev/cleanenv"
 	tele "gopkg.in/telebot.v4"
-	pkgLog "s-belichenko/house-tg-bot/pkg/logger"
 )
 
 type (
@@ -18,7 +19,7 @@ type (
 	}
 )
 
-type Config struct {
+type config struct {
 	AdministrationChatID TeleID `env:"ADMINISTRATION_CHAT_ID"`
 	HouseChatID          TeleID `env:"HOUSE_CHAT_ID"`   // Домовой чат, управляемый ботом
 	HomeThreadBot        int    `env:"HOME_THREAD_BOT"` // Тема в супергруппе, где нет ограничений для бота
@@ -26,20 +27,24 @@ type Config struct {
 }
 
 var (
-	config = Config{LogStreamName: "main_stream"}
-	log    pkgLog.Logger
+	cfg = config{LogStreamName: "main_stream"}
+	log pkgLog.Logger
 )
 
 func init() {
-	log = pkgLog.InitLog(config.LogStreamName)
+	log = pkgLog.InitLog(cfg.LogStreamName)
 
 	initConfig()
 }
 
 func initConfig() {
-	if err := cleanenv.ReadEnv(&config); err != nil {
+	if err := cleanenv.ReadEnv(&cfg); err != nil {
 		log.Error(fmt.Sprintf("Error reading Bot config: %v", err), nil)
 	}
+
+	log.Debug("Загружена конфигурация пакета middleware", pkgLog.LogContext{
+		"config": cfg,
+	})
 }
 
 // SetValue сеттер для загрузки в конфигурацию типа TeleID.
