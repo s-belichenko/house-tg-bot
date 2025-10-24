@@ -27,7 +27,7 @@ func JoinRequestHandler(ctx tele.Context) error {
 func notifyAdmins(ctx tele.Context) {
 	if _, err := ctx.Bot().Send(
 		&tele.Chat{ID: cfg.AdministrationChatID},
-		renderingTool.RenderText(`join_request.txt`, struct {
+		renderingTool.RenderText(`join_request.gohtml`, struct {
 			ChatURL   template.URL
 			ChatName  string
 			UserID    int64
@@ -74,7 +74,7 @@ func sendHi(ctx tele.Context) {
 	if _, err := ctx.Bot().Send(
 		ctx.Sender(),
 		renderingTool.RenderEscapedText(
-			`hi.txt`,
+			`hi.gohtml`,
 			struct {
 				InviteURL   template.URL
 				HomeAddress template.HTML

@@ -15,22 +15,24 @@ func TestGetGreetingName(t *testing.T) {
 		expected map[string]string
 	}{
 		testData: map[string]tele.User{
-			"Все данные": {
-				Username:  "some_username",
-				FirstName: "Иван",
-				LastName:  "Петров",
-			},
-			"Нет только username":    {Username: "", FirstName: "Иван", LastName: "Петров"},
-			"Нет username и имени":   {Username: "", FirstName: "", LastName: "Петров"},
-			"Нет username и фамилии": {Username: "", FirstName: "Иван", LastName: ""},
-			"Нет ничего":             {Username: "", FirstName: "", LastName: ""},
+			"Все данные":              {Username: "some_username", FirstName: "Иван", LastName: "Петров"},
+			"Нет только username":     {Username: "", FirstName: "Иван", LastName: "Петров"},
+			"Нет username и имени":    {Username: "", FirstName: "", LastName: "Петров"},
+			"Нет username и фамилии":  {Username: "", FirstName: "Иван", LastName: ""},
+			"Нет ничего":              {Username: "", FirstName: "", LastName: ""},
+			"Только пробелы":          {Username: "", FirstName: " ", LastName: " "},
+			"Неподходящие символы":    {Username: "", FirstName: "😄", LastName: ""},
+			"Часть символов подходит": {Username: "", FirstName: "D😄", LastName: ""},
 		},
 		expected: map[string]string{
-			"Все данные":             "@some_username",
-			"Нет только username":    "Иван Петров",
-			"Нет username и имени":   "Петров",
-			"Нет username и фамилии": "Иван",
-			"Нет ничего":             "сосед",
+			"Все данные":              "@some_username",
+			"Нет только username":     "Иван Петров",
+			"Нет username и имени":    "Петров",
+			"Нет username и фамилии":  "Иван",
+			"Нет ничего":              "сосед",
+			"Только пробелы":          "сосед",
+			"Неподходящие символы":    "сосед",
+			"Часть символов подходит": "D😄",
 		},
 	}
 
