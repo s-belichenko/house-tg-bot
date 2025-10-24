@@ -18,7 +18,7 @@ const (
 )
 
 func GetGreetingName(user *tele.User) string {
-	name := "сосед"
+	var name string
 
 	if user.Username != "" {
 		return "@" + user.Username
@@ -40,7 +40,31 @@ func GetGreetingName(user *tele.User) string {
 		name += lastname
 	}
 
-	return name
+	regExp, err := regexp.Compile(`[a-zA-Z0-9а-яА-Я.\-_—–!@#$%^&*()"'/?><,]+`)
+	if err != nil {
+		pkgLog.Error(
+			fmt.Sprintf(`Ошибка компиляции регулярного выражения для вычисления имени соседа: %v`, err),
+			pkgLogger.LogContext{`name`: name},
+		)
+
+		return ""
+	}
+
+	matchString, err := regexp.MatchString(regExp.String(), name)
+	if err != nil {
+		pkgLog.Error(
+			fmt.Sprintf(`Не удалось применить регулярное выражение для вычисления имени соседа: %v`, err),
+			pkgLogger.LogContext{`name`: name},
+		)
+
+		return ""
+	}
+
+	if matchString {
+		return name
+	}
+
+	return "сосед"
 }
 
 func GenerateMessageLink(chat *tele.Chat, messageID int) string {

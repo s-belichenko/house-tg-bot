@@ -14,7 +14,7 @@ import (
 	pkgLogger "s-belichenko/house-tg-bot/pkg/logger"
 )
 
-//go:embed templates/**/*.txt
+//go:embed templates/**/*.gohtml
 var templates embed.FS
 
 type RenderingTool interface {

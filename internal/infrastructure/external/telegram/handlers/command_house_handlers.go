@@ -42,7 +42,7 @@ func CommandReportHandler(ctx tele.Context) error {
 
 	var (
 		violatorID       int64
-		violatorUsername string
+		violatorUsername = "username неизвестен"
 		violationText    = "Сообщение не содержало текста."
 		clarification    = "Не оставлено."
 	)
@@ -63,7 +63,11 @@ func CommandReportHandler(ctx tele.Context) error {
 
 	violator := msg.ReplyTo.Sender
 	violatorID = violator.ID
-	violatorUsername = violator.Username
+
+	if violator.Username != "" {
+		violatorUsername = "@" + violator.Username
+	}
+
 	violationMessageID := msg.ReplyTo.ID
 	messageLink := GenerateMessageLink(msg.ReplyTo.Chat, violationMessageID)
 
@@ -101,7 +105,7 @@ func thxForReport(
 ) {
 	if _, err := ctx.Bot().Send(
 		reporter,
-		renderingTool.RenderText(`report_thx.txt`, struct {
+		renderingTool.RenderText(`report_thx.gohtml`, struct {
 			Text          string
 			Clarification string
 		}{
@@ -180,9 +184,22 @@ func sendNotification(
 	clarification string,
 	messageLink string,
 ) {
+	var (
+		reporterUsername = "username неизвестен"
+		violatorUsername = "username неизвестен"
+	)
+
+	if reporter.Username != "" {
+		reporterUsername = "@" + reporter.Username
+	}
+
+	if violator.Username != "" {
+		violatorUsername = "@" + violator.Username
+	}
+
 	if _, err := ctx.Bot().Send(
 		&tele.Chat{ID: cfg.AdministrationChatID},
-		renderingTool.RenderText(`report_notice.txt`, struct {
+		renderingTool.RenderText(`report_notice.gohtml`, struct {
 			ChatTitle        string
 			ChatURL          template.URL
 			ReporterUsername string
@@ -195,11 +212,11 @@ func sendNotification(
 		}{
 			ChatTitle:        ctx.Chat().Title,
 			ChatURL:          template.URL(cfg.InviteURL.String()),
-			ReporterUsername: reporter.Username,
+			ReporterUsername: reporterUsername,
 			ReporterID:       reporter.ID,
 			Clarification:    clarification,
 			MessageLink:      messageLink,
-			ViolatorUsername: violator.Username,
+			ViolatorUsername: violatorUsername,
 			ViolatorID:       violator.ID,
 			Text:             violationText,
 		}),

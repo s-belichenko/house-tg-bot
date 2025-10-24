@@ -31,15 +31,6 @@ var (
 	cfg    = config{LogStreamName: "main_stream"}
 )
 
-func init() {
-	initModule()
-	initBot()
-	setBotMiddleware()
-	registerBotCommandHandlers()
-	registerJoinRequestHandler()
-	registerMediaHandler()
-}
-
 func initModule() {
 	pkgLog = pkgLogger.InitLog(cfg.LogStreamName)
 
@@ -102,6 +93,11 @@ func registerBotCommandHandlers() {
 	bot.Handle(
 		"/"+handlers.HelpCommand.Text,
 		handlers.CommandHelpHandler,
+		mid.AllPrivateChatsMiddleware,
+	)
+	bot.Handle(
+		"/"+handlers.MyInfoCommand.Text,
+		handlers.CommandMyInfoHandler,
 		mid.AllPrivateChatsMiddleware,
 	)
 	// Домашний чат.
@@ -176,6 +172,13 @@ func Handler(writer http.ResponseWriter, request *http.Request) {
 
 		return
 	}
+
+	initModule()
+	initBot()
+	setBotMiddleware()
+	registerBotCommandHandlers()
+	registerJoinRequestHandler()
+	registerMediaHandler()
 
 	go bot.ProcessUpdate(update)
 }
