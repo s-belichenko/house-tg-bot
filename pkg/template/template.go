@@ -14,7 +14,7 @@ import (
 	pkgLogger "s-belichenko/house-tg-bot/pkg/logger"
 )
 
-//go:embed templates/**/*.txt
+//go:embed templates/**/*.gohtml
 var templates embed.FS
 
 type RenderingTool interface {
@@ -143,9 +143,8 @@ func (t *Templating) unescapeData(data any, escapedStrings []string) (interface{
 		tmp.Set(elem.Elem())
 		fieldValue := tmp.FieldByName(fieldName)
 		tmp.FieldByName(fieldName).SetString(unescapeLineBreak(fieldValue.String()))
+		elem.Set(tmp)
 	}
-
-	elem.Set(tmp)
 
 	return data, nil
 }

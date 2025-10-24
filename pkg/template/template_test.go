@@ -29,22 +29,22 @@ func TestTemplate_RenderTextSuccess(t *testing.T) {
 		}{
 			`Обычный пример`: {
 				storagePath: `test/`,
-				tmplName:    `template.txt`,
+				tmplName:    `template.gohtml`,
 				data:        struct{ Name string }{Name: `John`},
 			},
 			`Слеш в имени файла`: {
 				storagePath: `test/`,
-				tmplName:    `/template.txt`,
+				tmplName:    `/template.gohtml`,
 				data:        struct{ Name string }{Name: `John`},
 			},
 			`Нет слеша в конце пути к шаблонам`: {
 				storagePath: `test`,
-				tmplName:    `/template.txt`,
+				tmplName:    `/template.gohtml`,
 				data:        struct{ Name string }{Name: `John`},
 			},
 			`Шаблон со ссылкой url.URL`: {
 				storagePath: `test`,
-				tmplName:    `template_with_url_url.txt`,
+				tmplName:    `template_with_url_url.gohtml`,
 				data: struct {
 					Name string
 					URL  *url.URL
@@ -52,7 +52,7 @@ func TestTemplate_RenderTextSuccess(t *testing.T) {
 			},
 			`Шаблон со ссылкой template.URL`: {
 				storagePath: `test`,
-				tmplName:    `template_with_template_url.txt`,
+				tmplName:    `template_with_template_url.gohtml`,
 				data: struct {
 					Name string
 					URL  template.URL
@@ -60,12 +60,12 @@ func TestTemplate_RenderTextSuccess(t *testing.T) {
 			},
 			`Шаблон с переносом`: {
 				storagePath: `test`,
-				tmplName:    `template_with_line_break.txt`,
+				tmplName:    `template_with_line_break.gohtml`,
 				data:        struct{ Name string }{Name: `John`},
 			},
 			`Шаблон с переносом внутри переменной`: {
 				storagePath: `test`,
-				tmplName:    `template_with_line_break_in_variable.txt`,
+				tmplName:    `template_with_line_break_in_variable.gohtml`,
 				data:        struct{ VarWithBeak string }{VarWithBeak: "Раз строка.\nДва строка."},
 			},
 		},
@@ -122,7 +122,7 @@ func TestTemplate_RenderTextWithEscapeCharactersSuccess(t *testing.T) {
 			mockLogger.EXPECT().Debug(mock.Anything, mock.Anything)
 			templating := pkgTemplating.NewTool(`test`, mockLogger)
 			result := templating.RenderEscapedText(
-				`escaped_characters.txt`, testData, []string{"EscapedCharacters"},
+				`escaped_characters.gohtml`, testData, []string{"EscapedCharacters"},
 			)
 
 			assert.Equal(t, dataProvider.expected[testCase], result)
@@ -137,11 +137,11 @@ func TestTemplate_RenderTextWrongPath(t *testing.T) {
 	}{
 		`Неверный путь`: {
 			storagePath: `wrong_path_to_resources/`,
-			tmplName:    `template.txt`,
+			tmplName:    `template.gohtml`,
 		},
 		`Неверное имя файла`: {
 			storagePath: `test_resources`,
-			tmplName:    `template1.txt`,
+			tmplName:    `template1.gohtml`,
 		},
 	}
 
@@ -227,10 +227,81 @@ func TestTemplate_RenderTextRealTemplate(t *testing.T) {
 	for testCase, testData := range dataProvider.testData {
 		t.Run(testCase, func(_ *testing.T) {
 			mockLogger := mocks.NewMockLogger(t)
-			mockLogger.EXPECT().Debug("Начата генерация шаблона hi.txt", mock.Anything)
-			mockLogger.EXPECT().Debug("Сгенерирован текст шаблона hi.txt", mock.Anything)
+			mockLogger.EXPECT().Debug("Начата генерация шаблона hi.gohtml", mock.Anything)
+			mockLogger.EXPECT().Debug("Сгенерирован текст шаблона hi.gohtml", mock.Anything)
 			templating := pkgTemplating.NewTool(`handlers`, mockLogger)
-			result := templating.RenderText(`hi.txt`, testData)
+			result := templating.RenderText(`hi.gohtml`, testData)
+
+			assert.Equal(t, dataProvider.expected[testCase], result)
+		})
+	}
+}
+
+func TestTemplating_RenderEscapedText(t *testing.T) {
+	dataProvider := struct {
+		testData map[string]struct {
+			data           any
+			escapedStrings []string
+		}
+		expected map[string]string
+	}{
+		testData: map[string]struct {
+			data           any
+			escapedStrings []string
+		}{
+			"Не задано экранированных": {
+				data: struct {
+					URL     template.HTML
+					Address string
+				}{
+					URL:     template.HTML(`https://example.org/foo/bar?param=value`),
+					Address: `Москва, Кремль, 1`,
+				},
+				escapedStrings: []string{},
+			},
+			"Не задано экранированных, есть перенос": {
+				data: struct {
+					URL     template.HTML
+					Address string
+				}{
+					URL:     template.HTML(`https://example.org/foo/bar?param=value`),
+					Address: "Москва, Кремль, 1\nНовая строка.",
+				},
+				escapedStrings: []string{},
+			},
+			"Экранированная с переносом": {
+				data: struct {
+					URL     template.HTML
+					Address string
+				}{
+					URL:     template.HTML(`https://example.org/foo/bar?param=value`),
+					Address: "Москва, Кремль, 1\\nНовая строка.",
+				},
+				escapedStrings: []string{"Address"},
+			},
+		},
+		expected: map[string]string{
+			"Не задано экранированных": `Привет! Наш адрес: Москва, Кремль, 1
+
+Наш сайт: <a href="https://example.org/foo/bar?param=value">сайт</a>.`,
+			"Не задано экранированных, есть перенос": `Привет! Наш адрес: Москва, Кремль, 1
+Новая строка.
+
+Наш сайт: <a href="https://example.org/foo/bar?param=value">сайт</a>.`,
+			"Экранированная с переносом": `Привет! Наш адрес: Москва, Кремль, 1
+Новая строка.
+
+Наш сайт: <a href="https://example.org/foo/bar?param=value">сайт</a>.`,
+		},
+	}
+
+	for testCase, testData := range dataProvider.testData {
+		t.Run(testCase, func(_ *testing.T) {
+			mockLogger := mocks.NewMockLogger(t)
+			mockLogger.EXPECT().Debug("Начата генерация шаблона escaped_strings.gohtml", mock.Anything)
+			mockLogger.EXPECT().Debug("Сгенерирован текст шаблона escaped_strings.gohtml", mock.Anything)
+			templating := pkgTemplating.NewTool(`test`, mockLogger)
+			result := templating.RenderEscapedText(`escaped_strings.gohtml`, testData.data, testData.escapedStrings)
 
 			assert.Equal(t, dataProvider.expected[testCase], result)
 		})

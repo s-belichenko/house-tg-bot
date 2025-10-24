@@ -2,6 +2,7 @@ package handlers
 
 import (
 	"fmt"
+	"html/template"
 	"strings"
 
 	tele "gopkg.in/telebot.v4"
@@ -353,27 +354,44 @@ func CommandUnbanHandler(ctx tele.Context) error {
 }
 
 func CommandHelpAdminHandler(ctx tele.Context) error {
-	help := fmt.Sprintf(`
-Справка для администратора. Все команды ниже используются только в чате администраторов.
-
-Команды:
-
-/help_admin – Текущая справка.
-%s – Ограничить пользователя в домовом чате. 
-%s – Снять ограничения с пользователя в домовом чате.
-%s – Забанить пользователя в домовом чата.
-%s – Разбанить пользователя в домовом чата.
-
-<a href="`+cfg.RulesURL.String()+`">Ссылка на правила</a>.`,
-		muteCommandFormat,
-		unmuteCommandFormat,
-		banCommandFormat,
-		unbanCommandFormat,
+	err := ctx.Send(
+		renderingTool.RenderText(`help_admin.gohtml`, struct {
+			HelpAdminCommand    string
+			MuteCommandFormat   string
+			UnmuteCommandFormat string
+			BanCommandFormat    string
+			UnbanCommandFormat  string
+			RulesURL            template.URL
+		}{
+			HelpAdminCommand:    HelpAdminChatCommand.Text,
+			MuteCommandFormat:   muteCommandFormat,
+			UnmuteCommandFormat: unmuteCommandFormat,
+			BanCommandFormat:    banCommandFormat,
+			UnbanCommandFormat:  unbanCommandFormat,
+			RulesURL:            template.URL(cfg.RulesURL.String()),
+		}),
+		tele.ModeHTML,
+		tele.NoPreview,
 	)
-
-	err := ctx.Send(help, tele.ModeHTML, tele.NoPreview)
 	if err != nil {
 		pkgLog.Error(fmt.Sprintf("Не удалось отправить текст справки: %v", err), nil)
+	}
+
+	return nil
+}
+
+func CallbackJoinHandler(ctx tele.Context) error {
+	err := ctx.Bot().ApproveJoinRequest(&tele.User{ID: 0}, &tele.User{})
+	if err != nil {
+		pkgLog.Error(
+			fmt.Sprintf(
+				`Не удалось одобрить заявку на вступление в чат пользователя %d: %e`,
+				ctx.Message().Sender.ID, err,
+			),
+			pkgLogger.LogContext{
+				"message": ctx.Message(),
+			},
+		)
 	}
 
 	return nil

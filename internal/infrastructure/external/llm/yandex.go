@@ -69,7 +69,7 @@ func init() {
 	})
 
 	cfg.SystemPrompt = templating.RenderText(
-		"systemPrompt.txt",
+		"systemPrompt.gohtml",
 		struct {
 			BotName     string
 			HomeAddress string

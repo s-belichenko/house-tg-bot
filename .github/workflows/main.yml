@@ -83,7 +83,7 @@ jobs:
             ./cmd/**/*.go
             ./internal/**/*.go
             ./pkg/**/*.go
-            ./pkg/template/templates/**/*.txt
+            ./pkg/template/templates/**/*.gohtml
             ./go.mod
           execution-timeout: ${{ vars.EXECUTION_TIMEOUT }}
           log-level: ${{ vars.LOG_LEVEL }}

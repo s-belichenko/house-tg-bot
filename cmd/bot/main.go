@@ -104,6 +104,11 @@ func registerBotCommandHandlers() {
 		handlers.CommandHelpHandler,
 		mid.AllPrivateChatsMiddleware,
 	)
+	bot.Handle(
+		"/"+handlers.MyInfoCommand.Text,
+		handlers.CommandMyInfoHandler,
+		mid.AllPrivateChatsMiddleware,
+	)
 	// Домашний чат.
 	bot.Handle(
 		"/"+handlers.KeysCommand.Text,

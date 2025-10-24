@@ -38,6 +38,7 @@ linters:
   enable:
     - wsl_v5
   disable:
+    - wsl
     - copyloopvar
     - depguard # Белый список разрешенных зависимостей
     - exhaustruct
@@ -60,6 +61,9 @@ linters:
           - Stream
     dupl:
       threshold: 175
+    gocritic:
+      disabled-checks:
+        - regexpMust
     gosec:
       excludes:
       - G203
