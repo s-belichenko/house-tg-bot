@@ -2,6 +2,8 @@ package handlers
 
 import (
 	"fmt"
+	"html/template"
+
 	"s-belichenko/house-tg-bot/internal/infrastructure/external/llm"
 
 	tele "gopkg.in/telebot.v4"
@@ -25,7 +27,8 @@ var (
 
 func CommandKeysHandler(c tele.Context) error {
 	if !cfg.HouseIsCompleted {
-		if err := c.Send(llm.GetAnswerAboutKeys()); err != nil {
+		err := c.Send(llm.GetAnswerAboutKeys())
+		if err != nil {
 			return err
 		}
 	}
@@ -44,18 +47,18 @@ func CommandReportHandler(ctx tele.Context) error {
 		clarification    = "Не оставлено."
 	)
 
+	if incorrectUseReportCommand(ctx, msg) {
+		cleanUpReport(ctx, msg, reporter)
+
+		return nil
+	}
+
 	if msg.ReplyTo.Text != "" {
 		violationText = msg.ReplyTo.Text
 	}
 
 	if ctx.Data() != "" {
 		clarification = ctx.Data()
-	}
-
-	if incorrectUseReportCommand(ctx, msg) {
-		cleanUpReport(ctx, msg, reporter)
-
-		return nil
 	}
 
 	violator := msg.ReplyTo.Sender
@@ -78,6 +81,8 @@ func CommandReportHandler(ctx tele.Context) error {
 	)
 
 	if reportAboutBot(ctx, violatorID, reporter) {
+		cleanUpReport(ctx, msg, reporter)
+
 		return nil
 	}
 
@@ -115,7 +120,8 @@ func thxForReport(
 }
 
 func cleanUpReport(ctx tele.Context, msg *tele.Message, reporter *tele.User) {
-	if err := ctx.Bot().Delete(msg); err != nil {
+	err := ctx.Bot().Delete(msg)
+	if err != nil {
 		pkgLog.Error(fmt.Sprintf(
 			"Не удалось удалить сообщение с жалобой от %s: %v", GetGreetingName(reporter), err),
 			pkgLogger.LogContext{
@@ -128,11 +134,13 @@ func cleanUpReport(ctx tele.Context, msg *tele.Message, reporter *tele.User) {
 
 func reportAboutBot(ctx tele.Context, violatorID int64, reporter *tele.User) bool {
 	if violatorID == cfg.BotID {
-		if err := ctx.Reply(fmt.Sprintf("%s, ай-яй-яй! %s", GetGreetingName(reporter), llm.GetTeaser())); err != nil {
+		err := ctx.Reply(fmt.Sprintf("%s, ай-яй-яй! %s", GetGreetingName(reporter), llm.GetTeaser()))
+		if err != nil {
 			pkgLog.Error(
 				fmt.Sprintf("Не удалось пообзываться в ответ на репорт на бота: %v", err),
 				pkgLogger.LogContext{
 					"reporter": reporter,
+					"message":  ctx.Message(),
 				},
 			)
 		}
@@ -147,8 +155,8 @@ func incorrectUseReportCommand(ctx tele.Context, msg *tele.Message) bool {
 	if msg.ReplyTo == nil || msg.ReplyTo.Sender.ID == msg.Sender.ID {
 		if _, err := ctx.Bot().Send(
 			msg.Sender,
-			"Пожалуйста, используйте эту команду в ответе на сообщение с нарушением. "+
-				"Подробнее: выполните /help в личной переписке с данным ботом.",
+			"Пожалуйста, используйте команду /report в ответе на сообщение с нарушением. "+
+				"Подробнее: /help.",
 		); err != nil {
 			pkgLog.Error(
 				fmt.Sprintf("Не удалось отправить уточнение про команду /report: %v", err),
@@ -175,6 +183,8 @@ func sendNotification(
 	if _, err := ctx.Bot().Send(
 		&tele.Chat{ID: cfg.AdministrationChatID},
 		renderingTool.RenderText(`report_notice.txt`, struct {
+			ChatTitle        string
+			ChatURL          template.URL
 			ReporterUsername string
 			ReporterID       int64
 			Clarification    string
@@ -183,6 +193,8 @@ func sendNotification(
 			ViolatorID       int64
 			Text             string
 		}{
+			ChatTitle:        ctx.Chat().Title,
+			ChatURL:          template.URL(cfg.InviteURL.String()),
 			ReporterUsername: reporter.Username,
 			ReporterID:       reporter.ID,
 			Clarification:    clarification,
@@ -225,7 +237,7 @@ func CommandRulesHandler(ctx tele.Context) error {
 	)
 
 	if targetMessage == nil {
-		if err := ctx.Send(
+		err := ctx.Send(
 			fmt.Sprintf(
 				`Привет, %s! Вот <a href="%s">правила чата</a>, ознакомься.`,
 				GetGreetingName(targetUser),
@@ -233,7 +245,8 @@ func CommandRulesHandler(ctx tele.Context) error {
 			),
 			tele.ModeHTML,
 			tele.NoPreview,
-		); err != nil {
+		)
+		if err != nil {
 			pkgLog.Error(
 				fmt.Sprintf("Не удалось отправить правила чата по команде /rules: %v", err),
 				pkgLogger.LogContext{
@@ -261,7 +274,8 @@ func CommandRulesHandler(ctx tele.Context) error {
 		}
 	}
 
-	if err := ctx.Bot().Delete(ctx.Message()); err != nil {
+	err := ctx.Bot().Delete(ctx.Message())
+	if err != nil {
 		pkgLog.Error(
 			fmt.Sprintf(
 				"Не удалось удалить сообщение с командой /rules от %s: %v",

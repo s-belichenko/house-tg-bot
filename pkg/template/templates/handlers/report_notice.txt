@@ -1,6 +1,7 @@
 #REPORT
 Новое нарушение правил:
 
+Чат: <a href="{{ .ChatURL }}">{{ .ChatTitle }}</a>
 Челобитчик: {{ .ReporterUsername }} (ID: {{ .ReporterID }})
 Уточнение: {{ .Clarification }}
 Ссылка: {{ .MessageLink }}

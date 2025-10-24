@@ -8,6 +8,7 @@ import (
 	"time"
 
 	tele "gopkg.in/telebot.v4"
+
 	pkgLogger "s-belichenko/house-tg-bot/pkg/logger"
 )
 
@@ -72,7 +73,8 @@ func GenerateMessageLink(chat *tele.Chat, messageID int) string {
 }
 
 func setCommands(c TeleContext, commands []tele.Command, scope tele.CommandScope) {
-	if err := c.Bot().SetCommands(commands, scope); err != nil {
+	err := c.Bot().SetCommands(commands, scope)
+	if err != nil {
 		pkgLog.Fatal(
 			fmt.Sprintf("Не удалось установить команды бота: %v", err),
 			pkgLogger.LogContext{
@@ -89,7 +91,8 @@ func setCommands(c TeleContext, commands []tele.Command, scope tele.CommandScope
 }
 
 func deleteCommands(c TeleContext, scope tele.CommandScope) {
-	if err := c.Bot().DeleteCommands(scope); err != nil {
+	err := c.Bot().DeleteCommands(scope)
+	if err != nil {
 		pkgLog.Fatal(fmt.Sprintf("Не удалось удалить команды бота: %v", err), pkgLogger.LogContext{
 			"scope": scope,
 		})

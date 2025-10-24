@@ -2,6 +2,7 @@ package handlers
 
 import (
 	"fmt"
+
 	pkgLogger "s-belichenko/house-tg-bot/pkg/logger"
 
 	tele "gopkg.in/telebot.v4"
@@ -29,10 +30,11 @@ func MediaHandler(ctx tele.Context) error {
 
 	menuInline.Inline(menuInline.Row(btnContactAdmin))
 
-	if err := ctx.Reply(
+	err := ctx.Reply(
 		`Я не обрабатываю медиафайлы. Если вы хотели пройти верификацию, прочитайте правила вступления чуть внимательнее.`,
 		menuInline,
-	); err != nil {
+	)
+	if err != nil {
 		pkgLog.Error(
 			fmt.Sprintf("Не удалось отправить сообщение в ответ на медиа: %v", err),
 			pkgLogger.LogContext{

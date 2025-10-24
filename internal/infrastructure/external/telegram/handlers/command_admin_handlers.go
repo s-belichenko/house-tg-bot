@@ -5,6 +5,7 @@ import (
 	"strings"
 
 	tele "gopkg.in/telebot.v4"
+
 	pkgLogger "s-belichenko/house-tg-bot/pkg/logger"
 )
 
@@ -41,6 +42,8 @@ var (
 func CommandMuteHandler(ctx tele.Context) error {
 	var violator *tele.ChatMember
 
+	var err error
+
 	d := ctx.Data()
 
 	fields := strings.Fields(d)
@@ -52,6 +55,7 @@ func CommandMuteHandler(ctx tele.Context) error {
 				Rights: tele.NoRights(),
 			}
 		}
+
 	case 2:
 		if user := createUserViolator(fields[0]); user != nil {
 			violator = &tele.ChatMember{
@@ -63,7 +67,8 @@ func CommandMuteHandler(ctx tele.Context) error {
 	}
 
 	if violator == nil {
-		if err := ctx.Reply(fmt.Sprintf("Верный формат команды: %s", muteCommandFormat), tele.ModeHTML); err != nil {
+		err := ctx.Reply(fmt.Sprintf("Верный формат команды: %s", muteCommandFormat), tele.ModeHTML)
+		if err != nil {
 			pkgLog.Error(
 				fmt.Sprintf("Не удалось отправить подсказку по команде /mute: %v", err),
 				pkgLogger.LogContext{
@@ -75,7 +80,8 @@ func CommandMuteHandler(ctx tele.Context) error {
 		return nil
 	}
 
-	if err := ctx.Bot().Restrict(&tele.Chat{ID: cfg.HouseChatID}, violator); err != nil {
+	err = ctx.Bot().Restrict(&tele.Chat{ID: cfg.HouseChatID}, violator)
+	if err != nil {
 		pkgLog.Error(
 			fmt.Sprintf("Не удалось ограничить пользователя: %v", err),
 			pkgLogger.LogContext{
@@ -84,7 +90,8 @@ func CommandMuteHandler(ctx tele.Context) error {
 			},
 		)
 
-		if err := ctx.Reply("Не удалось ограничить пользователя."); err != nil {
+		err := ctx.Reply("Не удалось ограничить пользователя.")
+		if err != nil {
 			pkgLog.Error(
 				fmt.Sprintf("Не удалось ограничить пользователя: %v", err),
 				pkgLogger.LogContext{
@@ -96,7 +103,8 @@ func CommandMuteHandler(ctx tele.Context) error {
 		return nil
 	}
 
-	if err := ctx.Reply("Пользователь ограничен."); err != nil {
+	err = ctx.Reply("Пользователь ограничен.")
+	if err != nil {
 		pkgLog.Error(
 			fmt.Sprintf("Не удалось уведомить что пользователь ограничен: %v", err),
 			pkgLogger.LogContext{
@@ -119,6 +127,8 @@ func CommandMuteHandler(ctx tele.Context) error {
 func CommandUnmuteHandler(ctx tele.Context) error {
 	var violator *tele.ChatMember
 
+	var err error
+
 	d := ctx.Data()
 
 	f := strings.Fields(d)
@@ -129,7 +139,8 @@ func CommandUnmuteHandler(ctx tele.Context) error {
 	}
 
 	if violator == nil {
-		if err := ctx.Reply(fmt.Sprintf("Верный формат команды: %s", unmuteCommandFormat), tele.ModeHTML); err != nil {
+		err := ctx.Reply(fmt.Sprintf("Верный формат команды: %s", unmuteCommandFormat), tele.ModeHTML)
+		if err != nil {
 			pkgLog.Error(
 				fmt.Sprintf("Не удалось отправить подсказку по команде /unmute: %v", err),
 				pkgLogger.LogContext{
@@ -141,7 +152,8 @@ func CommandUnmuteHandler(ctx tele.Context) error {
 		return nil
 	}
 
-	if err := ctx.Bot().Promote(&tele.Chat{ID: cfg.HouseChatID}, violator); err != nil {
+	err = ctx.Bot().Promote(&tele.Chat{ID: cfg.HouseChatID}, violator)
+	if err != nil {
 		pkgLog.Error(
 			fmt.Sprintf("Не удалось снять ограничения с пользователя: %v", err),
 			pkgLogger.LogContext{
@@ -150,7 +162,8 @@ func CommandUnmuteHandler(ctx tele.Context) error {
 			},
 		)
 
-		if err := ctx.Reply("Не удалось снять ограничения с пользователя."); err != nil {
+		err := ctx.Reply("Не удалось снять ограничения с пользователя.")
+		if err != nil {
 			pkgLog.Error(
 				fmt.Sprintf("Не удалось снять ограничения с пользователя: %v", err),
 				pkgLogger.LogContext{
@@ -162,7 +175,8 @@ func CommandUnmuteHandler(ctx tele.Context) error {
 		return nil
 	}
 
-	if err := ctx.Reply("Сняты ограничения с пользователя."); err != nil {
+	err = ctx.Reply("Сняты ограничения с пользователя.")
+	if err != nil {
 		pkgLog.Error(
 			fmt.Sprintf("Не удалось уведомить что сняты ограничения с пользователя: %v", err),
 			pkgLogger.LogContext{
@@ -184,6 +198,8 @@ func CommandUnmuteHandler(ctx tele.Context) error {
 
 func CommandBanHandler(ctx tele.Context) error {
 	var violator *tele.ChatMember
+
+	var err error
 
 	data := ctx.Data()
 
@@ -207,7 +223,8 @@ func CommandBanHandler(ctx tele.Context) error {
 			"arguments_string": data,
 		})
 
-		if err := ctx.Reply(fmt.Sprintf("Верный формат команды: %s", banCommandFormat), tele.ModeHTML); err != nil {
+		err := ctx.Reply(fmt.Sprintf("Верный формат команды: %s", banCommandFormat), tele.ModeHTML)
+		if err != nil {
 			pkgLog.Error(
 				fmt.Sprintf("Не удалось отправить подсказку по команде /ban: %v", err),
 				pkgLogger.LogContext{
@@ -219,7 +236,8 @@ func CommandBanHandler(ctx tele.Context) error {
 		return nil
 	}
 
-	if err := ctx.Bot().Ban(&tele.Chat{ID: cfg.HouseChatID}, violator); err != nil {
+	err = ctx.Bot().Ban(&tele.Chat{ID: cfg.HouseChatID}, violator)
+	if err != nil {
 		pkgLog.Error(
 			fmt.Sprintf("Не удалось заблокировать пользователя: %v", err),
 			pkgLogger.LogContext{
@@ -228,7 +246,8 @@ func CommandBanHandler(ctx tele.Context) error {
 			},
 		)
 
-		if err := ctx.Reply("Не удалось заблокировать пользователя."); err != nil {
+		err := ctx.Reply("Не удалось заблокировать пользователя.")
+		if err != nil {
 			pkgLog.Error(
 				fmt.Sprintf("Не удалось заблокировать пользователя: %v", err),
 				pkgLogger.LogContext{
@@ -240,7 +259,8 @@ func CommandBanHandler(ctx tele.Context) error {
 		return nil
 	}
 
-	if err := ctx.Reply("Пользователь заблокирован."); err != nil {
+	err = ctx.Reply("Пользователь заблокирован.")
+	if err != nil {
 		pkgLog.Error(
 			fmt.Sprintf("Не удалось уведомить что пользователь заблокирован: %v", err),
 			pkgLogger.LogContext{
@@ -263,6 +283,8 @@ func CommandBanHandler(ctx tele.Context) error {
 func CommandUnbanHandler(ctx tele.Context) error {
 	var violator *tele.User
 
+	var err error
+
 	data := ctx.Data()
 
 	f := strings.Fields(data)
@@ -275,7 +297,8 @@ func CommandUnbanHandler(ctx tele.Context) error {
 			"arguments_string": data,
 		})
 
-		if err := ctx.Reply(fmt.Sprintf("Верный формат команды: %s", banCommandFormat), tele.ModeHTML); err != nil {
+		err := ctx.Reply(fmt.Sprintf("Верный формат команды: %s", banCommandFormat), tele.ModeHTML)
+		if err != nil {
 			pkgLog.Error(
 				fmt.Sprintf("Не удалось отправить подсказку по команде /unban: %v", err),
 				pkgLogger.LogContext{
@@ -285,7 +308,8 @@ func CommandUnbanHandler(ctx tele.Context) error {
 		}
 	}
 
-	if err := ctx.Bot().Unban(&tele.Chat{ID: cfg.HouseChatID}, violator, true); err != nil {
+	err = ctx.Bot().Unban(&tele.Chat{ID: cfg.HouseChatID}, violator, true)
+	if err != nil {
 		pkgLog.Error(
 			fmt.Sprintf("Не удалось разблокировать пользователя: %v", err),
 			pkgLogger.LogContext{
@@ -294,7 +318,8 @@ func CommandUnbanHandler(ctx tele.Context) error {
 			},
 		)
 
-		if err := ctx.Reply("Не удалось разблокировать пользователя."); err != nil {
+		err := ctx.Reply("Не удалось разблокировать пользователя.")
+		if err != nil {
 			pkgLog.Error(
 				fmt.Sprintf("Не удалось разблокировать пользователя: %v", err),
 				pkgLogger.LogContext{
@@ -306,7 +331,8 @@ func CommandUnbanHandler(ctx tele.Context) error {
 		return nil
 	}
 
-	if err := ctx.Reply("Пользователь разблокирован."); err != nil {
+	err = ctx.Reply("Пользователь разблокирован.")
+	if err != nil {
 		pkgLog.Error(
 			fmt.Sprintf("Не удалось уведомить что пользователь разблокирован: %v", err),
 			pkgLogger.LogContext{
@@ -345,7 +371,8 @@ func CommandHelpAdminHandler(ctx tele.Context) error {
 		unbanCommandFormat,
 	)
 
-	if err := ctx.Send(help, tele.ModeHTML, tele.NoPreview); err != nil {
+	err := ctx.Send(help, tele.ModeHTML, tele.NoPreview)
+	if err != nil {
 		pkgLog.Error(fmt.Sprintf("Не удалось отправить текст справки: %v", err), nil)
 	}
 

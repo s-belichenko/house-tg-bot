@@ -7,6 +7,7 @@ import (
 	"net/http"
 	"os"
 	"runtime/debug"
+
 	"s-belichenko/house-tg-bot/internal/infrastructure/external/telegram/handlers"
 	"s-belichenko/house-tg-bot/internal/utils"
 
@@ -44,7 +45,8 @@ func initModule() {
 
 	pkgLog.Debug("Start init module", nil)
 
-	if err := cleanenv.ReadEnv(&cfg); err != nil {
+	err := cleanenv.ReadEnv(&cfg)
+	if err != nil {
 		pkgLog.Fatal(fmt.Sprintf("Не удалось прочитать конфигурацию ота: %v", err), nil)
 		os.Exit(1)
 	}

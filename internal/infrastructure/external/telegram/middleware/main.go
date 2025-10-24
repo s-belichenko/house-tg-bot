@@ -39,7 +39,8 @@ func init() {
 }
 
 func initConfig() {
-	if err := cleanenv.ReadEnv(&cfg); err != nil {
+	err := cleanenv.ReadEnv(&cfg)
+	if err != nil {
 		log.Error(fmt.Sprintf("Error reading Bot config: %v", err), nil)
 	}
 

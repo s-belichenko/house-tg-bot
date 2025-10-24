@@ -9,8 +9,9 @@ import (
 	"html/template"
 	"path/filepath"
 	"reflect"
-	pkgLogger "s-belichenko/house-tg-bot/pkg/logger"
 	"strings"
+
+	pkgLogger "s-belichenko/house-tg-bot/pkg/logger"
 )
 
 //go:embed templates/**/*.txt

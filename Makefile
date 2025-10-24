@@ -1,4 +1,4 @@
-LINTER_IMAGE:='golangci/golangci-lint:v2.0.0-alpine'
+LINTER_IMAGE:='golangci/golangci-lint:v2.5.0-alpine'
 
 download:
 	@go mod download

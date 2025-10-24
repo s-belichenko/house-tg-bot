@@ -59,7 +59,8 @@ func init() {
 	pkgLog = pkgLogger.InitLog(cfg.LogStreamName)
 	templating = pkgTemplate.NewTool(cfg.TemplatesPath, pkgLog)
 
-	if err := cleanenv.ReadEnv(&cfg); err != nil {
+	err := cleanenv.ReadEnv(&cfg)
+	if err != nil {
 		pkgLog.Error(fmt.Sprintf("Error reading LLM config: %v", err), nil)
 	}
 

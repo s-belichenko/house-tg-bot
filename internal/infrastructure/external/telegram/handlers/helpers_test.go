@@ -5,6 +5,7 @@ import (
 
 	"github.com/go-test/deep"
 	tele "gopkg.in/telebot.v4"
+
 	hndls "s-belichenko/house-tg-bot/internal/infrastructure/external/telegram/handlers"
 )
 

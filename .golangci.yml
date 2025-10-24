@@ -1,56 +1,24 @@
 version: "2"
 
-linters:
-  default: all
-  disable:
-    - copyloopvar
-    - gochecknoinits
-    - godox # Служебные комментарии в коде
-    - gomoddirectives
-    - perfsprint
-    - depguard # Белый список разрешенных зависимостей
-    - paralleltest
-    - mnd # Магические числа
-    - intrange
-    # TODO: Поправить и включить проверку.
-    - exhaustruct
-    - gochecknoglobals
-    - funlen
-    - wrapcheck
-  settings:
-    tagliatelle:
-      case:
-        ignored-fields:
-          # Обход проверки для пакета logger, формат сообщений которого требует Yandex Cloud.
-          - Stream
-    dupl:
-      threshold: 175
-    gosec:
-      excludes:
-      - G203
-  exclusions:
-    generated: lax
-    warn-unused: true
-    presets:
-      - comments
-      - std-error-handling
-      - common-false-positives
-      - legacy
+run:
+  timeout: "0"
+  relative-path-mode: gomod
+  issues-exit-code: 2
+  tests: true
+  modules-download-mode: readonly
+  allow-parallel-runners: true
+  allow-serial-runners: true
+  go: '1.21'
+  concurrency: 8
 
-formatters:
-  enable:
-    - gofumpt
-    - golines
-  exclusions:
-    generated: lax
-  settings:
-    golines:
-      max-len: 120
+severity:
+  default: error
 
 issues:
   max-issues-per-linter: 0
   max-same-issues: 0
-  fix: false
+  uniq-by-line: true
+  new: false
 
 output:
   formats:
@@ -65,13 +33,68 @@ output:
     - file # filepath, line, and column.
   show-stats: true
 
-run:
-  timeout: "0"
-  relative-path-mode: gomod
-  issues-exit-code: 2
-  tests: true
-  modules-download-mode: readonly
-  allow-parallel-runners: true
-  allow-serial-runners: true
-  go: '1.21'
-  concurrency: 4
+linters:
+  default: all
+  enable:
+    - wsl_v5
+  disable:
+    - copyloopvar
+    - depguard # Белый список разрешенных зависимостей
+    - exhaustruct
+    - funlen
+    - gochecknoglobals # TODO: Поправить и включить проверку.
+    - gochecknoinits
+    - godox # Служебные комментарии в коде
+    - gomoddirectives
+    - intrange
+    - mnd # Магические числа
+    - noinlineerr
+    - perfsprint
+    - paralleltest
+    - wrapcheck
+  settings:
+    tagliatelle:
+      case:
+        ignored-fields:
+          # Обход проверки для пакета logger, формат сообщений которого требует Yandex Cloud.
+          - Stream
+    dupl:
+      threshold: 175
+    gosec:
+      excludes:
+      - G203
+    wsl_v5:
+      allow-first-in-block: true
+      allow-whole-block: false
+      case-max-lines: 4
+      branch-max-lines: 4
+      default: none
+      enable:
+        - return
+  exclusions:
+    generated: lax
+    warn-unused: true
+    presets:
+      - comments
+      - std-error-handling
+      - common-false-positives
+      - legacy
+    rules:
+      - linters:
+          - revive
+        text: "var-naming: avoid meaningless package names"
+
+formatters:
+  enable:
+    - goimports
+    - golines
+  exclusions:
+    generated: lax
+  settings:
+    goimports:
+      local-prefixes:
+        - s-belichenko/house-tg-bot
+    golines:
+      max-len: 120
+      shorten-comments: true
+      chain-split-dots: false

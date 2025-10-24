@@ -2,6 +2,7 @@ package middleware
 
 import (
 	"fmt"
+
 	"s-belichenko/house-tg-bot/internal/infrastructure/external/llm"
 
 	tele "gopkg.in/telebot.v4"

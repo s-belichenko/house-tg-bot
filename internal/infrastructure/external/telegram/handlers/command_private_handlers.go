@@ -57,7 +57,8 @@ func CommandHelpHandler(ctx tele.Context) error {
 		cfg.RulesURL.String(),
 	)
 
-	if err := ctx.Send(help, tele.ModeHTML, tele.NoPreview); err != nil {
+	err := ctx.Send(help, tele.ModeHTML, tele.NoPreview)
+	if err != nil {
 		pkgLog.Error(fmt.Sprintf("Не удалось отправить текст справки: %v", err), nil)
 	}
 
