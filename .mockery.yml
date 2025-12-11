@@ -1,0 +1,14 @@
+template: testify
+template-data:
+  unroll-variadic: true
+packages:
+  s-belichenko/house-tg-bot/pkg/logger:
+    config:
+      dir: '{{.InterfaceDir}}/mocks'
+      structname: Mock{{.InterfaceName}}
+      pkgname: mocks
+  s-belichenko/house-tg-bot/pkg/time:
+    config:
+      dir: '{{.InterfaceDir}}/mocks'
+      structname: Mock{{.InterfaceName}}
+      pkgname: mocks

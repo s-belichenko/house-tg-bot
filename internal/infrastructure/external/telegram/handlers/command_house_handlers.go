@@ -4,12 +4,23 @@ import (
 	"fmt"
 	"html/template"
 
-	"s-belichenko/house-tg-bot/internal/infrastructure/external/llm"
+	"s-belichenko/house-tg-bot/internal/config"
+
+	template2 "s-belichenko/house-tg-bot/pkg/template"
+
+	"s-belichenko/house-tg-bot/internal/domain/models"
 
 	tele "gopkg.in/telebot.v4"
 
 	pkgLogger "s-belichenko/house-tg-bot/pkg/logger"
 )
+
+type CommandHouseHandlers struct {
+	config        config.App
+	ai            models.AI
+	renderingTool template2.RenderingTool
+	logger        pkgLogger.Logger
+}
 
 // Команды бота для домового чата.
 var (
@@ -25,9 +36,20 @@ var (
 	}
 )
 
-func CommandKeysHandler(c tele.Context) error {
-	if !cfg.HouseIsCompleted {
-		err := c.Send(llm.GetAnswerAboutKeys())
+func NewCommandHouseHandlers(cfg config.App, ai models.AI, logger pkgLogger.Logger) *CommandHouseHandlers {
+	renderingTool := template2.NewTool("handlers", logger)
+
+	return &CommandHouseHandlers{
+		config:        cfg,
+		ai:            ai,
+		renderingTool: renderingTool,
+		logger:        logger,
+	}
+}
+
+func (h *CommandHouseHandlers) CommandKeysHandler(c tele.Context) error {
+	if !h.config.HouseIsCompleted {
+		err := c.Send(h.ai.GetAnswerAboutKeys())
 		if err != nil {
 			return err
 		}
@@ -36,7 +58,7 @@ func CommandKeysHandler(c tele.Context) error {
 	return nil
 }
 
-func CommandReportHandler(ctx tele.Context) error {
+func (h *CommandHouseHandlers) CommandReportHandler(ctx tele.Context) error {
 	msg := ctx.Message()
 	reporter := msg.Sender
 
@@ -47,8 +69,8 @@ func CommandReportHandler(ctx tele.Context) error {
 		clarification    = "Не оставлено."
 	)
 
-	if incorrectUseReportCommand(ctx, msg) {
-		cleanUpReport(ctx, msg, reporter)
+	if h.incorrectUseReportCommand(ctx, msg) {
+		h.cleanUpReport(ctx, msg, reporter)
 
 		return nil
 	}
@@ -69,10 +91,17 @@ func CommandReportHandler(ctx tele.Context) error {
 	}
 
 	violationMessageID := msg.ReplyTo.ID
-	messageLink := GenerateMessageLink(msg.ReplyTo.Chat, violationMessageID)
+	messageLink, err := GenerateMessageLink(msg.ReplyTo.Chat, violationMessageID)
+	if err != nil {
+		h.logger.Warn(fmt.Sprintf("Не удалось получить ссылку на сообщение с нарушением: %v", err), nil)
+	}
 
-	pkgLog.Info(
-		fmt.Sprintf("Получен отчет о новом нарушении правил от %s", GetGreetingName(reporter)),
+	greetingName, err := GetGreetingName(reporter)
+	if err != nil {
+		h.logger.Warn(fmt.Sprintf("Не удалось сформировать обращение к пользователю %d: %v", reporter.ID, err), nil)
+	}
+	h.logger.Info(
+		fmt.Sprintf("Получен отчет о новом нарушении правил от %s", greetingName),
 		pkgLogger.LogContext{
 			"reporter_username": reporter.Username,
 			"reporter_id":       reporter.ID,
@@ -84,20 +113,104 @@ func CommandReportHandler(ctx tele.Context) error {
 		},
 	)
 
-	if reportAboutBot(ctx, violatorID, reporter) {
-		cleanUpReport(ctx, msg, reporter)
+	if h.reportAboutBot(ctx, violatorID, reporter) {
+		h.cleanUpReport(ctx, msg, reporter)
 
 		return nil
 	}
 
-	sendNotification(ctx, violationText, violator, reporter, clarification, messageLink)
-	cleanUpReport(ctx, msg, reporter)
-	thxForReport(ctx, violationText, clarification, reporter)
+	h.sendNotification(ctx, violationText, violator, reporter, clarification, messageLink)
+	h.cleanUpReport(ctx, msg, reporter)
+	h.thxForReport(ctx, violationText, clarification, reporter)
 
 	return nil
 }
 
-func thxForReport(
+func (h *CommandHouseHandlers) CommandRulesHandler(ctx tele.Context) error {
+	var (
+		targetUser    *tele.User
+		targetMessage *tele.Message
+	)
+
+	if ctx.Message().ReplyTo == nil {
+		targetMessage = ctx.Message()
+		targetUser = ctx.Message().Sender
+	} else {
+		targetMessage = ctx.Message().ReplyTo
+		targetUser = ctx.Message().ReplyTo.Sender
+	}
+
+	h.logger.Info(
+		`Получен запрос правил`,
+		pkgLogger.LogContext{
+			"message": ctx.Message(),
+		},
+	)
+
+	greetingName, err := GetGreetingName(targetUser)
+	if err != nil {
+		h.logger.Warn(
+			fmt.Sprintf("Не удалось сформировать обращение к пользователю %d: %v", targetUser.ID, err),
+			nil,
+		)
+	}
+	if targetMessage == nil {
+		err := ctx.Send(
+			fmt.Sprintf(
+				`Привет, %s! Вот <a href="%s">правила чата</a>, ознакомься.`,
+				greetingName,
+				h.config.RulesURL.String(),
+			),
+			tele.ModeHTML,
+			tele.NoPreview,
+		)
+		if err != nil {
+			h.logger.Error(
+				fmt.Sprintf("Не удалось отправить правила чата по команде /rules: %v", err),
+				pkgLogger.LogContext{
+					"ctx": ctx,
+				},
+			)
+		}
+	} else {
+		if _, err := ctx.Bot().Reply(
+			targetMessage,
+			fmt.Sprintf(
+				`Привет, %s! Вот <a href="%s">правила чата</a>, ознакомься.`,
+				greetingName,
+				h.config.RulesURL.String(),
+			),
+			tele.ModeHTML,
+			tele.NoPreview,
+		); err != nil {
+			h.logger.Error(
+				fmt.Sprintf("Не удалось отправить правила чата по команде /rules: %v", err),
+				pkgLogger.LogContext{
+					"ctx": ctx,
+				},
+			)
+		}
+	}
+
+	err = ctx.Bot().Delete(ctx.Message())
+	if err != nil {
+		h.logger.Error(
+			fmt.Sprintf(
+				"Не удалось удалить сообщение с командой /rules от %d: %v",
+				ctx.Message().Sender.ID,
+				err,
+			),
+			pkgLogger.LogContext{
+				"message_id":   ctx.Message().ID,
+				"message_text": ctx.Message().Text,
+			},
+		)
+	}
+
+	return nil
+}
+
+func (h *CommandHouseHandlers) thxForReport(
 	ctx tele.Context,
 	violationText string,
 	clarification string,
@@ -105,7 +218,7 @@ func thxForReport(
 ) {
 	if _, err := ctx.Bot().Send(
 		reporter,
-		renderingTool.RenderText(`report_thx.gohtml`, struct {
+		h.renderingTool.RenderText(`report_thx.gohtml`, struct {
 			Text          string
 			Clarification string
 		}{
@@ -115,19 +228,19 @@ func thxForReport(
 		tele.ModeHTML,
 		tele.NoPreview,
 	); err != nil {
-		pkgLog.Error(fmt.Sprintf(
-			"Не удалось послать благодарность за жалобу %s: %v",
-			GetGreetingName(reporter),
+		h.logger.Error(fmt.Sprintf(
+			"Не удалось послать благодарность за жалобу %d: %v",
+			reporter.ID,
 			err,
 		), nil)
 	}
 }
 
-func cleanUpReport(ctx tele.Context, msg *tele.Message, reporter *tele.User) {
+func (h *CommandHouseHandlers) cleanUpReport(ctx tele.Context, msg *tele.Message, reporter *tele.User) {
 	err := ctx.Bot().Delete(msg)
 	if err != nil {
-		pkgLog.Error(fmt.Sprintf(
-			"Не удалось удалить сообщение с жалобой от %s: %v", GetGreetingName(reporter), err),
+		h.logger.Error(fmt.Sprintf(
+			"Не удалось удалить сообщение с жалобой от %d: %v", reporter.ID, err),
 			pkgLogger.LogContext{
 				"message_id":   msg.ID,
 				"message_text": msg.Text,
@@ -136,11 +249,15 @@ func cleanUpReport(ctx tele.Context, msg *tele.Message, reporter *tele.User) {
 	}
 }
 
-func reportAboutBot(ctx tele.Context, violatorID int64, reporter *tele.User) bool {
-	if violatorID == cfg.BotID {
-		err := ctx.Reply(fmt.Sprintf("%s, ай-яй-яй! %s", GetGreetingName(reporter), llm.GetTeaser()))
+func (h *CommandHouseHandlers) reportAboutBot(ctx tele.Context, violatorID int64, reporter *tele.User) bool {
+	if violatorID == h.config.BotID {
+		greetingName, err := GetGreetingName(reporter)
 		if err != nil {
-			pkgLog.Error(
+			h.logger.Warn(fmt.Sprintf("Не удалось сформировать обращение к пользователю %d", reporter.ID), nil)
+		}
+		err = ctx.Reply(fmt.Sprintf("%s, ай-яй-яй! %s", greetingName, h.ai.GetTeaser()))
+		if err != nil {
+			h.logger.Error(
 				fmt.Sprintf("Не удалось пообзываться в ответ на репорт на бота: %v", err),
 				pkgLogger.LogContext{
 					"reporter": reporter,
@@ -155,14 +272,14 @@ func reportAboutBot(ctx tele.Context, violatorID int64, reporter *tele.User) boo
 	return false
 }
 
-func incorrectUseReportCommand(ctx tele.Context, msg *tele.Message) bool {
+func (h *CommandHouseHandlers) incorrectUseReportCommand(ctx tele.Context, msg *tele.Message) bool {
 	if msg.ReplyTo == nil || msg.ReplyTo.Sender.ID == msg.Sender.ID {
 		if _, err := ctx.Bot().Send(
 			msg.Sender,
 			"Пожалуйста, используйте команду /report в ответе на сообщение с нарушением. "+
 				"Подробнее: /help.",
 		); err != nil {
-			pkgLog.Error(
+			h.logger.Error(
 				fmt.Sprintf("Не удалось отправить уточнение про команду /report: %v", err),
 				pkgLogger.LogContext{
 					"report_message_object": msg,
@@ -176,7 +293,7 @@ func incorrectUseReportCommand(ctx tele.Context, msg *tele.Message) bool {
 	return false
 }
 
-func sendNotification(
+func (h *CommandHouseHandlers) sendNotification(
 	ctx tele.Context,
 	violationText string,
 	violator *tele.User,
@@ -198,8 +315,8 @@ func sendNotification(
 	}
 
 	if _, err := ctx.Bot().Send(
-		&tele.Chat{ID: cfg.AdministrationChatID},
-		renderingTool.RenderText(`report_notice.gohtml`, struct {
+		&tele.Chat{ID: int64(h.config.AdminChatID)},
+		h.renderingTool.RenderText(`report_notice.gohtml`, struct {
 			ChatTitle        string
 			ChatURL          template.URL
 			ReporterUsername string
@@ -211,7 +328,7 @@ func sendNotification(
 			Text             string
 		}{
 			ChatTitle:        ctx.Chat().Title,
-			ChatURL:          template.URL(cfg.InviteURL.String()),
+			ChatURL:          template.URL(h.config.InviteURL.String()),
 			ReporterUsername: reporterUsername,
 			ReporterID:       reporter.ID,
 			Clarification:    clarification,
@@ -223,88 +340,11 @@ func sendNotification(
 		tele.ModeHTML,
 		tele.NoPreview,
 	); err != nil {
-		pkgLog.Error(fmt.Sprintf(
-			"Не удалось послать в чат админов жалобу от %s на %s: %v",
-			GetGreetingName(reporter),
-			GetGreetingName(violator),
+		h.logger.Error(fmt.Sprintf(
+			"Не удалось послать в административный чат жалобу от %d на %d: %v",
+			reporter.ID,
+			violator.ID,
 			err,
 		), nil)
 	}
-}
-
-func CommandRulesHandler(ctx tele.Context) error {
-	var (
-		targetUser    *tele.User
-		targetMessage *tele.Message
-	)
-
-	if ctx.Message().ReplyTo == nil {
-		targetMessage = ctx.Message()
-		targetUser = ctx.Message().Sender
-	} else {
-		targetMessage = ctx.Message().ReplyTo
-		targetUser = ctx.Message().ReplyTo.Sender
-	}
-
-	pkgLog.Info(
-		`Получен запрос правил`,
-		pkgLogger.LogContext{
-			"message": ctx.Message(),
-		},
-	)
-
-	if targetMessage == nil {
-		err := ctx.Send(
-			fmt.Sprintf(
-				`Привет, %s! Вот <a href="%s">правила чата</a>, ознакомься.`,
-				GetGreetingName(targetUser),
-				cfg.RulesURL.String(),
-			),
-			tele.ModeHTML,
-			tele.NoPreview,
-		)
-		if err != nil {
-			pkgLog.Error(
-				fmt.Sprintf("Не удалось отправить правила чата по команде /rules: %v", err),
-				pkgLogger.LogContext{
-					"ctx": ctx,
-				},
-			)
-		}
-	} else {
-		if _, err := ctx.Bot().Reply(
-			targetMessage,
-			fmt.Sprintf(
-				`Привет, %s! Вот <a href="%s">правила чата</a>, ознакомься.`,
-				GetGreetingName(targetUser),
-				cfg.RulesURL.String(),
-			),
-			tele.ModeHTML,
-			tele.NoPreview,
-		); err != nil {
-			pkgLog.Error(
-				fmt.Sprintf("Не удалось отправить правила чата по команде /rules: %v", err),
-				pkgLogger.LogContext{
-					"ctx": ctx,
-				},
-			)
-		}
-	}
-
-	err := ctx.Bot().Delete(ctx.Message())
-	if err != nil {
-		pkgLog.Error(
-			fmt.Sprintf(
-				"Не удалось удалить сообщение с командой /rules от %s: %v",
-				GetGreetingName(ctx.Message().Sender),
-				err,
-			),
-			pkgLogger.LogContext{
-				"message_id":   ctx.Message().ID,
-				"message_text": ctx.Message().Text,
-			},
-		)
-	}
-
-	return nil
 }

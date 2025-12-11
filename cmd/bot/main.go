@@ -4,160 +4,160 @@ import (
 	"encoding/json"
 	"fmt"
 	"io"
+	"log"
 	"net/http"
 	"os"
 	"runtime/debug"
 
-	"s-belichenko/house-tg-bot/internal/infrastructure/external/telegram/handlers"
-	"s-belichenko/house-tg-bot/internal/utils"
+	"s-belichenko/house-tg-bot/internal/config"
 
-	"github.com/ilyakaznacheev/cleanenv"
+	"s-belichenko/house-tg-bot/internal/domain/models"
+	llm2 "s-belichenko/house-tg-bot/internal/infrastructure/adapters/llm"
+	"s-belichenko/house-tg-bot/internal/infrastructure/external/telegram/handlers"
+	"s-belichenko/house-tg-bot/internal/infrastructure/external/telegram/middleware"
+	"s-belichenko/house-tg-bot/internal/utils"
+	pkgTime "s-belichenko/house-tg-bot/pkg/time"
+
 	tele "gopkg.in/telebot.v4"
 	teleMid "gopkg.in/telebot.v4/middleware"
 
-	mid "s-belichenko/house-tg-bot/internal/infrastructure/external/telegram/middleware"
 	pkgLogger "s-belichenko/house-tg-bot/pkg/logger"
 )
 
-type config struct {
-	BotToken             string `env:"TELEGRAM_BOT_TOKEN"`
-	AdministrationChatID int64  `env:"ADMINISTRATION_CHAT_ID"` // Чат администраторов, куда поступают уведомления и тп
-	LogStreamName        string
+func initLog(logStreamName string) pkgLogger.Logger {
+	logger := log.New(os.Stdout, "", 0)
+	time := pkgTime.Time{} // Отключаем все флаги.
+
+	return pkgLogger.NewYandexLogger(logStreamName, logger, time)
 }
 
-var (
-	bot    *tele.Bot
-	pkgLog pkgLogger.Logger
-	cfg    = config{LogStreamName: "main_stream"}
-)
+func initAI(logger pkgLogger.Logger, cfg config.App) models.AI {
+	llmService := llm2.NewYandexLLM(cfg, logger)
 
-func init() {
-	initModule()
-	initBot()
-	setBotMiddleware()
-	registerBotCommandHandlers()
-	registerJoinRequestHandler()
-	registerMediaHandler()
+	return models.NewAI(llmService, logger)
 }
 
-func initModule() {
-	pkgLog = pkgLogger.InitLog(cfg.LogStreamName)
-
-	pkgLog.Debug("Start init module", nil)
-
-	err := cleanenv.ReadEnv(&cfg)
-	if err != nil {
-		pkgLog.Fatal(fmt.Sprintf("Не удалось прочитать конфигурацию ота: %v", err), nil)
-		os.Exit(1)
-	}
-
-	pkgLog.Debug("Загружена конфигурация пакета main", pkgLogger.LogContext{
-		"config": cfg,
-	})
-}
-
-func initBot() {
+func initBot(logger pkgLogger.Logger, cfg config.App) *tele.Bot {
 	var err error
 
-	pkgLog.Debug("Start init bot", nil)
+	logger.Debug("Start init bot", nil)
 
-	bot, err = tele.NewBot(tele.Settings{Token: cfg.BotToken})
+	bot, err := tele.NewBot(tele.Settings{Token: cfg.BotToken})
 	if err != nil {
-		pkgLog.Fatal(fmt.Sprintf("Не удалось инициализировать бота: %v", err), nil)
+		logger.Fatal(fmt.Sprintf("Не удалось инициализировать бота: %v", err), nil)
 		os.Exit(1)
 	}
 
-	handlers.SetBotID(bot.Me.ID)
+	return bot
 }
 
-func setBotMiddleware() {
-	pkgLog.Debug("Start use middleware bot", nil)
+func setBotMiddleware(bot *tele.Bot, mid *middleware.TelebotMiddleware, logger pkgLogger.Logger) {
+	logger.Debug("Start use middleware bot", nil)
 	bot.Use(
 		teleMid.Recover(
 			func(err error, _ tele.Context) {
-				pkgLog.Fatal(
+				logger.Fatal(
 					fmt.Sprintf("Bot fatal: %v", err),
 					pkgLogger.LogContext{"stack_trace": utils.GetStackTraceAsJSON(debug.Stack())},
 				)
 			},
 		),
 	)
-	bot.Use(mid.GetLogUpdateMiddleware(pkgLog))
+	bot.Use(mid.GetLogUpdateMiddleware(logger))
 }
 
-func registerBotCommandHandlers() {
-	pkgLog.Debug("Start register command handlers", nil)
+func registerBotCommandHandlers(
+	bot *tele.Bot,
+	logger pkgLogger.Logger,
+	mid *middleware.TelebotMiddleware,
+	cfg config.App,
+	ai models.AI,
+) {
+	logger.Debug("Start register command handlers", nil)
+
+	houseHandlers := handlers.NewCommandHouseHandlers(cfg, ai, logger)
+	adminHandlers := handlers.NewCommandAdminHandlers(cfg, logger)
+	privateHandlers := handlers.NewCommandPrivateHandlers(cfg, logger)
+	serviceHandlers := handlers.NewCommandServiceHandlers(cfg, logger)
+
 	// Общие команды
 	bot.Handle(
 		"/"+handlers.RulesCommand.Text,
-		handlers.CommandRulesHandler,
+		houseHandlers.CommandRulesHandler,
 		mid.CommonCommandMiddleware,
 	)
 	// Личные сообщения.
 	bot.Handle(
 		"/"+handlers.StartCommand.Text,
-		handlers.CommandStartHandler,
+		privateHandlers.CommandStartHandler,
 		mid.AllPrivateChatsMiddleware,
 	)
 	bot.Handle(
 		"/"+handlers.HelpCommand.Text,
-		handlers.CommandHelpHandler,
+		privateHandlers.CommandHelpHandler,
 		mid.AllPrivateChatsMiddleware,
 	)
 	bot.Handle(
 		"/"+handlers.MyInfoCommand.Text,
-		handlers.CommandMyInfoHandler,
+		privateHandlers.CommandMyInfoHandler,
 		mid.AllPrivateChatsMiddleware,
 	)
 	// Домашний чат.
 	bot.Handle(
 		"/"+handlers.KeysCommand.Text,
-		handlers.CommandKeysHandler,
+		houseHandlers.CommandKeysHandler,
 		mid.HomeChatMiddleware,
 		mid.KeysCommandMiddleware,
 	)
 	bot.Handle(
 		"/"+handlers.ReportCommand.Text,
-		handlers.CommandReportHandler,
+		houseHandlers.CommandReportHandler,
 		mid.HomeChatMiddleware,
 	)
 	// Административный чат (админы).
 	bot.Handle(
 		"/"+handlers.SetCommandsCommand.Text,
-		handlers.CommandSetCommandsHandler,
+		serviceHandlers.CommandSetCommandsHandler,
 		mid.AdminChatMiddleware,
 	)
 	bot.Handle(
 		"/"+handlers.DeleteCommandsCommand.Text,
-		handlers.CommandDeleteCommandsHandler,
+		serviceHandlers.CommandDeleteCommandsHandler,
 		mid.AdminChatMiddleware,
 	)
 	// Административный чат (участники).
 	bot.Handle(
 		"/"+handlers.HelpAdminChatCommand.Text,
-		handlers.CommandHelpAdminHandler,
+		adminHandlers.CommandHelpAdminHandler,
 		mid.AdminChatMiddleware,
 	)
-	bot.Handle("/"+handlers.MuteCommand.Text, handlers.CommandMuteHandler, mid.AdminChatMiddleware)
+	bot.Handle("/"+handlers.MuteCommand.Text, adminHandlers.CommandMuteHandler, mid.AdminChatMiddleware)
 	bot.Handle(
 		"/"+handlers.UnmuteCommand.Text,
-		handlers.CommandUnmuteHandler,
+		adminHandlers.CommandUnmuteHandler,
 		mid.AdminChatMiddleware,
 	)
-	bot.Handle("/"+handlers.BanCommand.Text, handlers.CommandBanHandler, mid.AdminChatMiddleware)
+	bot.Handle("/"+handlers.BanCommand.Text, adminHandlers.CommandBanHandler, mid.AdminChatMiddleware)
 	bot.Handle(
 		"/"+handlers.UnbanCommand.Text,
-		handlers.CommandUnbanHandler,
+		adminHandlers.CommandUnbanHandler,
 		mid.AdminChatMiddleware,
 	)
 }
 
-func registerJoinRequestHandler() {
-	bot.Handle(tele.OnChatJoinRequest, handlers.JoinRequestHandler)
+func registerJoinRequestHandler(bot *tele.Bot, cfg config.App, logger pkgLogger.Logger) {
+	logger.Debug("Start register join request handlers", nil)
+
+	joinRequestHandlers := handlers.NewJoinRequestHandlersHandlers(cfg, logger)
+	bot.Handle(tele.OnChatJoinRequest, joinRequestHandlers.JoinRequestHandler)
 }
 
-func registerMediaHandler() {
-	bot.Handle(tele.OnMedia, handlers.MediaHandler, mid.OnMediaMiddleware)
+func registerMediaHandler(bot *tele.Bot, mid *middleware.TelebotMiddleware, cfg config.App, logger pkgLogger.Logger) {
+	logger.Debug("Start register media handlers", nil)
+
+	mediaHandlers := handlers.NewCommandMediaHandlers(cfg, logger)
+
+	bot.Handle(tele.OnMedia, mediaHandlers.MediaHandler, mid.OnMediaMiddleware)
 }
 
 // Handler Функция-обработчик для Yandex Cloud Function.
@@ -181,6 +181,19 @@ func Handler(writer http.ResponseWriter, request *http.Request) {
 
 		return
 	}
+
+	logger := initLog("main_stream")
+	cfg := config.LoadConfig(logger)
+
+	bot := initBot(logger, cfg)
+	cfg.BotID = bot.Me.ID
+	ai := initAI(logger, cfg)
+	mid := middleware.NewTelebotMiddleware(logger, ai, cfg)
+
+	setBotMiddleware(bot, mid, logger)
+	registerBotCommandHandlers(bot, logger, mid, cfg, ai)
+	registerJoinRequestHandler(bot, cfg, logger)
+	registerMediaHandler(bot, mid, cfg, logger)
 
 	go bot.ProcessUpdate(update)
 }

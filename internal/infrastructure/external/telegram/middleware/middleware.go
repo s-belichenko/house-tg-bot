@@ -3,7 +3,9 @@ package middleware
 import (
 	"fmt"
 
-	"s-belichenko/house-tg-bot/internal/infrastructure/external/llm"
+	"s-belichenko/house-tg-bot/internal/config"
+
+	"s-belichenko/house-tg-bot/internal/domain/models"
 
 	tele "gopkg.in/telebot.v4"
 
@@ -11,13 +13,27 @@ import (
 	pkgLog "s-belichenko/house-tg-bot/pkg/logger"
 )
 
-func CommonCommandMiddleware(next tele.HandlerFunc) tele.HandlerFunc {
+type TelebotMiddleware struct {
+	logger pkgLog.Logger
+	ai     models.AI
+	config config.App
+}
+
+func NewTelebotMiddleware(logger pkgLog.Logger, ai models.AI, cfg config.App) *TelebotMiddleware {
+	return &TelebotMiddleware{
+		logger: logger,
+		ai:     ai,
+		config: cfg,
+	}
+}
+
+func (m *TelebotMiddleware) CommonCommandMiddleware(next tele.HandlerFunc) tele.HandlerFunc {
 	return func(ctx tele.Context) error {
 		if ctx.Chat().Type != tele.ChatPrivate &&
 			ctx.Chat().Type != tele.ChatChannelPrivate &&
 			ctx.Chat().Type != tele.ChatGroup &&
 			ctx.Chat().Type != tele.ChatSuperGroup {
-			log.Warn(
+			m.logger.Warn(
 				fmt.Sprintf(
 					"Попытка использовать %q в чате типа %q",
 					getCommandName(ctx.Message()),
@@ -27,24 +43,27 @@ func CommonCommandMiddleware(next tele.HandlerFunc) tele.HandlerFunc {
 			return nil
 		}
 
-		if (ctx.Chat().Type == tele.ChatSuperGroup || ctx.Chat().Type == tele.ChatGroup) &&
-			TeleID(ctx.Chat().ID) != cfg.HouseChatID {
-			log.Warn(fmt.Sprintf(
-				"Попытка использовать %q вне домового чата, чат: %d",
-				getCommandName(ctx.Message()),
-				ctx.Chat().ID,
-			), pkgLog.LogContext{
-				"message": ctx.Message(),
-			})
-
-			return nil
+		if config.TeleID(ctx.Chat().ID) == m.config.HouseChatID ||
+			config.TeleID(ctx.Chat().ID) == m.config.AdminChatID {
+			return next(ctx)
 		}
 
-		return next(ctx)
+		m.logger.Warn(fmt.Sprintf(
+			"Попытка использовать %q вне домового или административного чата, чат: %d",
+			getCommandName(ctx.Message()),
+			ctx.Chat().ID,
+		), pkgLog.LogContext{
+			"message":       ctx.Message(),
+			"chat_id":       ctx.Chat().ID,
+			"house_chat_id": m.config.HouseChatID,
+			"admin_chat_id": m.config.AdminChatID,
+		})
+
+		return nil
 	}
 }
 
-func OnMediaMiddleware(next tele.HandlerFunc) tele.HandlerFunc {
+func (m *TelebotMiddleware) OnMediaMiddleware(next tele.HandlerFunc) tele.HandlerFunc {
 	return func(ctx tele.Context) error {
 		if ctx.Chat().Type != tele.ChatPrivate && ctx.Chat().Type != tele.ChatChannelPrivate {
 			return nil
@@ -54,23 +73,23 @@ func OnMediaMiddleware(next tele.HandlerFunc) tele.HandlerFunc {
 	}
 }
 
-func AllPrivateChatsMiddleware(next tele.HandlerFunc) tele.HandlerFunc {
+func (m *TelebotMiddleware) AllPrivateChatsMiddleware(next tele.HandlerFunc) tele.HandlerFunc {
 	return func(ctx tele.Context) error {
 		if ctx.Chat().Type != tele.ChatPrivate && ctx.Chat().Type != tele.ChatChannelPrivate {
-			log.Warn(
+			m.logger.Warn(
 				fmt.Sprintf(
 					"Попытка использовать %q в чате типа %q",
 					getCommandName(ctx.Message()),
 					ctx.Chat().Type,
 				), pkgLog.LogContext{"message": ctx.Message()})
 
-			if TeleID(ctx.Chat().ID) == cfg.HouseChatID {
+			if config.TeleID(ctx.Chat().ID) == m.config.HouseChatID {
 				err := ctx.Reply(fmt.Sprintf(
 					"Используйте команду %q в личной переписке с ботом.",
 					getCommandName(ctx.Message()),
 				))
 				if err != nil {
-					log.Error(
+					m.logger.Error(
 						fmt.Sprintf(
 							"Не удалось посоветовать использовать личную переписку с ботом: %v",
 							err,
@@ -87,10 +106,10 @@ func AllPrivateChatsMiddleware(next tele.HandlerFunc) tele.HandlerFunc {
 	}
 }
 
-func HomeChatMiddleware(next tele.HandlerFunc) tele.HandlerFunc {
+func (m *TelebotMiddleware) HomeChatMiddleware(next tele.HandlerFunc) tele.HandlerFunc {
 	return func(ctx tele.Context) error {
 		if ctx.Chat().Type != tele.ChatGroup && ctx.Chat().Type != tele.ChatSuperGroup {
-			log.Warn(fmt.Sprintf(
+			m.logger.Warn(fmt.Sprintf(
 				"Попытка использовать %q в чате типа %q",
 				getCommandName(ctx.Message()),
 				ctx.Chat().Type,
@@ -99,8 +118,8 @@ func HomeChatMiddleware(next tele.HandlerFunc) tele.HandlerFunc {
 			return nil
 		}
 
-		if TeleID(ctx.Chat().ID) != cfg.HouseChatID {
-			log.Warn(fmt.Sprintf(
+		if config.TeleID(ctx.Chat().ID) != m.config.HouseChatID {
+			m.logger.Warn(fmt.Sprintf(
 				"Попытка использовать %q вне домового чата, чат: %d",
 				getCommandName(ctx.Message()),
 				ctx.Chat().ID,
@@ -115,10 +134,10 @@ func HomeChatMiddleware(next tele.HandlerFunc) tele.HandlerFunc {
 	}
 }
 
-func AdminChatMiddleware(next tele.HandlerFunc) tele.HandlerFunc {
+func (m *TelebotMiddleware) AdminChatMiddleware(next tele.HandlerFunc) tele.HandlerFunc {
 	return func(ctx tele.Context) error {
 		if ctx.Chat().Type != tele.ChatGroup && ctx.Chat().Type != tele.ChatSuperGroup {
-			log.Warn(fmt.Sprintf(
+			m.logger.Warn(fmt.Sprintf(
 				"Попытка использовать команду %q в чате типа %q",
 				getCommandName(ctx.Message()),
 				ctx.Chat().Type,
@@ -129,8 +148,8 @@ func AdminChatMiddleware(next tele.HandlerFunc) tele.HandlerFunc {
 			return nil
 		}
 
-		if TeleID(ctx.Chat().ID) != cfg.AdministrationChatID {
-			log.Warn(fmt.Sprintf(
+		if config.TeleID(ctx.Chat().ID) != m.config.AdminChatID {
+			m.logger.Warn(fmt.Sprintf(
 				"Попытка использовать команду %q в чате %d",
 				getCommandName(ctx.Message()),
 				ctx.Chat().ID,
@@ -141,10 +160,10 @@ func AdminChatMiddleware(next tele.HandlerFunc) tele.HandlerFunc {
 		}
 
 		if member, err := ctx.Bot().ChatMemberOf(ctx.Chat(), ctx.Sender()); err != nil {
-			log.Error(
+			m.logger.Error(
 				fmt.Sprintf(
-					"Не удалось получить информацию об отправителе %q команды %q: %v",
-					hndls.GetGreetingName(ctx.Sender()),
+					"Не удалось получить информацию об отправителе %d команды %q: %v",
+					ctx.Sender().ID,
 					getCommandName(ctx.Message()),
 					err,
 				),
@@ -153,12 +172,28 @@ func AdminChatMiddleware(next tele.HandlerFunc) tele.HandlerFunc {
 
 			return nil
 		} else if (tele.Creator != member.Role) && (tele.Administrator != member.Role) {
-			link := fmt.Sprintf("<a href=%q>ссылка</a>", hndls.GenerateMessageLink(ctx.Chat(), ctx.Message().ID))
+			greetingName, err := hndls.GetGreetingName(ctx.Sender())
+			if err != nil {
+				m.logger.Warn(fmt.Sprintf("Не удалось сформировать обращение к пользователю %d: %v", ctx.Sender().ID, err), nil)
+			}
+			generateMessageLink, err := hndls.GenerateMessageLink(ctx.Chat(), ctx.Message().ID)
+			if err != nil {
+				m.logger.Warn(
+					fmt.Sprintf(
+						"Не удалось сформировать ссылку на сообщение %d в чате %d: %v",
+						ctx.Message().ID,
+						ctx.Chat().ID,
+						err,
+					),
+					nil,
+				)
+			}
+			link := fmt.Sprintf("<a href=%q>ссылка</a>", generateMessageLink)
 			reportMessage := fmt.Sprintf(
 				`Хакир детектед! Пользователь %q попытался использовать команду %q, ссылка: %s`,
-				hndls.GetGreetingName(ctx.Sender()), getCommandName(ctx.Message()), link,
+				greetingName, getCommandName(ctx.Message()), link,
 			)
-			adminChat := &tele.Chat{ID: int64(cfg.AdministrationChatID)}
+			adminChat := &tele.Chat{ID: int64(m.config.AdminChatID)}
 			_, _ = ctx.Bot().Send(adminChat, reportMessage, tele.ModeHTML)
 		}
 
@@ -166,17 +201,17 @@ func AdminChatMiddleware(next tele.HandlerFunc) tele.HandlerFunc {
 	}
 }
 
-func KeysCommandMiddleware(next tele.HandlerFunc) tele.HandlerFunc {
+func (m *TelebotMiddleware) KeysCommandMiddleware(next tele.HandlerFunc) tele.HandlerFunc {
 	return func(ctx tele.Context) error {
-		if cfg.HouseIsCompleted {
+		if m.config.HouseIsCompleted {
 			return nil
 		}
 
-		if IsBotHouse(ctx) {
+		if m.isBotHouse(ctx) {
 			return next(ctx)
 		}
 
-		if cantSpeakPhrase := llm.GetCantSpeakPhrase(); cantSpeakPhrase != "" {
+		if cantSpeakPhrase := m.ai.GetCantSpeakPhrase(); cantSpeakPhrase != "" {
 			// TODO: Через очереди записывать команды не в тех местах и удалять их по истечении некоего времени.
 			//  Писать также куда-то злоупотребляющих командой не в тех местах? Писать вообще все команды куда-либо?
 			//  Использовать DeleteAfter()?
@@ -185,7 +220,7 @@ func KeysCommandMiddleware(next tele.HandlerFunc) tele.HandlerFunc {
 				cantSpeakPhrase, ctx.Sender().Username,
 			))
 			if err != nil {
-				log.Error(
+				m.logger.Error(
 					fmt.Sprintf(
 						`Бот не смог рассказать об ограничениях команды /keys: %v`,
 						err,
@@ -199,7 +234,7 @@ func KeysCommandMiddleware(next tele.HandlerFunc) tele.HandlerFunc {
 	}
 }
 
-func GetLogUpdateMiddleware(logger pkgLog.Logger) tele.MiddlewareFunc {
+func (m *TelebotMiddleware) GetLogUpdateMiddleware(logger pkgLog.Logger) tele.MiddlewareFunc {
 	return func(next tele.HandlerFunc) tele.HandlerFunc {
 		return func(c tele.Context) error {
 			logger.Debug("Получен Update от Telegram", pkgLog.LogContext{
@@ -209,4 +244,8 @@ func GetLogUpdateMiddleware(logger pkgLog.Logger) tele.MiddlewareFunc {
 			return next(c)
 		}
 	}
+}
+
+func (m *TelebotMiddleware) isBotHouse(c TeleContext) bool {
+	return c.Message().ThreadID == m.config.HomeThreadBot
 }

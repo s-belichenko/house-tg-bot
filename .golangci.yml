@@ -48,6 +48,7 @@ linters:
     - godox # Служебные комментарии в коде
     - gomoddirectives
     - intrange
+    - ireturn
     - mnd # Магические числа
     - noinlineerr
     - perfsprint

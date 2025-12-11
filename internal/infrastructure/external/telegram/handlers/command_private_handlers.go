@@ -4,6 +4,10 @@ import (
 	"fmt"
 	"html/template"
 
+	"s-belichenko/house-tg-bot/internal/config"
+
+	template2 "s-belichenko/house-tg-bot/pkg/template"
+
 	"s-belichenko/house-tg-bot/pkg/logger"
 
 	tele "gopkg.in/telebot.v4"
@@ -16,24 +20,45 @@ var (
 	MyInfoCommand = tele.Command{Text: "my_info", Description: "Информация о вас"}
 )
 
-func CommandStartHandler(ctx tele.Context) error {
-	err := ctx.Send(fmt.Sprintf(
-		"Привет, %s! Ознакомься со справкой по работе с ботом: /help", GetGreetingName(ctx.Sender()),
-	))
+type CommandPrivateHandlers struct {
+	config        config.App
+	renderingTool template2.RenderingTool
+	logger        logger.Logger
+}
+
+func NewCommandPrivateHandlers(cfg config.App, logger logger.Logger) *CommandPrivateHandlers {
+	renderingTool := template2.NewTool("handlers", logger)
+
+	return &CommandPrivateHandlers{
+		config:        cfg,
+		renderingTool: renderingTool,
+		logger:        logger,
+	}
+}
+
+func (h *CommandPrivateHandlers) CommandStartHandler(ctx tele.Context) error {
+	greetingName, err := GetGreetingName(ctx.Sender())
 	if err != nil {
-		pkgLog.Error(fmt.Sprintf("Не удалось отправить ответ на команду /start: %v", err), nil)
+		h.logger.Warn(fmt.Sprintf("Не удалось сформировать обращение к пользователю %d", ctx.Sender().ID), nil)
+	}
+	err = ctx.Send(fmt.Sprintf("Привет, %s! Ознакомься со справкой по работе с ботом: /help", greetingName))
+	if err != nil {
+		h.logger.Error(fmt.Sprintf("Не удалось отправить ответ на команду /start: %v", err), nil)
 	}
 
 	return err
 }
 
-func CommandMyInfoHandler(ctx tele.Context) error {
+func (h *CommandPrivateHandlers) CommandMyInfoHandler(ctx tele.Context) error {
 	var chatMember *tele.ChatMember
 	var err error
 
-	chatMember, err = ctx.Bot().ChatMemberOf(&tele.Chat{ID: cfg.HouseChatID}, &tele.User{ID: ctx.Sender().ID})
+	chatMember, err = ctx.Bot().ChatMemberOf(
+		&tele.Chat{ID: int64(h.config.HouseChatID)},
+		&tele.User{ID: ctx.Sender().ID},
+	)
 	if err != nil {
-		pkgLog.Error(
+		h.logger.Error(
 			fmt.Sprintf(`Не удалось получить информацию об участнике чата %d: %e`, ctx.Message().Sender.ID, err),
 			logger.LogContext{"message": ctx.Message()},
 		)
@@ -41,7 +66,7 @@ func CommandMyInfoHandler(ctx tele.Context) error {
 		return nil
 	}
 
-	pkgLog.Info(
+	h.logger.Info(
 		fmt.Sprintf(`Получена информация об участнике чата %d`, ctx.Message().Sender.ID),
 		logger.LogContext{"chat_member": chatMember},
 	)
@@ -64,7 +89,7 @@ func CommandMyInfoHandler(ctx tele.Context) error {
 
 	err = ctx.Reply(fmt.Sprintf(`Ваш статус в чате: <b>%s</b>.`, memberStatus), tele.ModeHTML)
 	if err != nil {
-		pkgLog.Error(
+		h.logger.Error(
 			fmt.Sprintf(`Не удалось ответить на команду /my_info пользователю %d: %e`, ctx.Message().Sender.ID, err),
 			logger.LogContext{"chat_member": chatMember},
 		)
@@ -75,9 +100,9 @@ func CommandMyInfoHandler(ctx tele.Context) error {
 	return nil
 }
 
-func CommandHelpHandler(ctx tele.Context) error {
+func (h *CommandPrivateHandlers) CommandHelpHandler(ctx tele.Context) error {
 	err := ctx.Send(
-		renderingTool.RenderEscapedText(
+		h.renderingTool.RenderEscapedText(
 			`help.gohtml`,
 			struct {
 				InviteURL     template.URL
@@ -90,21 +115,21 @@ func CommandHelpHandler(ctx tele.Context) error {
 				ReportCommand string
 				RulesURL      template.URL
 			}{
-				InviteURL:     template.URL(cfg.InviteURL.String()),
-				HomeAddress:   cfg.HomeAddress,
+				InviteURL:     template.URL(h.config.InviteURL.String()),
+				HomeAddress:   h.config.HomeAddress,
 				StartCommand:  StartCommand.Text,
 				HelpCommand:   HelpCommand.Text,
 				MyInfoCommand: MyInfoCommand.Text,
 				KeysCommand:   KeysCommand.Text,
 				ReportCommand: ReportCommand.Text,
 				RulesCommand:  RulesCommand.Text,
-				RulesURL:      template.URL(cfg.RulesURL.String()),
+				RulesURL:      template.URL(h.config.RulesURL.String()),
 			}, []string{}),
 		tele.ModeHTML,
 		tele.NoPreview,
 	)
 	if err != nil {
-		pkgLog.Error(fmt.Sprintf("Не удалось отправить текст справки: %v", err), nil)
+		h.logger.Error(fmt.Sprintf("Не удалось отправить текст справки: %v", err), nil)
 	}
 
 	return nil

@@ -4,13 +4,37 @@ import (
 	"fmt"
 	"html/template"
 
-	pkgLogger "s-belichenko/house-tg-bot/pkg/logger"
+	"s-belichenko/house-tg-bot/internal/config"
+
+	template2 "s-belichenko/house-tg-bot/pkg/template"
+
+	"s-belichenko/house-tg-bot/pkg/logger"
 
 	tele "gopkg.in/telebot.v4"
 )
 
-func JoinRequestHandler(ctx tele.Context) error {
-	pkgLog.Info("Получена заявка на вступление в чат", pkgLogger.LogContext{
+type joinRequestHandlers struct {
+	renderingTool template2.RenderingTool
+	config        config.App
+	logger        logger.Logger
+}
+
+type JoinRequestHandlers interface {
+	JoinRequestHandler(ctx tele.Context) error
+}
+
+func NewJoinRequestHandlersHandlers(cfg config.App, logger logger.Logger) JoinRequestHandlers {
+	renderingTool := template2.NewTool("handlers", logger)
+
+	return &joinRequestHandlers{
+		renderingTool: renderingTool,
+		config:        cfg,
+		logger:        logger,
+	}
+}
+
+func (h *joinRequestHandlers) JoinRequestHandler(ctx tele.Context) error {
+	h.logger.Info("Получена заявка на вступление в чат", logger.LogContext{
 		"chat_id":   ctx.Chat().ID,
 		"user_id":   ctx.Sender().ID,
 		"username":  ctx.Sender().Username,
@@ -18,16 +42,16 @@ func JoinRequestHandler(ctx tele.Context) error {
 		"lastname":  ctx.Sender().LastName,
 	})
 
-	notifyAdmins(ctx)
-	sendHi(ctx)
+	h.notifyAdmins(ctx)
+	h.sendHi(ctx)
 
 	return nil
 }
 
-func notifyAdmins(ctx tele.Context) {
+func (h *joinRequestHandlers) notifyAdmins(ctx tele.Context) {
 	if _, err := ctx.Bot().Send(
-		&tele.Chat{ID: cfg.AdministrationChatID},
-		renderingTool.RenderText(`join_request.gohtml`, struct {
+		&tele.Chat{ID: int64(h.config.AdminChatID)},
+		h.renderingTool.RenderText(`join_request.gohtml`, struct {
 			ChatURL   template.URL
 			ChatName  string
 			UserID    int64
@@ -35,7 +59,7 @@ func notifyAdmins(ctx tele.Context) {
 			Firstname string
 			Lastname  string
 		}{
-			ChatURL:   template.URL(cfg.InviteURL.String()),
+			ChatURL:   template.URL(h.config.InviteURL.String()),
 			ChatName:  ctx.Chat().Title,
 			UserID:    ctx.Sender().ID,
 			Username:  ctx.Sender().Username,
@@ -45,9 +69,9 @@ func notifyAdmins(ctx tele.Context) {
 		tele.ModeHTML,
 		tele.NoPreview,
 	); err != nil {
-		pkgLog.Error(
+		h.logger.Error(
 			fmt.Sprintf("Не удалось оповестить администраторов о заявке на вступление: %v", err),
-			pkgLogger.LogContext{
+			logger.LogContext{
 				"user_id":   ctx.Sender().ID,
 				"username":  ctx.Sender().Username,
 				"firstname": ctx.Sender().FirstName,
@@ -57,7 +81,7 @@ func notifyAdmins(ctx tele.Context) {
 	}
 }
 
-func sendHi(ctx tele.Context) {
+func (h *joinRequestHandlers) sendHi(ctx tele.Context) {
 	var (
 		menuInline = &tele.ReplyMarkup{
 			ResizeKeyboard: true,
@@ -65,7 +89,7 @@ func sendHi(ctx tele.Context) {
 		}
 		btnContactAdmin = menuInline.URL(
 			"Написать администратору",
-			"https://t.me/"+cfg.OwnerNickname,
+			"https://t.me/"+h.config.OwnerNickname,
 		)
 	)
 
@@ -73,25 +97,25 @@ func sendHi(ctx tele.Context) {
 
 	if _, err := ctx.Bot().Send(
 		ctx.Sender(),
-		renderingTool.RenderEscapedText(
+		h.renderingTool.RenderEscapedText(
 			`hi.gohtml`,
 			struct {
 				InviteURL   template.URL
 				HomeAddress template.HTML
 				VerifyRules template.HTML
 			}{
-				InviteURL:   template.URL(cfg.InviteURL.String()),
-				HomeAddress: template.HTML(cfg.HomeAddress),
-				VerifyRules: template.HTML(cfg.VerifyRules),
+				InviteURL:   template.URL(h.config.InviteURL.String()),
+				HomeAddress: template.HTML(h.config.HomeAddress),
+				VerifyRules: template.HTML(h.config.VerifyRules),
 			},
 			[]string{"VerifyRules"},
 		),
 		menuInline,
 		tele.ModeHTML, tele.NoPreview,
 	); err != nil {
-		pkgLog.Error(
+		h.logger.Error(
 			fmt.Sprintf("Не удалось отправить правила вступления: %v", err),
-			pkgLogger.LogContext{
+			logger.LogContext{
 				"user_id":   ctx.Sender().ID,
 				"username":  ctx.Sender().Username,
 				"firstname": ctx.Sender().FirstName,

@@ -6,7 +6,7 @@ import (
 	"testing"
 
 	mocks "s-belichenko/house-tg-bot/pkg/logger/mocks"
-	pkgTemplating "s-belichenko/house-tg-bot/pkg/template"
+	pkgTemplate "s-belichenko/house-tg-bot/pkg/template"
 
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
@@ -88,8 +88,8 @@ func TestTemplate_RenderTextSuccess(t *testing.T) {
 			mockLogger := mocks.NewMockLogger(t)
 			mockLogger.EXPECT().Debug(mock.Anything, mock.Anything)
 			mockLogger.EXPECT().Debug(mock.Anything, mock.Anything)
-			templating := pkgTemplating.NewTool(testData.storagePath, mockLogger)
-			result := templating.RenderText(testData.tmplName, testData.data)
+			renderingTool := pkgTemplate.NewTool(testData.storagePath, mockLogger)
+			result := renderingTool.RenderText(testData.tmplName, testData.data)
 
 			assert.Equal(t, dataProvider.expected[testCase], result)
 		})
@@ -120,8 +120,8 @@ func TestTemplate_RenderTextWithEscapeCharactersSuccess(t *testing.T) {
 			mockLogger := mocks.NewMockLogger(t)
 			mockLogger.EXPECT().Debug(mock.Anything, mock.Anything)
 			mockLogger.EXPECT().Debug(mock.Anything, mock.Anything)
-			templating := pkgTemplating.NewTool(`test`, mockLogger)
-			result := templating.RenderEscapedText(
+			renderingTool := pkgTemplate.NewTool(`test`, mockLogger)
+			result := renderingTool.RenderEscapedText(
 				`escaped_characters.gohtml`, testData, []string{"EscapedCharacters"},
 			)
 
@@ -151,8 +151,8 @@ func TestTemplate_RenderTextWrongPath(t *testing.T) {
 			// FIXME: Начать проверять через регулярные выражения текст ошибки.
 			mockLogger.EXPECT().Debug(mock.Anything, mock.Anything)
 			mockLogger.EXPECT().Error(mock.Anything, mock.Anything)
-			templating := pkgTemplating.NewTool(testData.storagePath, mockLogger)
-			result := templating.RenderText(testData.tmplName, nil)
+			renderingTool := pkgTemplate.NewTool(testData.storagePath, mockLogger)
+			result := renderingTool.RenderText(testData.tmplName, nil)
 
 			assert.Empty(t, result)
 		})
@@ -229,8 +229,8 @@ func TestTemplate_RenderTextRealTemplate(t *testing.T) {
 			mockLogger := mocks.NewMockLogger(t)
 			mockLogger.EXPECT().Debug("Начата генерация шаблона hi.gohtml", mock.Anything)
 			mockLogger.EXPECT().Debug("Сгенерирован текст шаблона hi.gohtml", mock.Anything)
-			templating := pkgTemplating.NewTool(`handlers`, mockLogger)
-			result := templating.RenderText(`hi.gohtml`, testData)
+			renderingTool := pkgTemplate.NewTool(`handlers`, mockLogger)
+			result := renderingTool.RenderText(`hi.gohtml`, testData)
 
 			assert.Equal(t, dataProvider.expected[testCase], result)
 		})
@@ -300,8 +300,8 @@ func TestTemplating_RenderEscapedText(t *testing.T) {
 			mockLogger := mocks.NewMockLogger(t)
 			mockLogger.EXPECT().Debug("Начата генерация шаблона escaped_strings.gohtml", mock.Anything)
 			mockLogger.EXPECT().Debug("Сгенерирован текст шаблона escaped_strings.gohtml", mock.Anything)
-			templating := pkgTemplating.NewTool(`test`, mockLogger)
-			result := templating.RenderEscapedText(`escaped_strings.gohtml`, testData.data, testData.escapedStrings)
+			renderingTool := pkgTemplate.NewTool(`test`, mockLogger)
+			result := renderingTool.RenderEscapedText(`escaped_strings.gohtml`, testData.data, testData.escapedStrings)
 
 			assert.Equal(t, dataProvider.expected[testCase], result)
 		})

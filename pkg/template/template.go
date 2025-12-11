@@ -22,37 +22,37 @@ type RenderingTool interface {
 	RenderEscapedText(tmplFilename string, data any, escapedStrings []string) string
 }
 
-type Templating struct {
+type renderingTool struct {
 	templatesPath string
-	log           pkgLogger.Logger
+	logger        pkgLogger.Logger
 }
 
 // NewTool Создает средство шаблонизации.
 //
 // 'templatesDir' – имя директории с шаблонами в директории `templates`,
-// 'log' – средство журналирования.
-func NewTool(templatesDir string, log pkgLogger.Logger) *Templating {
+// 'logger' – средство журналирования.
+func NewTool(templatesDir string, logger pkgLogger.Logger) RenderingTool {
 	templatesPath := filepath.Join("templates", templatesDir)
 
 	_, err := templates.ReadDir(templatesPath)
 	if err != nil {
-		log.Error(fmt.Sprintf(`Не удалось разрешить путь до шаблонов: %v`, err), nil)
+		logger.Error(fmt.Sprintf(`Не удалось разрешить путь до шаблонов: %v`, err), nil)
 	}
 
-	return &Templating{
+	return &renderingTool{
 		templatesPath: templatesPath,
-		log:           log,
+		logger:        logger,
 	}
 }
 
-func (t *Templating) RenderEscapedText(
+func (t *renderingTool) RenderEscapedText(
 	tmplFilename string,
 	data any,
 	escapedStrings []string,
 ) string {
 	unescapedData, err := t.unescapeData(&data, escapedStrings)
 	if err != nil {
-		t.log.Error(
+		t.logger.Error(
 			fmt.Sprintf("Не удалось сгенерировать текст шаблона %q: %e", tmplFilename, err),
 			nil,
 		)
@@ -61,14 +61,14 @@ func (t *Templating) RenderEscapedText(
 	return html.UnescapeString(t.renderText(tmplFilename, unescapedData))
 }
 
-func (t *Templating) RenderText(tmplFilename string, data any) string {
+func (t *renderingTool) RenderText(tmplFilename string, data any) string {
 	return t.renderText(tmplFilename, data)
 }
 
-func (t *Templating) renderText(tmplFilename string, data any) string {
+func (t *renderingTool) renderText(tmplFilename string, data any) string {
 	var renderedBuffer bytes.Buffer
 
-	t.log.Debug(
+	t.logger.Debug(
 		fmt.Sprintf("Начата генерация шаблона %s", tmplFilename),
 		pkgLogger.LogContext{"data": data},
 	)
@@ -77,7 +77,7 @@ func (t *Templating) renderText(tmplFilename string, data any) string {
 
 	tmpl, err := template.ParseFS(templates, tmplPath)
 	if err != nil {
-		t.log.Error(
+		t.logger.Error(
 			fmt.Sprintf(`Не удалось прочитать шаблон из файла "%s": %v`, tmplPath, err),
 			nil,
 		)
@@ -86,7 +86,7 @@ func (t *Templating) renderText(tmplFilename string, data any) string {
 	}
 
 	if err := tmpl.Execute(&renderedBuffer, data); err != nil {
-		t.log.Error(
+		t.logger.Error(
 			fmt.Sprintf(`Не удалось сгенерировать текст из шаблона "%s": %v`, tmplPath, err),
 			nil,
 		)
@@ -95,7 +95,7 @@ func (t *Templating) renderText(tmplFilename string, data any) string {
 	}
 
 	result := renderedBuffer.String()
-	t.log.Debug(fmt.Sprintf(
+	t.logger.Debug(fmt.Sprintf(
 		"Сгенерирован текст шаблона %s", tmplFilename),
 		map[string]interface{}{
 			"rendered": result,
@@ -106,7 +106,7 @@ func (t *Templating) renderText(tmplFilename string, data any) string {
 }
 
 //nolint:err113
-func (t *Templating) unescapeData(data any, escapedStrings []string) (interface{}, error) {
+func (t *renderingTool) unescapeData(data any, escapedStrings []string) (interface{}, error) {
 	repoError := errors.New("repositoryError")
 
 	value := reflect.ValueOf(data)

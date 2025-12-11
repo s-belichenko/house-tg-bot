@@ -26,7 +26,7 @@ func NewYandexLogger(
 	streamName string,
 	logger SystemLogger,
 	time pkgTime.ClockInterface,
-) *YandexLogger {
+) Logger {
 	return &YandexLogger{
 		stream: streamName,
 		logger: logger,

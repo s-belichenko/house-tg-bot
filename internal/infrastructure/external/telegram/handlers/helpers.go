@@ -5,11 +5,8 @@ import (
 	"regexp"
 	"strconv"
 	"strings"
-	"time"
 
 	tele "gopkg.in/telebot.v4"
-
-	pkgLogger "s-belichenko/house-tg-bot/pkg/logger"
 )
 
 const (
@@ -17,11 +14,12 @@ const (
 	userIDRegex   = `^[0-9]+$`
 )
 
-func GetGreetingName(user *tele.User) string {
+func GetGreetingName(user *tele.User) (string, error) {
+	const defaultName = "сосед"
 	var name string
 
 	if user.Username != "" {
-		return "@" + user.Username
+		return "@" + user.Username, nil
 	}
 
 	firstname := strings.TrimSpace(user.FirstName)
@@ -42,37 +40,35 @@ func GetGreetingName(user *tele.User) string {
 
 	regExp, err := regexp.Compile(`[a-zA-Z0-9а-яА-Я.\-_—–!@#$%^&*()"'/?><,]+`)
 	if err != nil {
-		pkgLog.Error(
-			fmt.Sprintf(`Ошибка компиляции регулярного выражения для вычисления имени соседа: %v`, err),
-			pkgLogger.LogContext{`name`: name},
+		return defaultName, fmt.Errorf(
+			`ошибка компиляции регулярного выражения для вычисления имени соседа "%s": %w`,
+			name,
+			err,
 		)
-
-		return ""
 	}
 
 	matchString, err := regexp.MatchString(regExp.String(), name)
 	if err != nil {
-		pkgLog.Error(
-			fmt.Sprintf(`Не удалось применить регулярное выражение для вычисления имени соседа: %v`, err),
-			pkgLogger.LogContext{`name`: name},
+		return defaultName, fmt.Errorf(
+			`не удалось применить регулярное выражение для вычисления имени соседа "%s": %w`,
+			name,
+			err,
 		)
-
-		return ""
 	}
 
 	if matchString {
-		return name
+		return name, nil
 	}
 
-	return "сосед"
+	return defaultName, nil
 }
 
-func GenerateMessageLink(chat *tele.Chat, messageID int) string {
+func GenerateMessageLink(chat *tele.Chat, messageID int) (string, error) {
 	if chat.Type == tele.ChatChannel || chat.Type == tele.ChatSuperGroup ||
 		chat.Type == tele.ChatGroup {
 		if chat.Username != "" { // Проверяем, есть ли у чата username
 			// если есть username, формируем публичную ссылку
-			return fmt.Sprintf("https://t.me/%s/%d", chat.Username, messageID)
+			return fmt.Sprintf("https://t.me/%s/%d", chat.Username, messageID), nil
 		}
 
 		// удаляем -100 из начала chat.ID
@@ -85,46 +81,10 @@ func GenerateMessageLink(chat *tele.Chat, messageID int) string {
 			chatID -= 1000000000000
 		}
 
-		return fmt.Sprintf("https://t.me/c/%d/%d", chatID, messageID)
+		return fmt.Sprintf("https://t.me/c/%d/%d", chatID, messageID), nil
 	}
 
-	pkgLog.Error("Невозможно сформировать ссылку для этого типа чата", pkgLogger.LogContext{
-		"chat":       chat,
-		"message_id": messageID,
-	})
-
-	return ""
-}
-
-func setCommands(c TeleContext, commands []tele.Command, scope tele.CommandScope) {
-	err := c.Bot().SetCommands(commands, scope)
-	if err != nil {
-		pkgLog.Fatal(
-			fmt.Sprintf("Не удалось установить команды бота: %v", err),
-			pkgLogger.LogContext{
-				"commands": commands,
-				"scope":    scope,
-			},
-		)
-	} else {
-		pkgLog.Info("Успешно установлены команды бота", pkgLogger.LogContext{
-			"commands": commands,
-			"scope":    scope,
-		})
-	}
-}
-
-func deleteCommands(c TeleContext, scope tele.CommandScope) {
-	err := c.Bot().DeleteCommands(scope)
-	if err != nil {
-		pkgLog.Fatal(fmt.Sprintf("Не удалось удалить команды бота: %v", err), pkgLogger.LogContext{
-			"scope": scope,
-		})
-	} else {
-		pkgLog.Info("Успешно удалены команды бота", pkgLogger.LogContext{
-			"scope": scope,
-		})
-	}
+	return "", nil
 }
 
 func parseUsername(str string) string {
@@ -142,27 +102,10 @@ func parseUserID(str string) int64 {
 	return i
 }
 
-func parseDays(s string) int64 {
-	days, err := strconv.ParseInt(s, 10, 64)
-	if err != nil {
-		pkgLog.Error(fmt.Sprintf("Не удалось распарсить days %q в int64 %v", s, err), nil)
-
-		return 0
-	}
-
-	return days
-}
-
 func createUserViolator(s string) *tele.User {
 	if userID := parseUserID(s); userID > 0 {
 		return &tele.User{ID: userID}
 	}
 
 	return nil
-}
-
-func createUnixTimeFromDays(d string) int64 {
-	r := parseDays(d)
-	// Дни в секундах плюс один час для просмотра после бана в настройках
-	return time.Now().Unix() + (r*86400 + 600)
 }

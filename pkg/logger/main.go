@@ -1,12 +1,5 @@
 package logger
 
-import (
-	"log"
-	"os"
-
-	pkgTime "s-belichenko/house-tg-bot/pkg/time"
-)
-
 type LogLevel string
 
 type Logger interface {
@@ -37,11 +30,4 @@ type SystemLogger interface {
 	Printf(format string, args ...interface{})
 	Println(args ...interface{})
 	Output(calldepth int, s string) error
-}
-
-func InitLog(logStreamName string) *YandexLogger {
-	logger := log.New(os.Stdout, "", 0)
-	time := pkgTime.Time{} // Отключаем все флаги.
-
-	return NewYandexLogger(logStreamName, logger, time)
 }
