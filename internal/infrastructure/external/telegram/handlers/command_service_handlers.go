@@ -40,7 +40,7 @@ func (h *CommandServiceHandlers) CommandSetCommandsHandler(ctx tele.Context) err
 		tele.CommandScope{Type: tele.CommandScopeDefault})
 	// Для личных чатов со всеми подряд
 	h.setCommands(ctx,
-		[]tele.Command{StartCommand, HelpCommand, RulesCommand},
+		[]tele.Command{StartCommand, HelpCommand, RulesCommand, MyInfoCommand, SelfBanCommand},
 		tele.CommandScope{Type: tele.CommandScopeAllPrivateChats})
 
 	var homeCommands []tele.Command

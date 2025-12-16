@@ -38,7 +38,6 @@ func (h *commandMediaHandlers) MediaHandler(ctx tele.Context) error {
 	var (
 		menuInline = &tele.ReplyMarkup{
 			ResizeKeyboard: true,
-			Placeholder:    "Inline placeholder",
 		}
 		btnContactAdmin = menuInline.URL(
 			"Написать администратору",

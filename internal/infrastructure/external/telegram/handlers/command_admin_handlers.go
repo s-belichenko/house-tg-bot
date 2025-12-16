@@ -69,7 +69,7 @@ func (h *CommandAdminHandlers) CommandMuteHandler(ctx tele.Context) error {
 	d := ctx.Data()
 
 	fields := strings.Fields(d)
-	user := createUserViolator(fields[0])
+	user := createUserFromUserID(fields[0])
 	if user == nil {
 		err := ctx.Reply(fmt.Sprintf("Верный формат команды: %s", muteCommandFormat), tele.ModeHTML)
 		if err != nil {
@@ -148,7 +148,7 @@ func (h *CommandAdminHandlers) CommandUnmuteHandler(ctx tele.Context) error {
 
 	f := strings.Fields(d)
 	if len(f) == 1 {
-		if user := createUserViolator(f[0]); user != nil {
+		if user := createUserFromUserID(f[0]); user != nil {
 			violator = &tele.ChatMember{User: user, Rights: tele.NoRestrictions()}
 		}
 	}
@@ -219,7 +219,7 @@ func (h *CommandAdminHandlers) CommandBanHandler(ctx tele.Context) error {
 	data := ctx.Data()
 
 	fields := strings.Fields(data)
-	user := createUserViolator(fields[0])
+	user := createUserFromUserID(fields[0])
 	if user == nil {
 		h.logger.Warn("Вызов команды /ban без аргументов", pkgLogger.LogContext{
 			"arguments_string": data,
@@ -299,7 +299,7 @@ func (h *CommandAdminHandlers) CommandUnbanHandler(ctx tele.Context) error {
 
 	f := strings.Fields(data)
 	if len(f) == 1 {
-		violator = createUserViolator(f[0])
+		violator = createUserFromUserID(f[0])
 	}
 
 	if violator == nil {

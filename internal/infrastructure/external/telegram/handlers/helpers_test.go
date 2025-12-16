@@ -4,6 +4,7 @@ import (
 	"testing"
 
 	"github.com/go-test/deep"
+	"github.com/stretchr/testify/assert"
 	tele "gopkg.in/telebot.v4"
 
 	hndls "s-belichenko/house-tg-bot/internal/infrastructure/external/telegram/handlers"
@@ -45,4 +46,17 @@ func TestGetGreetingName(t *testing.T) {
 			}
 		})
 	}
+}
+
+func TestIsHomeChatMember(t *testing.T) {
+	var chatMember *tele.ChatMember
+
+	chatMember = &tele.ChatMember{}
+	assert.False(t, hndls.IsHomeChatMember(chatMember))
+
+	chatMember = &tele.ChatMember{Role: tele.Left}
+	assert.False(t, hndls.IsHomeChatMember(chatMember))
+
+	chatMember = &tele.ChatMember{Role: tele.Member}
+	assert.True(t, hndls.IsHomeChatMember(chatMember))
 }

@@ -85,7 +85,6 @@ func (h *joinRequestHandlers) sendHi(ctx tele.Context) {
 	var (
 		menuInline = &tele.ReplyMarkup{
 			ResizeKeyboard: true,
-			Placeholder:    "Inline placeholder",
 		}
 		btnContactAdmin = menuInline.URL(
 			"Написать администратору",

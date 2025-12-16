@@ -3,6 +3,7 @@ package handlers
 import (
 	"fmt"
 	"regexp"
+	"slices"
 	"strconv"
 	"strings"
 
@@ -102,10 +103,18 @@ func parseUserID(str string) int64 {
 	return i
 }
 
-func createUserViolator(s string) *tele.User {
+func createUserFromUserID(s string) *tele.User {
 	if userID := parseUserID(s); userID > 0 {
 		return &tele.User{ID: userID}
 	}
 
 	return nil
+}
+
+// IsHomeChatMember Проверяет, что пользователь является участником домового чата.
+func IsHomeChatMember(chatMember *tele.ChatMember) bool {
+	return slices.Contains(
+		[]tele.MemberStatus{tele.Creator, tele.Administrator, tele.Member, tele.Restricted},
+		chatMember.Role,
+	)
 }
