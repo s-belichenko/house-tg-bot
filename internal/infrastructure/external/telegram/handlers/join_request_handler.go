@@ -13,27 +13,23 @@ import (
 	tele "gopkg.in/telebot.v4"
 )
 
-type joinRequestHandlers struct {
+type JoinRequestHandlers struct {
 	renderingTool template2.RenderingTool
 	config        config.App
 	logger        logger.Logger
 }
 
-type JoinRequestHandlers interface {
-	JoinRequestHandler(ctx tele.Context) error
-}
-
-func NewJoinRequestHandlersHandlers(cfg config.App, logger logger.Logger) JoinRequestHandlers {
+func NewJoinRequestHandlersHandlers(cfg config.App, logger logger.Logger) *JoinRequestHandlers {
 	renderingTool := template2.NewTool("handlers", logger)
 
-	return &joinRequestHandlers{
+	return &JoinRequestHandlers{
 		renderingTool: renderingTool,
 		config:        cfg,
 		logger:        logger,
 	}
 }
 
-func (h *joinRequestHandlers) JoinRequestHandler(ctx tele.Context) error {
+func (h *JoinRequestHandlers) JoinRequestHandler(ctx tele.Context) error {
 	h.logger.Info("Получена заявка на вступление в чат", logger.LogContext{
 		"chat_id":   ctx.Chat().ID,
 		"user_id":   ctx.Sender().ID,
@@ -42,13 +38,52 @@ func (h *joinRequestHandlers) JoinRequestHandler(ctx tele.Context) error {
 		"lastname":  ctx.Sender().LastName,
 	})
 
-	h.notifyAdmins(ctx)
-	h.sendHi(ctx)
+	h.notifyAdminsAboutJoinRequest(ctx)
+	h.sendJoinRules(ctx)
 
 	return nil
 }
 
-func (h *joinRequestHandlers) notifyAdmins(ctx tele.Context) {
+func (h *JoinRequestHandlers) UserJoinedHandler(ctx tele.Context) error {
+	h.logger.Info("Пользователь успешно добавлен в чат", logger.LogContext{
+		"chat_id":   ctx.Chat().ID,
+		"user_id":   ctx.Sender().ID,
+		"username":  ctx.Sender().Username,
+		"firstname": ctx.Sender().FirstName,
+		"lastname":  ctx.Sender().LastName,
+	})
+
+	if _, err := ctx.Bot().Send(
+		ctx.Sender(),
+		h.renderingTool.RenderText(
+			`hi.gohtml`,
+			struct {
+				InviteURL   template.URL
+				HomeAddress template.HTML
+				ChatSiteURL template.URL
+			}{
+				InviteURL:   template.URL(h.config.InviteURL.String()),
+				HomeAddress: template.HTML(h.config.HomeAddress),
+				ChatSiteURL: template.URL(h.config.ChatSiteURL.String()),
+			},
+		),
+		tele.ModeHTML, tele.NoPreview,
+	); err != nil {
+		h.logger.Error(
+			fmt.Sprintf("Не удалось отправить приветственное сообщение: %v", err),
+			logger.LogContext{
+				"user_id":   ctx.Sender().ID,
+				"username":  ctx.Sender().Username,
+				"firstname": ctx.Sender().FirstName,
+				"lastname":  ctx.Sender().LastName,
+			},
+		)
+	}
+
+	return nil
+}
+
+func (h *JoinRequestHandlers) notifyAdminsAboutJoinRequest(ctx tele.Context) {
 	if _, err := ctx.Bot().Send(
 		&tele.Chat{ID: int64(h.config.AdminChatID)},
 		h.renderingTool.RenderText(`join_request.gohtml`, struct {
@@ -81,7 +116,7 @@ func (h *joinRequestHandlers) notifyAdmins(ctx tele.Context) {
 	}
 }
 
-func (h *joinRequestHandlers) sendHi(ctx tele.Context) {
+func (h *JoinRequestHandlers) sendJoinRules(ctx tele.Context) {
 	var (
 		menuInline = &tele.ReplyMarkup{
 			ResizeKeyboard: true,
@@ -97,17 +132,17 @@ func (h *joinRequestHandlers) sendHi(ctx tele.Context) {
 	if _, err := ctx.Bot().Send(
 		ctx.Sender(),
 		h.renderingTool.RenderEscapedText(
-			`hi.gohtml`,
+			`join_rules.gohtml`,
 			struct {
 				InviteURL   template.URL
 				HomeAddress template.HTML
-				VerifyRules template.HTML
+				JoinRules   template.HTML
 			}{
 				InviteURL:   template.URL(h.config.InviteURL.String()),
 				HomeAddress: template.HTML(h.config.HomeAddress),
-				VerifyRules: template.HTML(h.config.VerifyRules),
+				JoinRules:   template.HTML(h.config.JoinRules),
 			},
-			[]string{"VerifyRules"},
+			[]string{"JoinRules"},
 		),
 		menuInline,
 		tele.ModeHTML, tele.NoPreview,

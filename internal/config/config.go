@@ -21,11 +21,12 @@ type App struct {
 	HouseChatID      TeleID  `env:"HOUSE_CHAT_ID"`          // Домовой чат, управляемый ботом
 	HomeThreadBot    int     `env:"HOME_THREAD_BOT"`        // Тема в супергруппе, где нет ограничений для бота
 	HouseIsCompleted bool    `env:"HOUSE_IS_COMPLETED"`     // Признак, что дом уже сдан
+	ChatSiteURL      url.URL `env:"CHAT_SITE_URL"`          // Ссылка на сайт чата
 	RulesURL         url.URL `env:"RULES_URL"`              // Ссылка на правила чата
 	OwnerNickname    string  `env:"OWNER_NICKNAME"`         // Никнейм владельца чата
 	InviteURL        url.URL `env:"INVITE_URL"`             // Ссылка для вступления в домовой чат
 	BotNickname      string  `env:"BOT_NICKNAME"`           // Ник бота
-	VerifyRules      string  `env:"VERIFY_RULES"`           // Правила верификации
+	JoinRules        string  `env:"JOIN_RULES"`             // Правила верификации
 	BotID            int64   // Собственный идентификатор бота
 
 	LlmYandex struct {

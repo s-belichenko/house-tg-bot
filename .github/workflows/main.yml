@@ -71,13 +71,14 @@ jobs:
             RULES_URL=${{ vars.RULES_URL }}\n
             OWNER_NICKNAME=${{ vars.OWNER_NICKNAME }}\n
             INVITE_URL=${{ vars.INVITE_URL }}\n
+            CHAT_SITE_URL=${{ vars.CHAT_SITE_URL }}\n
             TELEGRAM_BOT_TOKEN=${{ secrets.TELEGRAM_BOT_TOKEN }}\n
             LLM_API_TOKEN=${{ secrets.LLM_API_TOKEN }}\n
             LLM_FOLDER_ID=${{ secrets.LLM_FOLDER_ID }}\n
             BOT_NAME=${{ vars.BOT_NAME }}\n
             BOT_NICKNAME=${{ vars.BOT_NICKNAME }}\n
             HOME_ADDRESS=${{ vars.HOME_ADDRESS }}\n
-            VERIFY_RULES=${{ vars.VERIFY_RULES }}\n
+            JOIN_RULES=${{ vars.JOIN_RULES }}\n
             HOUSE_IS_COMPLETED=${{ vars.HOUSE_IS_COMPLETED }}\n"
           include: |
             ./cmd/**/*.go

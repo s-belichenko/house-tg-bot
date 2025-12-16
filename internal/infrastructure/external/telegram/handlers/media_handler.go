@@ -10,23 +10,19 @@ import (
 	tele "gopkg.in/telebot.v4"
 )
 
-type commandMediaHandlers struct {
+type CommandMediaHandlers struct {
 	config config.App
 	logger logger.Logger
 }
 
-type CommandMediaHandlers interface {
-	MediaHandler(ctx tele.Context) error
-}
-
-func NewCommandMediaHandlers(cfg config.App, logger logger.Logger) CommandMediaHandlers {
-	return &commandMediaHandlers{
+func NewCommandMediaHandlers(cfg config.App, logger logger.Logger) *CommandMediaHandlers {
+	return &CommandMediaHandlers{
 		config: cfg,
 		logger: logger,
 	}
 }
 
-func (h *commandMediaHandlers) MediaHandler(ctx tele.Context) error {
+func (h *CommandMediaHandlers) MediaHandler(ctx tele.Context) error {
 	h.logger.Info("Получено медиа в переписке с ботом", logger.LogContext{
 		"chat_id":   ctx.Chat().ID,
 		"user_id":   ctx.Sender().ID,

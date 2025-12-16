@@ -168,38 +168,38 @@ func TestTemplate_RenderTextRealTemplate(t *testing.T) {
 			"Кавычки в raw-строке": struct {
 				InviteURL   string
 				HomeAddress string
-				VerifyRules string
+				JoinRules   string
 			}{
 				InviteURL:   "https://example.org/foo/bar?param=value",
 				HomeAddress: "Москва, Кремль, дом 1",
-				VerifyRules: `Бла-бла-бла <a href="https://ya.ru">Я.ру</a>.`,
+				JoinRules:   `Бла-бла-бла <a href="https://ya.ru">Я.ру</a>.`,
 			},
 			"Кавычки в обычной строке": struct {
 				InviteURL   string
 				HomeAddress string
-				VerifyRules string
+				JoinRules   string
 			}{
 				InviteURL:   "https://example.org/foo/bar?param=value",
 				HomeAddress: "Москва, Кремль, дом 1",
-				VerifyRules: `Бла-бла-бла <a href="https://ya.ru">Я.ру</a>.`,
+				JoinRules:   `Бла-бла-бла <a href="https://ya.ru">Я.ру</a>.`,
 			},
 			"Кавычки в raw-строке в template.HTML": struct {
 				InviteURL   template.HTML
 				HomeAddress template.HTML
-				VerifyRules template.HTML
+				JoinRules   template.HTML
 			}{
 				InviteURL:   template.HTML(`https://example.org/foo/bar?param=value`),
 				HomeAddress: template.HTML(`Москва, Кремль, дом 1`),
-				VerifyRules: template.HTML(`Бла-бла-бла <a href="https://ya.ru">Я.ру</a>.`),
+				JoinRules:   template.HTML(`Бла-бла-бла <a href="https://ya.ru">Я.ру</a>.`),
 			},
 			"Перенос в raw-строке в template.HTML": struct {
 				InviteURL   template.HTML
 				HomeAddress template.HTML
-				VerifyRules template.HTML
+				JoinRules   template.HTML
 			}{
 				InviteURL:   template.HTML(`https://example.org/foo/bar?param=value`),
 				HomeAddress: template.HTML(`Москва, Кремль, дом 1`),
-				VerifyRules: template.HTML("Раз строка.\nДва строка."),
+				JoinRules:   template.HTML("Раз строка.\nДва строка."),
 			},
 		},
 		expected: map[string]string{
@@ -227,10 +227,10 @@ func TestTemplate_RenderTextRealTemplate(t *testing.T) {
 	for testCase, testData := range dataProvider.testData {
 		t.Run(testCase, func(_ *testing.T) {
 			mockLogger := mocks.NewMockLogger(t)
-			mockLogger.EXPECT().Debug("Начата генерация шаблона hi.gohtml", mock.Anything)
-			mockLogger.EXPECT().Debug("Сгенерирован текст шаблона hi.gohtml", mock.Anything)
+			mockLogger.EXPECT().Debug("Начата генерация шаблона join_rules.gohtml", mock.Anything)
+			mockLogger.EXPECT().Debug("Сгенерирован текст шаблона join_rules.gohtml", mock.Anything)
 			renderingTool := pkgTemplate.NewTool(`handlers`, mockLogger)
-			result := renderingTool.RenderText(`hi.gohtml`, testData)
+			result := renderingTool.RenderText(`join_rules.gohtml`, testData)
 
 			assert.Equal(t, dataProvider.expected[testCase], result)
 		})
