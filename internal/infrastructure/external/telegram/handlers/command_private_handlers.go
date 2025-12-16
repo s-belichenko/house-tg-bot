@@ -146,6 +146,8 @@ func (h *CommandPrivateHandlers) CommandSelfMuteHandler(ctx tele.Context) error 
 		},
 	)
 
+	h.notifyAdminsAboutSelfMute(ctx, days)
+
 	return nil
 }
 
@@ -311,4 +313,27 @@ func (h *CommandPrivateHandlers) userCanSelfBan(ctx tele.Context) bool {
 	}
 
 	return true
+}
+
+func (h *CommandPrivateHandlers) notifyAdminsAboutSelfMute(ctx tele.Context, days string) {
+	name, err := GetGreetingName(ctx.Sender())
+	if err != nil {
+		h.logger.Warn(fmt.Sprintf("Не удалось сформировать обращение к пользователю %d", ctx.Sender().ID), nil)
+	}
+	if _, err := ctx.Bot().Send(
+		&tele.Chat{ID: int64(h.config.AdminChatID)},
+		fmt.Sprintf("Пользователь %s самоограничил себя на %s дней.", name, days),
+		tele.ModeHTML,
+		tele.NoPreview,
+	); err != nil {
+		h.logger.Error(
+			fmt.Sprintf("Не удалось оповестить администраторов о самоограничении пользователя: %v", err),
+			logger.LogContext{
+				"user_id":   ctx.Sender().ID,
+				"username":  ctx.Sender().Username,
+				"firstname": ctx.Sender().FirstName,
+				"lastname":  ctx.Sender().LastName,
+			},
+		)
+	}
 }
