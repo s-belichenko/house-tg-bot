@@ -18,7 +18,7 @@ import (
 )
 
 const (
-	selfBanCommandFormat = `/self_ban [days] (от 1 до 366, по умолчанию 7)`
+	selfBanCommandFormat = `/self_mute [days] (от 1 до 366, по умолчанию 7)`
 )
 
 // Команды бота для административного чата.
@@ -26,7 +26,7 @@ var (
 	StartCommand   = tele.Command{Text: "start", Description: "Начать работу с ботом"}
 	HelpCommand    = tele.Command{Text: "help", Description: "Справка по боту"}
 	MyInfoCommand  = tele.Command{Text: "my_info", Description: "Информация о вас"}
-	SelfBanCommand = tele.Command{Text: "self_ban", Description: "Временно ограничить себя в домовом чате"}
+	SelfBanCommand = tele.Command{Text: "self_mute", Description: "Временно ограничить себя в домовом чате"}
 )
 
 type CommandPrivateHandlers struct {
@@ -58,7 +58,7 @@ func (h *CommandPrivateHandlers) CommandStartHandler(ctx tele.Context) error {
 	return err
 }
 
-func (h *CommandPrivateHandlers) CommandSelfBanHandler(ctx tele.Context) error {
+func (h *CommandPrivateHandlers) CommandSelfMuteHandler(ctx tele.Context) error {
 	var (
 		neighbour *tele.ChatMember
 		err       error

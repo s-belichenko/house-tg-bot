@@ -104,7 +104,7 @@ func registerBotCommandHandlers(
 	)
 	bot.Handle(
 		"/"+handlers.SelfBanCommand.Text,
-		privateHandlers.CommandSelfBanHandler,
+		privateHandlers.CommandSelfMuteHandler,
 		mid.AllPrivateChatsMiddleware,
 	)
 	// Домашний чат.

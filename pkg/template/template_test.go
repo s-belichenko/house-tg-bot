@@ -206,21 +206,25 @@ func TestTemplate_RenderTextRealTemplate(t *testing.T) {
 			"Кавычки в raw-строке": `Привет! Я бот <a href="https://example.org/foo/bar?param=value">чата</a> ` +
 				`дома по адресу Москва, Кремль, дом 1. Правила добавления в чат:
 
-Бла-бла-бла &lt;a href=&#34;https://ya.ru&#34;&gt;Я.ру&lt;/a&gt;.`,
+Бла-бла-бла &lt;a href=&#34;https://ya.ru&#34;&gt;Я.ру&lt;/a&gt;.
+`,
 			"Кавычки в обычной строке": `Привет! Я бот <a href="https://example.org/foo/bar?param=value">чата</a>` +
 				` дома по адресу Москва, Кремль, дом 1. Правила добавления в чат:
 
-Бла-бла-бла &lt;a href=&#34;https://ya.ru&#34;&gt;Я.ру&lt;/a&gt;.`,
+Бла-бла-бла &lt;a href=&#34;https://ya.ru&#34;&gt;Я.ру&lt;/a&gt;.
+`,
 			"Кавычки в raw-строке в template.HTML": `Привет! Я бот <a href="https://example.org/foo/bar?param=value">чата</a> ` +
 				`дома по адресу Москва, Кремль, дом 1. Правила добавления в чат:
 
-Бла-бла-бла <a href="https://ya.ru">Я.ру</a>.`,
+Бла-бла-бла <a href="https://ya.ru">Я.ру</a>.
+`,
 			"Перенос в raw-строке в template.HTML": `Привет! Я бот ` +
 				`<a href="https://example.org/foo/bar?param=value">чата</a> дома по адресу Москва, ` +
 				`Кремль, дом 1. Правила добавления в чат:
 
 Раз строка.
-Два строка.`,
+Два строка.
+`,
 		},
 	}
 
