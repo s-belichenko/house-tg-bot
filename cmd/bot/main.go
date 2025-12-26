@@ -156,6 +156,7 @@ func registerJoinRequestHandler(bot *tele.Bot, cfg config.App, logger pkgLogger.
 	joinRequestHandlers := handlers.NewJoinRequestHandlersHandlers(cfg, logger)
 	bot.Handle(tele.OnChatJoinRequest, joinRequestHandlers.JoinRequestHandler)
 	bot.Handle(tele.OnUserJoined, joinRequestHandlers.UserJoinedHandler)
+	bot.Handle(tele.OnUserLeft, joinRequestHandlers.UserLeftHandler)
 }
 
 func registerMediaHandler(bot *tele.Bot, mid *middleware.TelebotMiddleware, cfg config.App, logger pkgLogger.Logger) {
