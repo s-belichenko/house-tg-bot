@@ -316,13 +316,25 @@ func (h *CommandPrivateHandlers) userCanSelfBan(ctx tele.Context) bool {
 }
 
 func (h *CommandPrivateHandlers) notifyAdminsAboutSelfMute(ctx tele.Context, days string) {
-	name, err := GetGreetingName(ctx.Sender())
-	if err != nil {
-		h.logger.Warn(fmt.Sprintf("Не удалось сформировать обращение к пользователю %d", ctx.Sender().ID), nil)
-	}
 	if _, err := ctx.Bot().Send(
 		&tele.Chat{ID: int64(h.config.AdminChatID)},
-		fmt.Sprintf("Пользователь %s самоограничил себя на %s дней.", name, days),
+		h.renderingTool.RenderText(`user_selfmuted.gohtml`, struct {
+			Days      string
+			ChatURL   template.URL
+			ChatName  string
+			UserID    int64
+			Username  string
+			Firstname string
+			Lastname  string
+		}{
+			Days:      days,
+			ChatURL:   template.URL(h.config.InviteURL.String()),
+			ChatName:  ctx.Chat().Title,
+			UserID:    ctx.Sender().ID,
+			Username:  ctx.Sender().Username,
+			Firstname: ctx.Sender().FirstName,
+			Lastname:  ctx.Sender().LastName,
+		}),
 		tele.ModeHTML,
 		tele.NoPreview,
 	); err != nil {

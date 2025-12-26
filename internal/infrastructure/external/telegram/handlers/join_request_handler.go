@@ -138,21 +138,21 @@ func (h *JoinRequestHandlers) sendJoinRules(ctx tele.Context) {
 func (h *JoinRequestHandlers) sendHiMessage(ctx tele.Context) {
 	if _, err := ctx.Bot().Send(
 		ctx.Sender(),
-		h.renderingTool.RenderText(
+		h.renderingTool.RenderEscapedText(
 			`hi.gohtml`,
 			struct {
 				InviteURL   template.URL
 				HomeAddress template.HTML
-				ChatSiteURL template.URL
 				HiMessage   template.HTML
 			}{
 				InviteURL:   template.URL(h.config.InviteURL.String()),
 				HomeAddress: template.HTML(h.config.HomeAddress),
-				ChatSiteURL: template.URL(h.config.ChatSiteURL.String()),
 				HiMessage:   template.HTML(h.config.HiMessage),
 			},
+			[]string{"HiMessage"},
 		),
-		tele.ModeHTML, tele.NoPreview,
+		tele.ModeHTML,
+		tele.NoPreview,
 	); err != nil {
 		h.logger.Error(
 			fmt.Sprintf("Не удалось отправить приветственное сообщение: %v", err),
