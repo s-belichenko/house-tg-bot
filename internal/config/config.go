@@ -27,6 +27,7 @@ type App struct {
 	InviteURL        url.URL `env:"INVITE_URL"`             // Ссылка для вступления в домовой чат
 	BotNickname      string  `env:"BOT_NICKNAME"`           // Ник бота
 	JoinRules        string  `env:"JOIN_RULES"`             // Правила верификации
+	HiMessage        string  `env:"HI_MESSAGE"`             // Приветствие вновь вступившим
 	BotID            int64   // Собственный идентификатор бота
 
 	LlmYandex struct {

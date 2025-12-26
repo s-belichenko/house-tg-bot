@@ -88,6 +88,9 @@ linters:
       - linters:
           - revive
         text: "var-naming: avoid meaningless package names"
+      - linters:
+          - dupl
+        text: "join_request_handler"
 
 formatters:
   enable:

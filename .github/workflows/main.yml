@@ -79,6 +79,7 @@ jobs:
             BOT_NICKNAME=${{ vars.BOT_NICKNAME }}\n
             HOME_ADDRESS=${{ vars.HOME_ADDRESS }}\n
             JOIN_RULES=${{ vars.JOIN_RULES }}\n
+            HI_MESSAGE=${{ vars.HI_MESSAGE }}\n
             HOUSE_IS_COMPLETED=${{ vars.HOUSE_IS_COMPLETED }}\n"
           include: |
             ./cmd/**/*.go

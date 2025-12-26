@@ -12,14 +12,14 @@ func CreateUnixTimeFromDays(d string) (int64, error) {
 		return 0, err
 	}
 	// Дни в секундах плюс один час для просмотра после бана в настройках.
-	return time.Now().Unix() + (int64(r)*86400 + 600), nil
+	return time.Now().Unix() + int64(r*86400+600), nil
 }
 
-func ParseDays(s string) (uint64, error) {
-	days, err := strconv.ParseUint(s, 10, 64)
+func ParseDays(s string) (uint32, error) {
+	days, err := strconv.ParseUint(s, 10, 32)
 	if err != nil {
-		return 0, fmt.Errorf("не удалось распарсить days %q в uint64 %w", s, err)
+		return 0, fmt.Errorf("не удалось распарсить days %q в uint16: %w", s, err)
 	}
 
-	return days, nil
+	return uint32(days), nil
 }

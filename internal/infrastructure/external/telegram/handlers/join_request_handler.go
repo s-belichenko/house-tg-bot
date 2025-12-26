@@ -53,32 +53,8 @@ func (h *JoinRequestHandlers) UserJoinedHandler(ctx tele.Context) error {
 		"lastname":  ctx.Sender().LastName,
 	})
 
-	if _, err := ctx.Bot().Send(
-		ctx.Sender(),
-		h.renderingTool.RenderText(
-			`hi.gohtml`,
-			struct {
-				InviteURL   template.URL
-				HomeAddress template.HTML
-				ChatSiteURL template.URL
-			}{
-				InviteURL:   template.URL(h.config.InviteURL.String()),
-				HomeAddress: template.HTML(h.config.HomeAddress),
-				ChatSiteURL: template.URL(h.config.ChatSiteURL.String()),
-			},
-		),
-		tele.ModeHTML, tele.NoPreview,
-	); err != nil {
-		h.logger.Error(
-			fmt.Sprintf("Не удалось отправить приветственное сообщение: %v", err),
-			logger.LogContext{
-				"user_id":   ctx.Sender().ID,
-				"username":  ctx.Sender().Username,
-				"firstname": ctx.Sender().FirstName,
-				"lastname":  ctx.Sender().LastName,
-			},
-		)
-	}
+	h.sendHiMessage(ctx)
+	h.notifyAdminsAboutUserJoined(ctx)
 
 	return nil
 }
@@ -149,6 +125,70 @@ func (h *JoinRequestHandlers) sendJoinRules(ctx tele.Context) {
 	); err != nil {
 		h.logger.Error(
 			fmt.Sprintf("Не удалось отправить правила вступления: %v", err),
+			logger.LogContext{
+				"user_id":   ctx.Sender().ID,
+				"username":  ctx.Sender().Username,
+				"firstname": ctx.Sender().FirstName,
+				"lastname":  ctx.Sender().LastName,
+			},
+		)
+	}
+}
+
+func (h *JoinRequestHandlers) sendHiMessage(ctx tele.Context) {
+	if _, err := ctx.Bot().Send(
+		ctx.Sender(),
+		h.renderingTool.RenderText(
+			`hi.gohtml`,
+			struct {
+				InviteURL   template.URL
+				HomeAddress template.HTML
+				ChatSiteURL template.URL
+				HiMessage   template.HTML
+			}{
+				InviteURL:   template.URL(h.config.InviteURL.String()),
+				HomeAddress: template.HTML(h.config.HomeAddress),
+				ChatSiteURL: template.URL(h.config.ChatSiteURL.String()),
+				HiMessage:   template.HTML(h.config.HiMessage),
+			},
+		),
+		tele.ModeHTML, tele.NoPreview,
+	); err != nil {
+		h.logger.Error(
+			fmt.Sprintf("Не удалось отправить приветственное сообщение: %v", err),
+			logger.LogContext{
+				"user_id":   ctx.Sender().ID,
+				"username":  ctx.Sender().Username,
+				"firstname": ctx.Sender().FirstName,
+				"lastname":  ctx.Sender().LastName,
+			},
+		)
+	}
+}
+
+func (h *JoinRequestHandlers) notifyAdminsAboutUserJoined(ctx tele.Context) {
+	if _, err := ctx.Bot().Send(
+		&tele.Chat{ID: int64(h.config.AdminChatID)},
+		h.renderingTool.RenderText(`user_joined.gohtml`, struct {
+			ChatURL   template.URL
+			ChatName  string
+			UserID    int64
+			Username  string
+			Firstname string
+			Lastname  string
+		}{
+			ChatURL:   template.URL(h.config.InviteURL.String()),
+			ChatName:  ctx.Chat().Title,
+			UserID:    ctx.Sender().ID,
+			Username:  ctx.Sender().Username,
+			Firstname: ctx.Sender().FirstName,
+			Lastname:  ctx.Sender().LastName,
+		}),
+		tele.ModeHTML,
+		tele.NoPreview,
+	); err != nil {
+		h.logger.Error(
+			fmt.Sprintf("Не удалось оповестить администраторов о вступлении в чат: %v", err),
 			logger.LogContext{
 				"user_id":   ctx.Sender().ID,
 				"username":  ctx.Sender().Username,
