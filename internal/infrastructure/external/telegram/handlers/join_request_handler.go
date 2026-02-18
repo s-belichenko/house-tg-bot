@@ -44,33 +44,38 @@ func (h *JoinRequestHandlers) JoinRequestHandler(ctx tele.Context) error {
 	return nil
 }
 
-// UserLeftHandler TODO: Точно ли не работает именно в закрытых группах?
+// UserLeftHandler Уведомляет о выходе пользователя из домового чата. TODO: Может не работать на больших группах?
 func (h *JoinRequestHandlers) UserLeftHandler(ctx tele.Context) error {
-	h.logger.Info("Пользователь покинул чат", logger.LogContext{
-		"chat_id":   ctx.Chat().ID,
-		"user_id":   ctx.Sender().ID,
-		"username":  ctx.Sender().Username,
-		"firstname": ctx.Sender().FirstName,
-		"lastname":  ctx.Sender().LastName,
-	})
+	if config.TeleID(ctx.Chat().ID) == h.config.HouseChatID {
+		h.logger.Info("Пользователь покинул чат", logger.LogContext{
+			"chat_id":   ctx.Chat().ID,
+			"user_id":   ctx.Sender().ID,
+			"username":  ctx.Sender().Username,
+			"firstname": ctx.Sender().FirstName,
+			"lastname":  ctx.Sender().LastName,
+		})
 
-	h.sendYouLeftMessage(ctx)
-	h.notifyAdminsAboutUserLeft(ctx)
+		h.sendYouLeftMessage(ctx)
+		h.notifyAdminsAboutUserLeft(ctx)
+	}
 
 	return nil
 }
 
+// UserJoinedHandler Уведомляет о вступлении пользователя из домового чата. TODO: Может не работать на больших группах?
 func (h *JoinRequestHandlers) UserJoinedHandler(ctx tele.Context) error {
-	h.logger.Info("Пользователь успешно добавлен в чат", logger.LogContext{
-		"chat_id":   ctx.Chat().ID,
-		"user_id":   ctx.Sender().ID,
-		"username":  ctx.Sender().Username,
-		"firstname": ctx.Sender().FirstName,
-		"lastname":  ctx.Sender().LastName,
-	})
+	if config.TeleID(ctx.Chat().ID) == h.config.HouseChatID {
+		h.logger.Info("Пользователь успешно добавлен в чат", logger.LogContext{
+			"chat_id":   ctx.Chat().ID,
+			"user_id":   ctx.Sender().ID,
+			"username":  ctx.Sender().Username,
+			"firstname": ctx.Sender().FirstName,
+			"lastname":  ctx.Sender().LastName,
+		})
 
-	h.sendHiMessage(ctx)
-	h.notifyAdminsAboutUserJoined(ctx)
+		h.sendHiMessage(ctx)
+		h.notifyAdminsAboutUserJoined(ctx)
+	}
 
 	return nil
 }

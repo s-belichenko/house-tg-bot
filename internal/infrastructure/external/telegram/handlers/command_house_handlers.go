@@ -119,7 +119,7 @@ func (h *CommandHouseHandlers) CommandReportHandler(ctx tele.Context) error {
 		return nil
 	}
 
-	h.sendNotification(ctx, violationText, violator, reporter, clarification, messageLink)
+	h.sendReportNotificationToAdmins(ctx, violationText, violator, reporter, clarification, messageLink)
 	h.cleanUpReport(ctx, msg, reporter)
 	h.thxForReport(ctx, violationText, clarification, reporter)
 
@@ -293,7 +293,7 @@ func (h *CommandHouseHandlers) incorrectUseReportCommand(ctx tele.Context, msg *
 	return false
 }
 
-func (h *CommandHouseHandlers) sendNotification(
+func (h *CommandHouseHandlers) sendReportNotificationToAdmins(
 	ctx tele.Context,
 	violationText string,
 	violator *tele.User,

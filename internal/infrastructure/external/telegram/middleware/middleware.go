@@ -9,7 +9,6 @@ import (
 
 	tele "gopkg.in/telebot.v4"
 
-	hndls "s-belichenko/house-tg-bot/internal/infrastructure/external/telegram/handlers"
 	pkgLog "s-belichenko/house-tg-bot/pkg/logger"
 )
 
@@ -157,44 +156,6 @@ func (m *TelebotMiddleware) AdminChatMiddleware(next tele.HandlerFunc) tele.Hand
 				pkgLog.LogContext{"message": ctx.Message()})
 
 			return nil
-		}
-
-		if member, err := ctx.Bot().ChatMemberOf(ctx.Chat(), ctx.Sender()); err != nil {
-			m.logger.Error(
-				fmt.Sprintf(
-					"Не удалось получить информацию об отправителе %d команды %q: %v",
-					ctx.Sender().ID,
-					getCommandName(ctx.Message()),
-					err,
-				),
-				pkgLog.LogContext{"user_id": ctx.Sender().ID},
-			)
-
-			return nil
-		} else if (tele.Creator != member.Role) && (tele.Administrator != member.Role) {
-			greetingName, err := hndls.GetGreetingName(ctx.Sender())
-			if err != nil {
-				m.logger.Warn(fmt.Sprintf("Не удалось сформировать обращение к пользователю %d: %v", ctx.Sender().ID, err), nil)
-			}
-			generateMessageLink, err := hndls.GenerateMessageLink(ctx.Chat(), ctx.Message().ID)
-			if err != nil {
-				m.logger.Warn(
-					fmt.Sprintf(
-						"Не удалось сформировать ссылку на сообщение %d в чате %d: %v",
-						ctx.Message().ID,
-						ctx.Chat().ID,
-						err,
-					),
-					nil,
-				)
-			}
-			link := fmt.Sprintf("<a href=%q>ссылка</a>", generateMessageLink)
-			reportMessage := fmt.Sprintf(
-				`Хакир детектед! Пользователь %q попытался использовать команду %q, ссылка: %s`,
-				greetingName, getCommandName(ctx.Message()), link,
-			)
-			adminChat := &tele.Chat{ID: int64(m.config.AdminChatID)}
-			_, _ = ctx.Bot().Send(adminChat, reportMessage, tele.ModeHTML)
 		}
 
 		return next(ctx)
