@@ -273,7 +273,24 @@ func (h *CommandHouseHandlers) reportAboutBot(ctx tele.Context, violatorID int64
 }
 
 func (h *CommandHouseHandlers) incorrectUseReportCommand(ctx tele.Context, msg *tele.Message) bool {
-	if msg.ReplyTo == nil || msg.ReplyTo.Sender.ID == msg.Sender.ID {
+	if msg.ReplyTo == nil {
+		if _, err := ctx.Bot().Send(
+			msg.Sender,
+			"Пожалуйста, используйте команду /report в ответе на сообщение с нарушением. "+
+				"Подробнее: /help.",
+		); err != nil {
+			h.logger.Error(
+				fmt.Sprintf("Не удалось отправить уточнение про команду /report: %v", err),
+				pkgLogger.LogContext{
+					"report_message_object": msg,
+				},
+			)
+		}
+
+		return true
+	}
+
+	if msg.ReplyTo.Sender.ID == msg.Sender.ID {
 		if _, err := ctx.Bot().Send(
 			msg.Sender,
 			"Пожалуйста, используйте команду /report в ответе на сообщение с нарушением. "+
